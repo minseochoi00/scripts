@@ -1,24 +1,6 @@
-#Run this with PowerShell / PowerShell ISE
-Write-Host "Installing Scoop for Installation of ThisIsWin11"
-
-# Installing Scoop
-iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
-Add-MpPreference -ExclusionPath "$($env:programdata)\scoop", "$($env:scoop)"
-
-# Installing GIT & Essentials
-scoop install git
-scoop bucket add extras
-
-# Installing ThisIsWin11
-Write-Host "Installing ThisIsWin11-Latest"
-scoop install thisiswin11
-
-# Waiting for Uninstall of ThisIsWin11 & Scoop
-Write-Host "Pausing for Uninstallation."
-Write-Host "Please close ThisIsWin11 for uninstallation"
-Pause
-
-# Uninstalling Scoop
-Remove-MpPreference -ExclusionPath "$($env:programdata)\scoop", "$($env:scoop)"
-scoop uninstall scoop
-del .\scoop -Force
+Write-Host "Downloading This is Win 11"
+# ONLY DOWNLOAD ThisIsWin11 on Windows 11 [ Not Funtionable in Windows 10 ]
+$url="https://github.com/builtbybel/ThisIsWin11/releases/download/1.4.1/TIW11.zip"
+$Path="$DefaultPath\TIW11-Install.TIW11.zip"
+Start-BitsTransfer -Source $url -Destination $path
+Start-Process "$Path"
