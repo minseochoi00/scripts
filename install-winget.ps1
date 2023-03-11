@@ -2,7 +2,6 @@
 if (Get-Command winget -ErrorAction SilentlyContinue) {
     Write-Host "Winget is already installed."
     pause
-    exit 0
 }
 
 # Download the latest version of Winget
@@ -28,14 +27,11 @@ if (Get-Command winget -ErrorAction SilentlyContinue) {
         Remove-AppxPackage -Package Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
         Remove-Item -Path $wingetFilePath -Force
         pause
-        exit 1
     }
     Remove-Item -Path $wingetFilePath -Force
     pause
-    exit 0
 } else {
     Write-Host "Winget installation failed."
     Remove-Item -Path $wingetFilePath -Force
     pause
-    exit 1
 }
