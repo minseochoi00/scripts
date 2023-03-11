@@ -19,7 +19,6 @@ Add-AppxPackage -Path $wingetFilePath
 # Check if Winget was installed successfully
 if (Get-Command winget -ErrorAction SilentlyContinue) {
     Write-Host "Winget installed successfully."
-    pause
     # Check if Winget is working
     try {
         winget --version
@@ -32,6 +31,7 @@ if (Get-Command winget -ErrorAction SilentlyContinue) {
         exit 1
     }
     Remove-Item -Path $wingetFilePath -Force
+    pause
     exit 0
 } else {
     Write-Host "Winget installation failed."
