@@ -1,6 +1,7 @@
 # Check if Winget is already installed
 if (Get-Command winget -ErrorAction SilentlyContinue) {
     Write-Host "Winget is already installed."
+    pause
     exit 0
 }
 
@@ -18,6 +19,7 @@ Add-AppxPackage -Path $wingetFilePath
 # Check if Winget was installed successfully
 if (Get-Command winget -ErrorAction SilentlyContinue) {
     Write-Host "Winget installed successfully."
+    pause
     # Check if Winget is working
     try {
         winget --version
@@ -26,6 +28,7 @@ if (Get-Command winget -ErrorAction SilentlyContinue) {
         # Remove Winget
         Remove-AppxPackage -Package Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
         Remove-Item -Path $wingetFilePath -Force
+        pause
         exit 1
     }
     Remove-Item -Path $wingetFilePath -Force
@@ -33,5 +36,6 @@ if (Get-Command winget -ErrorAction SilentlyContinue) {
 } else {
     Write-Host "Winget installation failed."
     Remove-Item -Path $wingetFilePath -Force
+    pause
     exit 1
 }
