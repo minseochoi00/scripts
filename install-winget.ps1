@@ -1,37 +1,40 @@
 # Check if Winget is already installed
 if (Get-Command winget -ErrorAction SilentlyContinue) {
+    
     Write-Host "Winget is already installed."
     pause
-}
 
-# Download the latest version of Winget
-$wingetUrl = "https://github.com/microsoft/winget-cli/releases/download/v1.4.10173/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
-$wingetFilePath = "$($env:TEMP)\winget.appxbundle"
+} else {
 
-Write-Host "Downloading Winget from $wingetUrl..."
-Invoke-WebRequest -Uri $wingetUrl -OutFile $wingetFilePath
+    # Download the latest version of Winget
+    $wingetUrl = "https://github.com/microsoft/winget-cli/releases/download/v1.4.10173/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+    $wingetFilePath = "$($env:TEMP)\winget.appxbundle"
 
-# Install Winget
-Write-Host "Installing Winget from $wingetFilePath..."
-Add-AppxPackage -Path $wingetFilePath
+    Write-Host "Downloading Winget from $wingetUrl..."
+    Invoke-WebRequest -Uri $wingetUrl -OutFile $wingetFilePath
 
-# Check if Winget was installed successfully
-if (Get-Command winget -ErrorAction SilentlyContinue) {
-    Write-Host "Winget installed successfully."
-    # Check if Winget is working
-    try {
-        winget --version
-    } catch {
-        Write-Host "Winget is not working."
-        # Remove Winget
-        Remove-AppxPackage -Package Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
+    # Install Winget
+    Write-Host "Installing Winget from $wingetFilePath..."
+    Add-AppxPackage -Path $wingetFilePath
+
+    # Check if Winget was installed successfully
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        Write-Host "Winget installed successfully."
+        # Check if Winget is working
+        try {
+         winget --version
+        } catch {
+            Write-Host "Winget is not working."
+            # Remove Winget
+            Remove-AppxPackage -Package Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
+            Remove-Item -Path $wingetFilePath -Force
+            pause
+         }
+        Remove-Item -Path $wingetFilePath -Force
+        pause
+    } else {
+        Write-Host "Winget installation failed."
         Remove-Item -Path $wingetFilePath -Force
         pause
     }
-    Remove-Item -Path $wingetFilePath -Force
-    pause
-} else {
-    Write-Host "Winget installation failed."
-    Remove-Item -Path $wingetFilePath -Force
-    pause
 }
