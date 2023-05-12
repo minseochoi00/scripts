@@ -3,7 +3,7 @@ if ((Get-Command -Name choco -ErrorAction Ignore) -and ($chocoVersion = (Get-Ite
     Write-Output ""
     Write-Output "Checking for Chocolatey Update"
     powershell choco feature enable -n allowGlobalConfirmation
-    choco upgrade chocolatey -y
+    powershell choco upgrade chocolatey -y
     Write-Output ""
     Write-Output "Chocolatey Version $chocoVersion is already installed or has been updated"
 } else {
