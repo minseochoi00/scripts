@@ -15,12 +15,13 @@ function Test-WinUtil-PATH-Checker {
         }
     }
 
+<#
     if($choco){
         if ((Get-Command -Name choco -ErrorAction Ignore) -and ($chocoVersion = (Get-Item "$env:ChocolateyInstall\choco.exe" -ErrorAction Ignore).VersionInfo.ProductVersion)){
             return $true
         }
     }
-
+#>
     return $false
 }
 
@@ -31,8 +32,8 @@ Try {
     if (Test-WinUtil-PATH-Checker -winget) {
             #Checks if winget executable exists and if the Windows Version is 1809 or higher
             Write-Host "Winget already Installed"
-            pause
-            return
+            Pause
+            Return
     }
 
     # Getting the computer's information
@@ -67,7 +68,7 @@ Try {
         Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
         Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
         Install-Script -Name winget-install -force
-        winget-instal
+        winget-install.ps1
             
             
         Start-Process powershell.exe -Verb RunAs -ArgumentList "-command irm https://raw.githubusercontent.com/ChrisTitusTech/winutil/$BranchToUse/winget.ps1 | iex | Out-Host" -WindowStyle Normal -ErrorAction Stop
@@ -87,8 +88,8 @@ Try {
         }
     }
         Write-Host "Winget Installed"
-        pause
-        return
+        Pause
+        Return
 }
     Catch {
     throw [WingetFailedInstall]::new('Failed to install')
