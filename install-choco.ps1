@@ -6,7 +6,7 @@ if ((Get-Command -Name choco -ErrorAction Ignore) -and ($chocoVersion = (Get-Ite
     powershell choco feature enable -n allowGlobalConfirmation
     powershell choco upgrade chocolatey -y
     Write-Output ""
-    Write-Output "Chocolatey Version $chocoVersion is already installed or has been updated"\
+    Write-Output "Chocolatey Version $chocoVersion is already installed or has been updated"
 
     Pause
     Return
