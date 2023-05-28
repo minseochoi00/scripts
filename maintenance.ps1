@@ -47,9 +47,9 @@ $cleanupOptions.Namespace(0x11).ParseName("C:").InvokeVerb("FullDiskCleanUp")
 $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
 if ($rebootChoice.ToUpper() -eq "Y") {
     Restart-Computer -Force
-} if else ($rebootChoice.ToUpper() -eq "Yes") {
+} elseif ($rebootChoice.ToUpper() -eq "Yes") {
     Restart-Computer -Force
-} if else ($rebootChoice.ToUpper() -eq "yes") {
+} elseif ($rebootChoice.ToUpper() -eq "yes") {
     Restart-Computer -Force
 } else {
     Write-Host "You can manually reboot your computer later at your convenience."
