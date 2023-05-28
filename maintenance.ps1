@@ -1,4 +1,3 @@
-
 # Check for and install Windows updates
 Write-Host "Checking for Windows updates..."
 $UpdateSession = New-Object -ComObject Microsoft.Update.Session
