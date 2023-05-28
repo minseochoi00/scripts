@@ -1,11 +1,20 @@
+# Settings
+$osVersion = [System.Environment]::OSVersion.Version
+$windows10Version = [System.Version]::Parse("10.0")
+$windowsVersion1 = "22621.1778" # Change this to latest build 22H2 of Windows 11
+$windowsVersion2 = "22000.2003" # Change this to latest build 21H2 of Windows 11
+
+# Installing NuGet Package for Module Installation
+Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+
+# Installing Module for Checking Windows Update
+Install-Module PSWindowsUpdate
+
+# Start
+
 # Delete Temporary Files for All Users
 Write-Host "Removing Temporary Files"
 Remove-Item -Path "$env:windir\Temp\*" -Recurse -Force -ErrorAction Ignore
-
-# Run Windows Cleanup
-Write-Host "Running Windows Clean-Up"
-$cleanupOptions = New-Object -ComObject Shell.Application
-$cleanupOptions.CleanupTemporaryFiles()
 
 # Flush Cache
 Write-Host "Flushing IP Cache"
@@ -17,12 +26,32 @@ Clear-RecycleBin -Force -ErrorAction Ignore
 
 # Windows Update
 Write-Host "Checking for Windows Update"
-$windowsUpdateSession = New-Object -ComObject Microsoft.Update.Session
-$windowsUpdateSearcher = $windowsUpdateSession.CreateUpdateSearcher()
-$windowsUpdateInstaller = New-Object -ComObject Microsoft.Update.Installer
-$updates = $windowsUpdateSearcher.Search("IsInstalled=0")
-$updates | ForEach-Object {
-    $windowsUpdateInstaller.Install($_.IsUpdate)
+
+# Check for Windows updates (excluding drivers)
+$updates = Get-WindowsUpdate -NotCategory "Drivers"
+
+if ($updates.Count -gt 0) {
+    Write-Host "Found $($updates.Count) Windows updates (excluding drivers)."
+    Write-Host "Installing updates..."
+
+    # Install updates
+    $session = New-Object -ComObject "Microsoft.Update.Session"
+    $downloader = $session.CreateUpdateDownloader()
+    $downloader.Updates = $updates
+    $downloader.Download()
+
+    $installer = $session.CreateUpdateInstaller()
+    $installer.Updates = $updates
+    $installationResult = $installer.Install()
+
+    # Check installation result
+    if ($installationResult.ResultCode -eq 2) {
+        Write-Host "Updates installed successfully."
+    } else {
+        Write-Host "Failed to install updates. Error code: $($installationResult.ResultCode)"
+    }
+} else {
+    Write-Host "No Windows updates (excluding drivers) available."
 }
 
 # Cleanup Print Queue & Delete Old Print Jobs
@@ -44,12 +73,44 @@ Clear-Item -Path "$env:LOCALAPPDATA\Microsoft\Windows\INetCache\*" -Force -Recur
 
 # Clean up C Drive
 Write-Host "Cleaning Up C Drive"
-$cleanupOptions = New-Object -ComObject Shell.Application
-$cleanupOptions.Namespace(0x11).ParseName("C:").InvokeVerb("EmptyRecycleBin")
+if ($osVersion -lt $windows10Version) {
+    Write-Host "This script requires Windows 10 or later."
 
-# Run full disk cleanup unattended
-Write-Host "Running Full Disk Cleanup - Unattended"
-$cleanupOptions.Namespace(0x11).ParseName("C:").InvokeVerb("FullDiskCleanUp")
+    # Prompt user to reboot
+    $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
+    if ($rebootChoice.ToUpper() -eq "Y") {
+        Restart-Computer -Force
+    } elseif ($rebootChoice.ToUpper() -eq "Yes") {
+        Restart-Computer -Force
+    } elseif ($rebootChoice.ToUpper() -eq "yes") {
+        Restart-Computer -Force
+    } else {
+        Write-Host "You can manually reboot your computer later at your convenience."
+        Pause
+        Exit
+    }
+}
+
+# Run disk cleanup on Windows 10
+if ($osVersion -lt $windows11Version) {
+    Write-Host "Running disk cleanup on Windows 10..."
+
+    $diskCleanupPath = "$env:SystemRoot\System32\cleanmgr.exe"
+    $diskCleanupArgs = "/c /sageset:65535 /sagerun:65535"
+    Start-Process -FilePath $diskCleanupPath -ArgumentList $diskCleanupArgs -Wait
+
+} else {
+
+# Run disk cleanup on Windows 11
+
+    Write-Host "Running disk cleanup on Windows 11..."
+
+    $diskCleanupPath = "C:\Windows\System32\cleanmgr.exe"
+    $diskCleanupArgs = "/lowdisk /verylowdisk"
+    Start-Process -FilePath $diskCleanupPath -ArgumentList $diskCleanupArgs -Wait
+}
+
+Write-Host "Disk cleanup completed."
 
 # Prompt user to reboot
 $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
@@ -61,4 +122,8 @@ if ($rebootChoice.ToUpper() -eq "Y") {
     Restart-Computer -Force
 } else {
     Write-Host "You can manually reboot your computer later at your convenience."
+    Pause
+    Exit
 }
+
+# End
