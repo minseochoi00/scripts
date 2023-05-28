@@ -5,8 +5,7 @@ function Test-WinUtil-PATH-Checker {
     #>
 
     Param(
-        [System.Management.Automation.SwitchParameter]$winget,
-        [System.Management.Automation.SwitchParameter]$choco
+        [System.Management.Automation.SwitchParameter]$winget
     )
 
     if($winget){
@@ -15,13 +14,6 @@ function Test-WinUtil-PATH-Checker {
         }
     }
 
-<#
-    if($choco){
-        if ((Get-Command -Name choco -ErrorAction Ignore) -and ($chocoVersion = (Get-Item "$env:ChocolateyInstall\choco.exe" -ErrorAction Ignore).VersionInfo.ProductVersion)){
-            return $true
-        }
-    }
-#>
     return $false
 }
 
@@ -64,18 +56,17 @@ Try {
         # Source: https://github.com/asheroto/winget-installer
 
         # adding the code from the asheroto repo
-        Set-ExecutionPolicy RemoteSigned -force
+        Set-ExecutionPolicy RemoteSigned -Force
         Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
         Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
-        Install-Script -Name winget-install -force
+        Install-Script -Name winget-install -Force
         winget-install.ps1
-            
-            
+                
         Start-Process powershell.exe -Verb RunAs -ArgumentList "-command irm https://raw.githubusercontent.com/ChrisTitusTech/winutil/$BranchToUse/winget.ps1 | iex | Out-Host" -WindowStyle Normal -ErrorAction Stop
 
         if(!(Test-WinUtilPackageManager -winget)){
-            break
-        }
+        break
+    }
     } else {
         # Installing Winget from the Microsoft Store
         Write-Host "Winget not found, installing it now."
@@ -94,3 +85,5 @@ Try {
     Catch {
     throw [WingetFailedInstall]::new('Failed to install')
 }
+
+Set-ExecutionPolicy Unrestricted -Force
