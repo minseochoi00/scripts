@@ -1,3 +1,24 @@
+<# Break-Down
+1. The Write-Verbose function is defined to display verbose messages if the $VerbosePreference variable is set to a value other than 'SilentlyContinue'.
+2. The script sets some initial settings and variables.
+    $DaysToDelete specifies the number of days for which files will be deleted.
+    $LogDate stores the current date and time in a specific format.
+    $objShell and $objFolder are COM objects used for accessing the Windows Shell and file system.
+    $ErrorActionPreference is set to "SilentlyContinue" to suppress error messages.
+3. The script starts a transcript of the script's output and clears the PowerShell host screen.
+4. It retrieves information about the ISO and VHD files in the "C:\Users" directory and calculates their sizes.
+5. The script collects information about the logical disks (drives) on the system and stores it in the $Before variable.
+6. The Windows Update service (wuauserv) is stopped forcefully and silently.
+7. The script deletes the contents of the "C:\Windows\SoftwareDistribution" folder, the "C:\Windows\Temp" folder, and the user-specific temporary folders.
+8. It removes the contents of the user's Temporary Internet Files folder.
+9. The script cleans up IIS logs and the Recycling Bin.
+10. The Windows Update service is started.
+11. The script modifies registry settings related to the Disk Cleanup utility to enable certain cleanup options.
+12. It runs the Disk Cleanup utility (cleanmgr) with a specific set of cleanup options (/sagerun:12).
+13. The script waits until the cleanmgr.exe process completes.
+14. Finally, it removes the registry settings modified earlier.
+#>
+
 function global:Write-Verbose ( [string]$Message )
 
 # check $VerbosePreference variable, and turns -Verbose on
