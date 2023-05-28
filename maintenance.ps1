@@ -28,31 +28,7 @@ Clear-RecycleBin -Force -ErrorAction Ignore
 Write-Host "Checking for Windows Update"
 
 # Check for Windows updates (excluding drivers)
-$updates = Get-WindowsUpdate -NotCategory "Drivers"
-
-if ($updates.Count -gt 0) {
-    Write-Host "Found $($updates.Count) Windows updates (excluding drivers)."
-    Write-Host "Installing updates..."
-
-    # Install updates
-    $session = New-Object -ComObject "Microsoft.Update.Session"
-    $downloader = $session.CreateUpdateDownloader()
-    $downloader.Updates = $updates
-    $downloader.Download()
-
-    $installer = $session.CreateUpdateInstaller()
-    $installer.Updates = $updates
-    $installationResult = $installer.Install()
-
-    # Check installation result
-    if ($installationResult.ResultCode -eq 2) {
-        Write-Host "Updates installed successfully."
-    } else {
-        Write-Host "Failed to install updates. Error code: $($installationResult.ResultCode)"
-    }
-} else {
-    Write-Host "No Windows updates (excluding drivers) available."
-}
+Get-WindowsUpdate -NotCategory "Drivers"
 
 # Cleanup Print Queue & Delete Old Print Jobs
 Write-Host "Cleaning up Print Queue"
