@@ -1,7 +1,8 @@
+# Settings
 function Test-WinUtil-PATH-Checker {
     <#
         .COMMENTS
-        This Function is for checking Winget or Chocolatey
+        This Function is for checking Winget
     #>
 
     Param(
@@ -17,7 +18,21 @@ function Test-WinUtil-PATH-Checker {
     return $false
 }
 
+# Getting the computer's information
+if ($null -eq $sync.ComputerInfo){
+    $ComputerInfo = Get-ComputerInfo -ErrorAction Stop
+} else {
+    $ComputerInfo = $sync.ComputerInfo
+}
 
+# Gets the Windows Edition
+$OSName = if ($ComputerInfo.OSName) {
+    $ComputerInfo.OSName
+} else {
+    $ComputerInfo.WindowsProductName
+}
+
+# Start
 Try {
     Write-Host "Checking if WinGet is installed..."
 
@@ -28,24 +43,11 @@ Try {
             Return
     }
 
-    # Getting the computer's information
-    if ($null -eq $sync.ComputerInfo){
-        $ComputerInfo = Get-ComputerInfo -ErrorAction Stop
-    } else {
-        $ComputerInfo = $sync.ComputerInfo
-    }
-
     if (($ComputerInfo.WindowsVersion) -lt "1809") {
         # Checks if Windows Version is too old for winget
         Write-Host "Winget is not supported on this version of Windows (Pre-1809)"
+        Pause
         return
-    }
-
-    # Gets the Windows Edition
-    $OSName = if ($ComputerInfo.OSName) {
-        $ComputerInfo.OSName
-    } else {
-        $ComputerInfo.WindowsProductName
     }
     
     if (((($OSName.IndexOf("LTSC")) -ne -1) -or ($OSName.IndexOf("Server") -ne -1)) -and (($ComputerInfo.WindowsVersion) -ge "1809")) {
@@ -67,7 +69,9 @@ Try {
         if(!(Test-WinUtilPackageManager -winget)){
         break
     }
+    
     } else {
+
         # Installing Winget from the Microsoft Store
         Write-Host "Winget not found, installing it now."
         Start-Process "ms-appinstaller:?source=https://aka.ms/getwinget"
