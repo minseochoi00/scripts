@@ -8,7 +8,7 @@ $windowsVersion2 = "22000.2003" # Change this to latest build 21H2 of Windows 11
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 
 # Installing Module for Checking Windows Update
-Install-Module PSWindowsUpdate
+Install-Module PSWindowsUpdate -Force
 
 # Start
 
@@ -45,7 +45,7 @@ w32tm /resync /nowait /rediscover
 
 # Clear Temporary Internet Files Only
 Write-Host "Clearing Temporary Internet Files"
-Clear-Item -Path "$env:LOCALAPPDATA\Microsoft\Windows\INetCache\*" -Force -Recurse
+Clear-Item -Path "$env:LOCALAPPDATA\Microsoft\Windows\INetCache\*" -Force -ErrorAction Ignore
 
 # Clean up C Drive
 Write-Host "Cleaning Up C Drive"
@@ -55,6 +55,8 @@ if ($osVersion -lt $windows10Version) {
     # Prompt user to reboot
     $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
     if ($rebootChoice.ToUpper() -eq "Y") {
+        Restart-Computer -Force
+    } elseif ($rebootChoice.ToUpper() -eq "y") {
         Restart-Computer -Force
     } elseif ($rebootChoice.ToUpper() -eq "Yes") {
         Restart-Computer -Force
@@ -69,7 +71,7 @@ if ($osVersion -lt $windows10Version) {
 
 # Run disk cleanup on Windows 10
 if ($osVersion -lt $windows11Version) {
-    Write-Host "Running disk cleanup on Windows 10..."
+    Write-Host "Running old disk cleanup."
 
     $diskCleanupPath = "$env:SystemRoot\System32\cleanmgr.exe"
     $diskCleanupArgs = "/c /sageset:65535 /sagerun:65535"
@@ -79,14 +81,14 @@ if ($osVersion -lt $windows11Version) {
 
 # Run disk cleanup on Windows 11
 
-    Write-Host "Running disk cleanup on Windows 11..."
+    Write-Host "Running newer disk cleanup."
 
     $diskCleanupPath = "C:\Windows\System32\cleanmgr.exe"
     $diskCleanupArgs = "/lowdisk /verylowdisk"
     Start-Process -FilePath $diskCleanupPath -ArgumentList $diskCleanupArgs -Wait
 }
 
-Write-Host "Disk cleanup completed."
+Write-Host "Disk cleanup has been completed."
 
 # Prompt user to reboot
 $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
