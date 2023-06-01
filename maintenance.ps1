@@ -1,9 +1,4 @@
 # Settings
-$osVersion = [System.Environment]::OSVersion.Version
-$windows10Version = [System.Version]::Parse("10.0")
-$windowsVersion1 = "22621.1778" # Change this to latest build 22H2 of Windows 11
-$windowsVersion2 = "22000.2003" # Change this to latest build 21H2 of Windows 11
-
 # Installing NuGet Package for Module Installation
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 
@@ -14,7 +9,8 @@ Install-Module PSWindowsUpdate -Force
 
 # Delete Temporary Files for All Users
 Write-Host "Removing Temporary Files"
-Remove-Item -Path "$env:windir\Temp\*" -Recurse -Force -ErrorAction Ignore
+Get-ChildItem -Path "$env:windir\Temp\" *.* -Recurse | Remove-Item -Force -Recurse
+Get-ChildItem -Path $env:TEMP *.* -Recurse | Remove-Item -Force -Recurse
 
 # Flush Cache
 Write-Host "Flushing IP Cache"
@@ -47,48 +43,9 @@ w32tm /resync /nowait /rediscover
 Write-Host "Clearing Temporary Internet Files"
 Clear-Item -Path "$env:LOCALAPPDATA\Microsoft\Windows\INetCache\*" -Force -ErrorAction Ignore
 
-# Clean up C Drive
-Write-Host "Cleaning Up C Drive"
-if ($osVersion -lt $windows10Version) {
-    Write-Host "This script requires Windows 10 or later."
-
-    # Prompt user to reboot
-    $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
-    if ($rebootChoice.ToUpper() -eq "Y") {
-        Restart-Computer -Force
-    } elseif ($rebootChoice.ToUpper() -eq "y") {
-        Restart-Computer -Force
-    } elseif ($rebootChoice.ToUpper() -eq "Yes") {
-        Restart-Computer -Force
-    } elseif ($rebootChoice.ToUpper() -eq "yes") {
-        Restart-Computer -Force
-    } else {
-        Write-Host "You can manually reboot your computer later at your convenience."
-        Pause
-        Exit
-    }
-}
-
-# Run disk cleanup on Windows 10
-if ($osVersion -lt $windows11Version) {
-    Write-Host "Running old disk cleanup."
-
-    $diskCleanupPath = "$env:SystemRoot\System32\cleanmgr.exe"
-    $diskCleanupArgs = "/c /sageset:65535 /sagerun:65535"
-    Start-Process -FilePath $diskCleanupPath -ArgumentList $diskCleanupArgs -Wait
-
-} else {
-
-# Run disk cleanup on Windows 11
-
-    Write-Host "Running newer disk cleanup."
-
-    $diskCleanupPath = "C:\Windows\System32\cleanmgr.exe"
-    $diskCleanupArgs = "/lowdisk /verylowdisk"
-    Start-Process -FilePath $diskCleanupPath -ArgumentList $diskCleanupArgs -Wait
-}
-
-Write-Host "Disk cleanup has been completed."
+# Running Disk Cleanup
+Write-Host "Starting Disk Cleanup"
+cleanmgr.exe /d C: /VERYLOWDISK
 
 # Prompt user to reboot
 $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
