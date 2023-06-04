@@ -45,6 +45,9 @@
         "Windows Upgrade Log Files"
     )
 
+# Windows Update File PATH
+    $WindowsUpdateFolder = "$($env:windir)\SoftwareDistribution\Download"
+
 # Start
 
 # Delete Temporary Files for All Users
@@ -52,10 +55,17 @@
     Get-ChildItem -Path "$env:windir\Temp\" *.* -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
     Get-ChildItem -Path $env:TEMP *.* -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
 
+# Delete Windows update files
+    Write-Host "Deleting Windows update files..."
+    Remove-Item $WindowsUpdateFolder\* -Recurse -Force -ErrorAction SilentlyContinue
+
+# Delete old Windows installation files
+    Write-Host "Deleting old Windows installation files..."
+    DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase /Quiet
 
 # Flush Cache
     Write-Host "Flushing IP Cache"
-    ipconfig /flushdns
+    Start-Process -FilePath ipconfig -ArgumentList '/flushdns' -WindowStyle Hidden
 
 # Empty Recycle Bin
     Write-Host "Empty Recycle Bin"
@@ -117,7 +127,12 @@ Write-Host "Fixing Workstation NTP Server"
     Remove-ItemProperty -Path $($Base+$Location) -Name $SageSet -Force -ea silentlycontinue | Out-Null
     }
 
+# Running Disk Defragmentation
+    Write-Host "Performing a disk defragmentation..."
+    Start-Process -FilePath "defrag.exe" -ArgumentList "-c" -Wait -WindowStyle Hidden -ErrorAction SilentlyContinue
+
 # Updating Microsoft Store Application
+    Write-Host "Updateing Microsoft Store's Applications.."
     $namespaceName = "root\cimv2\mdm\dmmap"
     $className = "MDM_EnterpriseModernAppManagement_AppManagement01"
     $wmiObj = Get-WmiObject -Namespace $namespaceName -Class $className
@@ -126,6 +141,10 @@ Write-Host "Fixing Workstation NTP Server"
 # Updating Chocolatey + WinGET Software
     irm minseochoi.tech/script/install-choco | iex
     irm minseochoi.tech/script/install-winget | iex
+
+# Check and repair system files
+    Write-Host "Checking and repairing system files..."
+    sfc /scannow /Quiet
 
 # Prompt user to reboot
     $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
