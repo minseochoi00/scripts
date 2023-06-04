@@ -123,14 +123,9 @@ Write-Host "Fixing Workstation NTP Server"
     $wmiObj = Get-WmiObject -Namespace $namespaceName -Class $className
     $result = $wmiObj.UpdateScanMethod()
 
-# Updating Chocolatey Application
-    try {
-        Write-Host "Upgrading Chocolatey"
-        choco upgrade chocolatey --confirm --no-progress
-    }
-    catch {
-        irm minseochoi.tech/script/install-choco | iex
-    }
+# Updating Chocolatey + WinGET Software
+    irm minseochoi.tech/script/install-choco | iex
+    irm minseochoi.tech/script/install-winget | iex
 
 # Prompt user to reboot
     $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
