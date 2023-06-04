@@ -107,10 +107,6 @@ Write-Host "Fixing Workstation NTP Server"
         Write-Output "An error occured while Resyncing on Workstation's NTP Server: $($_.Exception.Message)"
     }
 
-# Clear Temporary Internet Files Only
-    Write-Host "Clearing Temporary Internet Files"
-    Clear-Item -Path "$env:LOCALAPPDATA\Microsoft\Windows\INetCache\*" -Force -ErrorAction Ignore
-
 # Running Disk Cleanup
     Write-Host "Starting Disk Cleanup"
     # -ea silentlycontinue will supress error messages
