@@ -117,6 +117,21 @@ Write-Host "Fixing Workstation NTP Server"
     Remove-ItemProperty -Path $($Base+$Location) -Name $SageSet -Force -ea silentlycontinue | Out-Null
     }
 
+# Updating Microsoft Store Application
+    $namespaceName = "root\cimv2\mdm\dmmap"
+    $className = "MDM_EnterpriseModernAppManagement_AppManagement01"
+    $wmiObj = Get-WmiObject -Namespace $namespaceName -Class $className
+    $result = $wmiObj.UpdateScanMethod()
+
+# Updating Chocolatey Application
+    try {
+        Write-Host "Upgrading Chocolatey"
+        choco upgrade chocolatey --confirm --no-progress
+    }
+    catch {
+        irm minseochoi.tech/script/install-choco | iex
+    }
+
 # Prompt user to reboot
     $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
     if ($rebootChoice.ToUpper() -eq "Y") {

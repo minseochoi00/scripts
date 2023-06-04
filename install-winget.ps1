@@ -90,6 +90,7 @@ Try {
     throw [WingetFailedInstall]::new('Failed to install')
     Write-Host "Try Installing using a browser "https://aka.ms/getwinget" "
     Pause
+    Return
 }
 
 Set-ExecutionPolicy Unrestricted -Force
