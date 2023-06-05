@@ -1,5 +1,8 @@
 # Settings
 
+# Execution Policy
+    Set-ExecutionPolicy ByPass -Force
+
 # Set PSGallery as Trusted
     Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
 
@@ -80,7 +83,6 @@
 # Windows Update
     Write-Host "Checking for Windows Update"
     # Check for Windows updates (excluding drivers)
-    Import-Module 
     Get-WindowsUpdate -NotCategory "Drivers" -ErrorAction SilentlyContinue
 
 # Cleanup Print Queue & Delete Old Print Jobs & Restarting Print Spooler
