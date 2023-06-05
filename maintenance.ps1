@@ -1,10 +1,16 @@
 # Settings
 
+# Set PSGallery as Trusted
+    Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
+
 # Installing NuGet Package for Module Installation
     Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -ErrorAction SilentlyContinue
 
 # Installing Module for Checking Windows Update
     Install-Module PSWindowsUpdate -Force -ErrorAction SilentlyContinue
+
+# Importing Module for Chekcing Windows Update
+    Import-Module PSWindowsUpdate -Force -ErrorAction SilentlyContinue
 
 # Required Parameter for Disk Clean-up
     $SageSet = "StateFlags0099"
@@ -74,6 +80,7 @@
 # Windows Update
     Write-Host "Checking for Windows Update"
     # Check for Windows updates (excluding drivers)
+    Import-Module 
     Get-WindowsUpdate -NotCategory "Drivers" -ErrorAction SilentlyContinue
 
 # Cleanup Print Queue & Delete Old Print Jobs & Restarting Print Spooler
@@ -135,12 +142,12 @@ Write-Host "Fixing Workstation NTP Server"
     $result = $wmiObj.UpdateScanMethod()
 
 # Updating Chocolatey + WinGET Software
-    irm minseochoi.tech/script/install-choco | iex
-    irm minseochoi.tech/script/install-winget | iex
+    #irm minseochoi.tech/script/install-choco | iex
+    #irm minseochoi.tech/script/install-winget | iex
 
 # Check and repair system files
     Write-Host "Checking and repairing system files..."
-    sfc /scannow /Quiet
+    sfc /scannow
 
 # Prompt user to reboot
     $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
