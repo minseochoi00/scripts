@@ -83,7 +83,7 @@
 # Windows Update
     Write-Host "Checking for Windows Update"
     # Check for Windows updates (excluding drivers)
-    Get-WindowsUpdate -Download -Hide -Install -NotCategory "Drivers" -ErrorAction SilentlyContinue
+    Get-WindowsUpdate -Download -Hide -Install -IgnoreReboot -Confirm -NotCategory "Drivers" -ErrorAction SilentlyContinue
 
 # Cleanup Print Queue & Delete Old Print Jobs & Restarting Print Spooler
     try {
