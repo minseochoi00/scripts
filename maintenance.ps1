@@ -62,7 +62,7 @@
     Write-Host "Installing Caffeine"
     choco install Caffeine
     $CaffeinePATH = "C:\ProgramData\chocolatey\lib\caffeine"
-    Start-Process -FilePath $CaffeinePATH\caffeine64.exe -ArgumentList '-appon'
+    Start-Process -FilePath $CaffeinePATH\caffeine64.exe
 
 #### Start
 
@@ -90,7 +90,7 @@
 # Windows Update
     Write-Host "Checking for Windows Update"
     # Check for Windows updates (excluding drivers)
-    Get-WindowsUpdate -Download -Hide -Install -IgnoreReboot -Confirm -NotCategory "Drivers" -ErrorAction SilentlyContinue
+    Get-WindowsUpdate -Download -Hide -Install -IgnoreReboot -NotCategory "Drivers" -ErrorAction SilentlyContinue
 
 # Cleanup Print Queue & Delete Old Print Jobs & Restarting Print Spooler
     try {
@@ -156,6 +156,7 @@ Write-Host "Fixing Workstation NTP Server"
 
 # Un-installation of Caffeine
     Write-Host "Uninstalling Caffeine"
+    Stop-Process -Name caffeine64
     choco uninstall caffeine
 
 # Installation and Uninstallation of Chocolatey Cleaner
