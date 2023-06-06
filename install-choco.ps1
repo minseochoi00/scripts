@@ -7,17 +7,13 @@ if ((Get-Command -Name choco -ErrorAction Ignore) -and ($chocoVersion = (Get-Ite
     Write-Host ""
     Write-Host "Chocolatey Version $chocoVersion is already installed or has been updated"
     Pause
-    Return
 
 } else {
 
     Write-Host ""
     Write-Host "Chocolatey is not installed, installing now"
     Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-    powershell choco feature enable -n allowGlobalConfirmation
-
-    Pause
-    Return
+    powershell choco feature enable -n allowGlobalConfirmations
 
 } elseif {
     
@@ -31,7 +27,6 @@ if ((Get-Command -Name choco -ErrorAction Ignore) -and ($chocoVersion = (Get-Ite
 
         Write-Host "Error has occured while installing chocolatey."
         Pause
-        Return
 
     }
 }

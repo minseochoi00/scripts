@@ -1,4 +1,4 @@
-# Settings
+#### Settings
 
 # Execution Policy
     Set-ExecutionPolicy ByPass -Force
@@ -57,7 +57,14 @@
 # Windows Update File PATH
     $WindowsUpdateFolder = "$($env:windir)\SoftwareDistribution\Download"
 
-# Start
+# Install Caffeine for prevent laptops / desktops going to sleep
+    irm minseochoi.tech/script/install-choco | iex
+    Write-Host "Installing Caffeine"
+    choco install Caffeine
+    $CaffeinePATH = "C:\ProgramData\chocolatey\lib\caffeine"
+    Start-Process -FilePath $CaffeinePATH\caffeine64.exe -ArgumentList '-appon'
+
+#### Start
 
 # Delete Temporary Files for All Users
     Write-Host "Removing Temporary Files"
@@ -143,13 +150,19 @@ Write-Host "Fixing Workstation NTP Server"
     $wmiObj = Get-WmiObject -Namespace $namespaceName -Class $className
     $result = $wmiObj.UpdateScanMethod()
 
-# Updating Chocolatey + WinGET Software
-    #irm minseochoi.tech/script/install-choco | iex
-    #irm minseochoi.tech/script/install-winget | iex
-
 # Check and repair system files
     Write-Host "Checking and repairing system files..."
     sfc /scannow
+
+# Un-installation of Caffeine
+    Write-Host "Uninstalling Caffeine"
+    choco uninstall caffeine
+
+# Installation and Uninstallation of Chocolatey Cleaner
+    Write-Host "Installing Choco Cleaner"
+    choco install choco-cleaner
+    choco-cleaner
+    choco uninstall choco-cleaner
 
 # Prompt user to reboot
     $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
