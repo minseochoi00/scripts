@@ -52,7 +52,7 @@ $graphics_devices = Get-CimInstance -Class Win32_VideoController
 
 Write-Host "Computer Name: $ComputerName"
 Write-Host "Operating System: $OSName"
-Write-Host "Operating Installed Date: $OSInstallDate"
+Write-Host "$OSInstallDate"
 Write-Host "System Model: $Model"
 Write-Host ""
 Write-Host "CPU: $CPU"
