@@ -1,5 +1,8 @@
 #### Settings
 
+# Stop File Explorer
+    taskkill /f /im explorer.exe
+
 # Execution Policy
     Set-ExecutionPolicy ByPass -Force
 
@@ -164,6 +167,9 @@ Write-Host "Fixing Workstation NTP Server"
     choco install choco-cleaner
     choco-cleaner
     choco uninstall choco-cleaner
+   
+# Starting File Explorer
+    start-process explorer
 
 # Prompt user to reboot
     $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
