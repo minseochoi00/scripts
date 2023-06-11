@@ -3,19 +3,19 @@
 # Stop File Explorer
     taskkill /f /im explorer.exe
 
-# Execution Policy
+# Set Execution Policy
     Set-ExecutionPolicy ByPass -Force
 
 # Set PSGallery as Trusted
     Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
 
-# Installing NuGet Package for Module Installation
+# Installing NuGet Package
     Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -ErrorAction SilentlyContinue
 
-# Installing Module for Checking Windows Update
+# Installing Windows Update Module
     Install-Module PSWindowsUpdate -Force -ErrorAction SilentlyContinue
 
-# Importing Module for Chekcing Windows Update
+# Importing Windows Update Module
     Import-Module PSWindowsUpdate -Force -ErrorAction SilentlyContinue
 
 # Required Parameter for Disk Clean-up
@@ -88,7 +88,7 @@
 
 # Empty Recycle Bin
     Write-Host "Empty Recycle Bin"
-    Clear-RecycleBin -Force -ErrorAction Ignore
+    Clear-RecycleBin -DriveLetter C -Force -ErrorAction Ignore
 
 # Windows Update
     Write-Host "Checking for Windows Update"
@@ -97,6 +97,7 @@
 
 # Cleanup Print Queue & Delete Old Print Jobs & Restarting Print Spooler
     try {
+        Write-Host "Fixing Print Spooler"
         Stop-Service -Name Spooler -Force
         Remove-Item -Path "$env:SystemRoot\System32\spool\PRINTERS\*.*" -ErrorAction Ignore
         Start-Service -Name Spooler
@@ -132,7 +133,7 @@ Write-Host "Fixing Workstation NTP Server"
 # Running Disk Cleanup
     Write-Host "Starting Disk Cleanup"
     # -ea silentlycontinue will supress error messages
-    ForEach($Location in $Locations) {
+    ForEach ($Location in $Locations) {
         Set-ItemProperty -Path $($Base+$Location) -Name $SageSet -Type DWORD -Value 2 -ea silentlycontinue | Out-Null
     }
 

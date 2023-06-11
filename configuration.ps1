@@ -43,12 +43,14 @@ catch {
 try {
     Write-Host "Enabling Windows 10 Right-Click Style in Windows 11"
         if ((Get-CimInstance -ClassName Win32_OperatingSystem).Version -notmatch "^10") {
-        Write-Host "This script is only intended for Windows 11"
+        Write-Host "This script is only intended for only Windows 11"
         Write-Host "This Script will be skipped automatically..."
         } else {
+        # Adding Registry to Workstation for Classic Right Click
         reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
         # Restarting Windows Explorer
         Get-Process explorer | Stop-Process
+            
             # Restore back to Windows 11
             # reg delete "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}" /f
     }

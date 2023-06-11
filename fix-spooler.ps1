@@ -1,8 +1,10 @@
-# Function to check if the script is running with administrative privileges
+# Create New Function 'Test-Admin'
 function Test-Admin {
+
     $currentUser = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     $isAdmin = $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
     return $isAdmin
+
 }
 
 # Check if the script is running as an administrator
@@ -13,6 +15,7 @@ if (-not (Test-Admin)) {
     Exit
 }
 
+# Start
 try {
 
     Write-Host "Stopping Print Spooler Service"
@@ -28,10 +31,13 @@ try {
     Return
 
 }
+# End
 
+# Error Prompt
 catch {
 
     Write-Host "Error has occured while Fixing Print Spooler"
     Pause
     Return
+
 }
