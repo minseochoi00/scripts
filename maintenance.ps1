@@ -109,9 +109,11 @@
 Write-Host "Fixing Workstation NTP Server"
     try {
         Start-Service 'W32Time'
-        w32tm /config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update
+        Start-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
+        # w32tm /config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update
         Restart-Service W32Time
-        w32tm /config /update
+        Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
+        # w32tm /config /update
     }
     catch {
         Write-Output "An error occured while Fixing on Workstation's NTP Server: $($_.Exception.Message)"
@@ -120,7 +122,8 @@ Write-Host "Fixing Workstation NTP Server"
 # Resync Time
     try {
     Write-Host "Resyncing Time"
-    w32tm /resync /nowait /rediscover
+    Start-Process -FilePath w32tm -ArgumentList '/resync /nowait /rediscover' -WindowStyle Hidden
+    # w32tm /resync /nowait /rediscover
     }
     catch {
         Write-Output "An error occured while Resyncing on Workstation's NTP Server: $($_.Exception.Message)"
@@ -146,19 +149,14 @@ Write-Host "Fixing Workstation NTP Server"
     Write-Host "Performing a disk defragmentation..."
     Start-Process -FilePath "defrag.exe" -ArgumentList "-c" -Wait -WindowStyle Hidden -ErrorAction SilentlyContinue
 
-# Updating Microsoft Store Application
-    Write-Host "Updateing Microsoft Store's Applications.."
-    $namespaceName = "root\cimv2\mdm\dmmap"
-    $className = "MDM_EnterpriseModernAppManagement_AppManagement01"
-    $wmiObj = Get-WmiObject -Namespace $namespaceName -Class $className
-    $result = $wmiObj.UpdateScanMethod()
-
 # Check and repair system files
     Write-Host "Checking and repairing system files..."
-    sfc /scannow
+    Start-Process -FilePath sfc -ArgumentList '/scannow' -WindowStyle Hidden
+    # sfc /scannow
 
 # Un-installation of Caffeine
     Write-Host "Uninstalling Caffeine"
+    $CheckCaffeine = Get-Process -Name caffeine64
     Stop-Process -Name caffeine64
     choco uninstall caffeine
 
