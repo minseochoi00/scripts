@@ -65,6 +65,7 @@
     Write-Host "Installing Caffeine"
     choco install Caffeine
     $CaffeinePATH = "C:\ProgramData\chocolatey\lib\caffeine"
+    Write-Host "Starting Caffeine"
     Start-Process -FilePath $CaffeinePATH\caffeine64.exe
 
 #### Start
