@@ -61,12 +61,21 @@
     $WindowsUpdateFolder = "$($env:windir)\SoftwareDistribution\Download"
 
 # Install Caffeine for prevent laptops / desktops going to sleep
-    irm minseochoi.tech/script/install-choco | iex
+    Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression
     Write-Host "Installing Caffeine"
     choco install Caffeine
-    $CaffeinePATH = "C:\ProgramData\chocolatey\lib\caffeine"
+    
     Write-Host "Starting Caffeine"
     Start-Process -FilePath $CaffeinePATH\caffeine64.exe
+    if ($CheckCaffeine) {
+        Write-Host 'Process 'Caffeine64' has STARTED.'
+    } else {
+        Write-Host 'Process 'Caffeine64' is currently NOT RUNNING.'
+    }
+
+# Caffeine64 Check Process and Set PATH
+    $CheckCaffeine = Get-Process -Name caffeine64 -ErrorAction SilentlyContinue
+    $CaffeinePATH = "C:\ProgramData\chocolatey\lib\caffeine"
 
 #### Start
 
@@ -91,11 +100,6 @@
     Write-Host "Empty Recycle Bin"
     Clear-RecycleBin -DriveLetter C -Force -ErrorAction Ignore
 
-# Windows Update
-    Write-Host "Checking for Windows Update"
-    # Check for Windows updates (excluding drivers)
-    Get-WindowsUpdate -Download -Hide -Install -IgnoreReboot -NotCategory "Drivers" -ErrorAction SilentlyContinue
-
 # Cleanup Print Queue & Delete Old Print Jobs & Restarting Print Spooler
     try {
         Write-Host "Fixing Print Spooler"
@@ -112,10 +116,8 @@ Write-Host "Fixing Workstation NTP Server"
     try {
         Start-Service 'W32Time'
         Start-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
-        # w32tm /config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update
         Restart-Service W32Time
         Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
-        # w32tm /config /update
     }
     catch {
         Write-Output "An error occured while Fixing on Workstation's NTP Server: $($_.Exception.Message)"
@@ -158,15 +160,24 @@ Write-Host "Fixing Workstation NTP Server"
 
 # Un-installation of Caffeine
     Write-Host "Uninstalling Caffeine"
-    $CheckCaffeine = Get-Process -Name caffeine64
-    Stop-Process -Name caffeine64
-    choco uninstall caffeine
+    if ($CheckCaffeine) {
+        Stop-Process -Name caffeine64
+        choco uninstall caffeine
+    } else {
+        Write-Host 'Process 'Caffeine64' is currently not running.'
+    }
+
 
 # Installation and Uninstallation of Chocolatey Cleaner
     Write-Host "Installing Choco Cleaner"
     choco install choco-cleaner
     choco-cleaner
     choco uninstall choco-cleaner
+
+# Windows Update
+    Write-Host "Checking for Windows Update"
+    # Check for Windows updates (excluding drivers)
+    Get-WindowsUpdate -Download -Hide -Install -IgnoreReboot -NotCategory "Drivers" -ErrorAction SilentlyContinue
    
 # Starting File Explorer
     start-process explorer
