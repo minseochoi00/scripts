@@ -6,6 +6,9 @@ $Model = (Get-CimInstance -ClassName Win32_ComputerSystem).Model
 $CPU = (Get-CimInstance -ClassName Win32_Processor).Name
 $RAM = [math]::Round((Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)
 $drives = Get-CimInstance -ClassName Win32_LogicalDisk | Select-Object DeviceID, VolumeName, FreeSpace
+$SerialNumber = (Get-WmiObject -Class Win32_BIOS).SerialNumber
+$clean = clear
+
 
 $driveInfo = @()
 foreach ($drive in $drives) {
@@ -22,10 +25,12 @@ $graphics_devices = Get-CimInstance -Class Win32_VideoController
 
 # ---------------------------------------------------------------------------------------------------------------------------- #
 
+$clean
 Write-Host "Computer Name: $ComputerName"
 Write-Host "Operating System: $OSName"
 Write-Host "$OSInstallDate"
 Write-Host "System Model: $Model"
+Write-Host "Serial Number: $SerialNumber"
 Write-Host ""
 Write-Host "CPU: $CPU"
 Write-Host "RAM: $RAM GB"
