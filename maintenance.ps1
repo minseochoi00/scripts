@@ -60,6 +60,10 @@
 # Windows Update File PATH
     $WindowsUpdateFolder = "$($env:windir)\SoftwareDistribution\Download"
 
+# Caffeine64 Check Process and Set PATH
+    $CheckCaffeine = Get-Process -Name caffeine64 -ErrorAction SilentlyContinue
+    $CaffeinePATH = "C:\ProgramData\chocolatey\lib\caffeine"
+
 # Install Caffeine for prevent laptops / desktops going to sleep
     Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression
     Write-Host "Installing Caffeine"
@@ -72,10 +76,6 @@
     } else {
         Write-Host 'Process 'Caffeine64' is currently NOT RUNNING.'
     }
-
-# Caffeine64 Check Process and Set PATH
-    $CheckCaffeine = Get-Process -Name caffeine64 -ErrorAction SilentlyContinue
-    $CaffeinePATH = "C:\ProgramData\chocolatey\lib\caffeine"
 
 #### Start
 
