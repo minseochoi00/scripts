@@ -67,7 +67,7 @@
 # Install Caffeine for prevent laptops / desktops going to sleep
     Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression
     Write-Host "Installing Caffeine"
-    choco install Caffeine
+    choco install Caffeine --confirm --limit-output --no-progress
     
     Write-Host "Starting Caffeine"
     Start-Process -FilePath $CaffeinePATH\caffeine64.exe
@@ -162,17 +162,16 @@ Write-Host "Fixing Workstation NTP Server"
     Write-Host "Uninstalling Caffeine"
     if ($CheckCaffeine) {
         Stop-Process -Name caffeine64
-        choco uninstall caffeine
+        choco uninstall caffeine --confirm --limit-output --no-progress
     } else {
-        Write-Host 'Process 'Caffeine64' is currently not running.'
+        Write-Host 'Process 'Caffeine64' is currently NOT running.'
     }
-
 
 # Installation and Uninstallation of Chocolatey Cleaner
     Write-Host "Installing Choco Cleaner"
-    choco install choco-cleaner
-    choco-cleaner
-    choco uninstall choco-cleaner
+    choco install choco-cleaner --confirm --limit-output --no-progress
+    choco-cleaner 
+    choco uninstall choco-cleaner --confirm --limit-output --no-progress
 
 # Windows Update
     Write-Host "Checking for Windows Update"
