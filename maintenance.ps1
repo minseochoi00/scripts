@@ -79,6 +79,22 @@
 
 #### Start
 
+# Check for One-Drive Installation
+    $oneDrivePackage = Get-AppxPackage *OneDrive*
+    if ($oneDrivePackage) {
+        Write-Output "OneDrive is Installed, Recommend Running Uninstaller"
+        Write-Output "----------------------------------------------------"
+        Write-Output "irm minseochoi.tech/script/remove-onedrive.ps1"
+        Write-Output "----------------------------------------------------"
+        if ($oneDrivePackage.InstallLocation) {
+            $oneDrivePATH = $oneDrivePackage.InstallLocation
+            Write-Output "OneDrive Installation PATH: $oneDrivePATH"
+        }
+        Pause
+    } else {
+        Write-Output "OneDrive is NOT Installed."
+    }
+
 # Delete Temporary Files for All Users
     Write-Host "Removing Temporary Files"
     Get-ChildItem -Path "$env:windir\Temp\" *.* -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
@@ -176,7 +192,7 @@ Write-Host "Fixing Workstation NTP Server"
 # Windows Update
     Write-Host "Checking for Windows Update"
     # Check for Windows updates (excluding drivers)
-    Get-WindowsUpdate -Download -Hide -Install -IgnoreReboot -NotCategory "Drivers" -ErrorAction SilentlyContinue
+    Get-WindowsUpdate -Download -Hide -IgnoreReboot -NotCategory "Drivers" -ErrorAction SilentlyContinue
    
 # Starting File Explorer
     start-process explorer
