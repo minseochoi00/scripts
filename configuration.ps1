@@ -6,6 +6,19 @@
         $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId
     # Check if this workstation has battery (to determine if it is a laptop or desktop)
         $hasBattery = Get-WmiObject -Class Win32_Battery
+    # Check if the current user has administrative privileges
+        $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+        $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
+    # Check if the local Administrator Account is ACTIVE
+        $adminAccount = Get.Get-WmiObject -Class Win32_UserAccount -Filter "Name='Administrator'"
+    # Set a Password for the local Administrator Account
+        $password = "l0c@l@dm1n"
+    # Administrator Priveilges
+        $NoAdmin = "No"
+
+if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    $NoAdmin = "Yes"
+}
 
 ###- Connected User Experiences and Telemetry
 ###- FAX
@@ -69,6 +82,23 @@ catch {
     Write-Output "An error occured while tweaking Right Click Style on Windows 11: $($_.Exception.Message)"
 }
 
+if ($NoAdmin -eq 'No') {
+    if (-not $adminAccount.Enabled) {
+        Write-Error "The Local Administrator account is not active.."
+        Write-Output "Activating Local Administrator Accounts now..."
+        $adminAccount.Disabled = $false
+        $adminAccount.Put()
+    } 
+    
+    # Setting up Saved Password of $password as Local Administrator Passwords
+        $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
+        $user.SetPassword($password)
+        $user.SetInfo()
+    
+    Write-Output "The password for the local Administrator account has been set successfully."
+}
+
+
 if ($hasBattery) {
 
         Write-Host "Starting a Laptop Configuration.."
@@ -106,8 +136,9 @@ if ($hasBattery) {
 
         # Disabling  NVIDIA High Definition Audio for Monitor
         Write-Host "Disabling  NVIDIA High Definition Audio for Monitor"
-        # $Variable is Up above at the settings
-            Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
+            # $Variable is Up above at the settings
+            
+        Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
             # Enable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
     }
     catch {
