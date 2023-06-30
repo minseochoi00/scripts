@@ -7,7 +7,7 @@ $CPU = (Get-CimInstance -ClassName Win32_Processor).Name
 $RAM = [math]::Round((Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)
 $drives = Get-CimInstance -ClassName Win32_LogicalDisk | Select-Object DeviceID, VolumeName, FreeSpace
 $SerialNumber = (Get-WmiObject -Class Win32_BIOS).SerialNumber
-$clean = clear
+$clean = Clear-Host
 
 
 $driveInfo = @()
