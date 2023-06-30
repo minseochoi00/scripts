@@ -62,7 +62,7 @@
 
 # Caffeine64 Check Process and Set PATH
     $CheckCaffeine = Get-Process -Name caffeine64 -ErrorAction SilentlyContinue
-    $CaffeinePATH = C:\ProgramData\chocolatey\lib\caffeine
+    $CaffeinePATH = "C:\ProgramData\chocolatey\lib\caffeine"
 
 # Install Caffeine for prevent laptops / desktops going to sleep
     Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression
