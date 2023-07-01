@@ -15,9 +15,11 @@
     $password = "l0c@l@dm1n"
 # Administrator Priveilges
     $NoAdmin = "No"
+# Query the Win32_ComputerSystem class
+    $computerSystem = Get-WmiObject -Class Win32_ComputerSystem
 
 if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-$NoAdmin = "Yes"
+    $NoAdmin = "Yes"
 }
 
 ###- Connected User Experiences and Telemetry
@@ -59,16 +61,23 @@ w32tm /config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:ye
 Restart-Service W32Time
 w32tm /config /update
 }
+
 catch {
-Write-Output "An error occured while working on the Workstation's NTP Server: $($_.Exception.Message)"
+
+Write-Output "An error occured while working on the Workstation's NTP Server"
+Write-Output "Error: $($_.Exception.Message)"
+
 }
 
 try {
+
 Write-Host "Enabling Windows 10 Right-Click Style in Windows 11"
     if ((Get-CimInstance -ClassName Win32_OperatingSystem).Version -notmatch "^10") {
     Write-Host "This script is only intended for only Windows 11"
     Write-Host "This Script will be skipped automatically..."
+
     } else {
+
     # Adding Registry to Workstation for Classic Right Click
     reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
     # Restarting Windows Explorer
@@ -76,49 +85,116 @@ Write-Host "Enabling Windows 10 Right-Click Style in Windows 11"
         
         # Restore back to Windows 11
         # reg delete "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}" /f
-}
+
+    }
 }
 catch {
-Write-Output "An error occured while tweaking Right Click Style on Windows 11: $($_.Exception.Message)"
+
+Write-Output "An error occured while tweaking Right Click Style on Windows 11" 
+Write-Output "Error: $($_.Exception.Message)"
+
 }
 
 if ($NoAdmin -eq 'No') {
-if (-not $adminAccount.Enabled) {
-    Write-Error "The Local Administrator account is not active.."
-    Write-Output "Activating Local Administrator Accounts now..."
-    net user Administrator /active:yes
-} 
 
-# Setting up Saved Password of $password as Local Administrator Passwords
-    $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
-    $user.SetPassword($password)
-    $user.SetInfo()
+    if (-not $adminAccount.Enabled) {
+        Write-Error "The Local Administrator account is not active.."
+        Write-Output "Activating Local Administrator Accounts now..."
+        net user Administrator /active:yes
+    } 
 
-Write-Output "The password for the local Administrator account has been set successfully."
+    # Setting up Saved Password of $password as Local Administrator Passwords
+        $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
+        $user.SetPassword($password)
+        $user.SetInfo()
+
+    Write-Output "The password for the local Administrator account has been set successfully."
+
 }
 
-
-if ($hasBattery) {
-
-    Write-Host "Starting a Laptop Configuration.."
-
+# Laptop
+if ($computerSystem.Model -like '*laptop*' -or $computerSystem.ChassisTypes -contains 8) {
+    
     # Laptop
+        Write-Host "Starting a Laptop Configuration.."
 
-    Write-Host "Setting Acitve Power Plan to Balanced"
+    # Change Power Plan to Balanced
+        Write-Host "Setting Acitve Power Plan to Balanced"
         # $Variable is Up above at the settings
         powercfg.exe /setactive $LpowerPlanGUID
 
-try {
+    try {
 
-    # Disabling  NVIDIA High Definition Audio for Monitor
-    Write-Host "Disabling  NVIDIA High Definition Audio for Monitor"
-    # $Variable is Up above at the settings
+        # Disabling  NVIDIA High Definition Audio for Monitor
+            Write-Host "Disabling  NVIDIA High Definition Audio for Monitor"
+        # $Variable is Up above at the settings
+            Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
+            # Enable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
+    }
+    catch {
+        Write-Output "An error occured while disabling NVIDIA Audio" # $($_.Exception.Message)"
+    }
+Pause
+return
+}
+
+# Desktop
+elseif ($computerSystem.Model -like '*desktop*') {
+    
+    # Desktop
+        Write-Host "Starting a Desktop Configuration.."
+    
+    try {
+        
+        # Set the active power plan to "High performance"
+        Write-Host "Setting Acitve Power Plan to High Performance"
+            # $Variable is Up above at the settings
+            powercfg.exe /setactive $HpowerPlanGUID
+    
+        # Disabling  NVIDIA High Definition Audio for Monitor
+        Write-Host "Disabling  NVIDIA High Definition Audio for Monitor"
+            # $Variable is Up above at the settings
+            
         Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
-        # Enable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
+            # Enable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
+    }
+    
+    catch {
+        Write-Output "An error occured while working on the Desktop Tweaks: $($_.Exception.Message)"
+    }
 }
-catch {
-    Write-Output "An error occured while disabling NVIDIA Audio: $($_.Exception.Message)"
+
+Pause
+return
+
+# Server
+else {
+Write-Output "Configuration for Server is still in development."
+Pause
+return
 }
+
+<# if ($hasBattery) {
+    
+    # Laptop
+    Write-Host "Starting a Laptop Configuration.."
+
+    # Change Power Plan to Balanced
+        Write-Host "Setting Acitve Power Plan to Balanced"
+        # $Variable is Up above at the settings
+        powercfg.exe /setactive $LpowerPlanGUID
+
+    try {
+
+        # Disabling  NVIDIA High Definition Audio for Monitor
+            Write-Host "Disabling  NVIDIA High Definition Audio for Monitor"
+        # $Variable is Up above at the settings
+            Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
+            # Enable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
+    }
+    catch {
+        Write-Output "An error occured while disabling NVIDIA Audio" # $($_.Exception.Message)"
+    }
 
 } else {
 
@@ -145,3 +221,4 @@ catch {
 }
 
 }
+#>
