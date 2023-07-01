@@ -12,7 +12,7 @@
 # Check if the local Administrator Account is ACTIVE
     $adminAccount = Get.Get-WmiObject -Class Win32_UserAccount -Filter "Name='Administrator'"
 # Set a Password for the local Administrator Account
-    $password = "l0c@l@dm1n"
+    $password = ""
 # Administrator Priveilges
     $NoAdmin = "No"
 # Query the Win32_ComputerSystem class
