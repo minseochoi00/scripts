@@ -1,25 +1,28 @@
 #### Settings
 
 # Stop File Explorer
-    taskkill /f /im explorer.exe
+Write-Host "Stopping Windows Explorer..."
+Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyle Hidden
 
 # Set Execution Policy
-    $Bypass = Get-ExecutionPolicy
-    if (-not $Bypass -eq 'Bypass') {
+    $BypassEXE_Policy = Get-ExecutionPolicy
+    if (-not $BypassEXE_Policy -eq 'Bypass') {
         Set-ExecutionPolicy ByPass -Force
     }
 
 # Set PSGallery as Trusted
-    Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
+    Start-Process powershell.exe -ArgumentList "Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted" -Verb RunAs -ErrorAction Ignore
 
 # Installing NuGet Package
-    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -ErrorAction SilentlyContinue
+    Start-Process powershell.exe -ArgumentList "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -ErrorAction SilentlyContinue" -Verb RunAs -ErrorAction Ignore
 
 # Installing Windows Update Module
-    Install-Module PSWindowsUpdate -Force -ErrorAction SilentlyContinue
+    Start-Process powershell.exe -ArgumentList "Install-Module PSWindowsUpdate -Force -ErrorAction SilentlyContinue" -Verb RunAs -ErrorAction Ignore
+    
 
 # Importing Windows Update Module
-    Import-Module PSWindowsUpdate -Force -ErrorAction SilentlyContinue
+    Start-Process powershell.exe -ArgumentList "Import-Module PSWindowsUpdate -Force -ErrorAction SilentlyContinue" -Verb RunAs -ErrorAction Ignore
+    
 
 # Required Parameter for Disk Clean-up
     $SageSet = "StateFlags0099"
@@ -63,17 +66,17 @@
 # Windows Update File PATH
     $WindowsUpdateFolder = "$($env:windir)\SoftwareDistribution\Download"
 
-# Caffeine64 Check Process and Set PATH
-    $CheckCaffeine = Get-Process -Name caffeine64 -ErrorAction SilentlyContinue
-    $CaffeinePATH = "C:\ProgramData\chocolatey\lib\caffeine"
+# Caffeine64 set PATH
+    $CaffeinePATH = "$env:ChocolateyInstall\lib\caffeine"
 
-# Install Caffeine for prevent laptops / desktops going to sleep
-    Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression
+# Install Caffeine and Chocolatey for prevent workstations going to sleep
+    Start-Process powershell.exe -ArgumentList "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression" -Verb RunAs -ErrorAction Ignore
     Write-Host "Installing Caffeine"
-    choco install Caffeine --confirm --limit-output --no-progress
+    Start-Process powershell.exe -ArgumentList "choco install Caffeine --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction SilentlyContinue
     
     Write-Host "Starting Caffeine"
-    Start-Process -FilePath '$CaffeinePATH\caffeine64.exe'
+    Start-Process -FilePath $CaffeinePATH\caffeine64.exe
+    $CheckCaffeine = Get-Process -Name caffeine64 -ErrorAction SilentlyContinue
     if ($CheckCaffeine) {
         Write-Host 'Process 'Caffeine64' has STARTED.'
     } else {
@@ -82,6 +85,8 @@
 
 #### Start
 
+# Keep this line of codes commented, since it needs a touch up.
+<#
 # Check for One-Drive Installation
     $oneDrivePackage = Get-AppxPackage *OneDrive*
     if ($oneDrivePackage) {
@@ -97,6 +102,7 @@
     } else {
         Write-Output "OneDrive is NOT Installed."
     }
+#>
 
 # Delete Temporary Files for All Users
     Write-Host "Removing Temporary Files"
@@ -178,19 +184,20 @@ Write-Host "Fixing Workstation NTP Server"
     # sfc /scannow
 
 # Un-installation of Caffeine
+    $CheckCaffeine = Get-Process -Name caffeine64 -ErrorAction SilentlyContinue 
     Write-Host "Uninstalling Caffeine"
     if ($CheckCaffeine) {
-        Stop-Process -Name caffeine64
-        choco uninstall caffeine --confirm --limit-output --no-progress
+        Stop-Process -Name 'caffeine64' -Verb RunAs -ErrorAction Ignore
+        Start-Process powershell.exe -ArgumentList "choco uninstall caffeine --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction Ignore
     } else {
         Write-Host 'Process 'Caffeine64' is currently NOT running.'
     }
 
 # Installation and Uninstallation of Chocolatey Cleaner
     Write-Host "Installing Choco Cleaner"
-    choco install choco-cleaner --confirm --limit-output --no-progress
-    choco-cleaner 
-    choco uninstall choco-cleaner --confirm --limit-output --no-progress
+    Start-Process powershell.exe -ArgumentList "choco install choco-cleaner --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction Ignore
+    choco-cleaner
+    Start-Process powershell.exe -ArgumentList "choco uninstall choco-cleaner --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction Ignore
 
 # Windows Update
     Write-Host "Checking for Windows Update"
@@ -198,7 +205,9 @@ Write-Host "Fixing Workstation NTP Server"
     Get-WindowsUpdate -Download -Hide -IgnoreReboot -NotCategory "Drivers" -ErrorAction SilentlyContinue
    
 # Starting File Explorer
-    start-process explorer
+    Write-Host "Starting Windows Explorer..."
+    Start-Process -FilePath 'Explorer' -WindowStyle Hidden
+    Set-ExecutionPolicy RemoteSigned -Force
 
 # Prompt user to reboot
     $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
@@ -213,8 +222,7 @@ Write-Host "Fixing Workstation NTP Server"
     }
 
 # Exit
-Set-ExecutionPolicy RemoteSigned -Force
-Pause
-Exit
+    Pause
+    Exit
 
 # End
