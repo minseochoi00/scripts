@@ -72,25 +72,10 @@ Try {
     
     } else {
 
-        # Installing Winget from the Microsoft Store
-        Write-Host "Winget not found, installing it now."
-        Start-Process "ms-appinstaller:?source=https://aka.ms/getwinget"
-        $nid = (Get-Process AppInstaller).Id
-        Wait-Process -Id $nid
-
-        if(!(Test-WinUtilPackageManager -winget)){
-            break
-        }
-    }
-        Write-Host "Winget Installed"
+        throw [WingetFailedInstall]::new('Failed to install')
+        Write-Host "Try Installing using a browser "https://aka.ms/getwinget" "
         Pause
         Return
-}
-    Catch {
-    throw [WingetFailedInstall]::new('Failed to install')
-    Write-Host "Try Installing using a browser "https://aka.ms/getwinget" "
-    Pause
-    Return
-}
+    }
 
 Set-ExecutionPolicy Unrestricted -Force

@@ -113,7 +113,7 @@ if ($NoAdmin -eq 'No') {
 }
 
 # Laptop
-if ($computerSystem.Model -like '*laptop*' -or $computerSystem.ChassisTypes -contains 8) {
+if ($computerSystem.Model -like '*laptop*' -or $computerSystem.Model -like '*Virtual Machine*' -or $computerSystem.ChassisTypes -contains 8) {
     
     # Laptop
         Write-Host "Starting a Laptop Configuration.."
@@ -123,12 +123,20 @@ if ($computerSystem.Model -like '*laptop*' -or $computerSystem.ChassisTypes -con
         # $Variable is Up above at the settings
         powercfg.exe /setactive $LpowerPlanGUID
 
+        # Turn OFF Display Value
+        powercfg /change monitor-timeout-ac '30' -ErrorAction SilentlyContinue
+        powercfg /change monitor-timeout-dc '15' -ErrorAction SilentlyContinue
+
+        # Sleep Value
+        powercfg /change standby-timeout-ac '0' -ErrorAction SilentlyContinue
+        powercfg /change standby-timeout-dc '0' -ErrorAction SilentlyContinue
+
     try {
 
         # Disabling  NVIDIA High Definition Audio for Monitor
             Write-Host "Disabling  NVIDIA High Definition Audio for Monitor"
         # $Variable is Up above at the settings
-            Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
+            Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue
             # Enable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
     }
     catch {
@@ -150,12 +158,19 @@ elseif ($computerSystem.Model -like '*desktop*') {
         Write-Host "Setting Acitve Power Plan to High Performance"
             # $Variable is Up above at the settings
             powercfg.exe /setactive $HpowerPlanGUID
+
+        
+        # Turn OFF Display Value
+        powercfg /change monitor-timeout-ac '30' -ErrorAction SilentlyContinue
+
+        # Sleep Value
+        powercfg /change standby-timeout-ac '0' -ErrorAction SilentlyContinue
     
         # Disabling  NVIDIA High Definition Audio for Monitor
         Write-Host "Disabling  NVIDIA High Definition Audio for Monitor"
             # $Variable is Up above at the settings
             
-        Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
+        Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue
             # Enable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
     }
     
