@@ -4,7 +4,10 @@
     taskkill /f /im explorer.exe
 
 # Set Execution Policy
-    Set-ExecutionPolicy ByPass -Force
+    $Bypass = Get-ExecutionPolicy
+    if (-not $Bypass -eq 'Bypass') {
+        Set-ExecutionPolicy ByPass -Force
+    }
 
 # Set PSGallery as Trusted
     Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
@@ -207,8 +210,11 @@ Write-Host "Fixing Workstation NTP Server"
         Restart-Computer -Force
     } else {
         Write-Host "You can manually reboot your computer later at your convenience."
-        Pause
-        Exit
     }
+
+# Exit
+Set-ExecutionPolicy RemoteSigned -Force
+Pause
+Exit
 
 # End
