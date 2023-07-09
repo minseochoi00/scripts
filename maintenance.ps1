@@ -8,6 +8,8 @@
 # Winget
     $winstall = winget install
     $wuninstall = winget uninstall
+# DISM - Delete old Windows installation files
+    $DISM_WIF = DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase /Quiet
 # Print Spooler
     $start_printspooler = Start-Service -Name Spooler 
     $stop_printspooler = Stop-Service -Name Spooler -Force
@@ -116,8 +118,6 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
 
 #### Start
 
-# Keep this line of codes commented, since it needs a touch up.
-
 # Check for One-Drive Installation
     if ($Process_oneDrive) {
         Write-Output "OneDrive is currently installed, Running Uninstaller"
@@ -140,7 +140,7 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
     Write-Host "Deleting old Windows installation files..."
     try {
 
-        DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase /Quiet
+        $DISM_WIF
 
     }
     
