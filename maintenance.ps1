@@ -1,13 +1,47 @@
 #### Settings
 
+# env
+    # Choco
+    $cinstall = choco install
+    $cuninstall = choco uninstall
+    $generic_install = --confirm --limit-output --no-progress
+# Winget
+    $winstall = winget install
+    $wuninstall = winget uninstall
+# Print Spooler
+    $start_printspooler = Start-Service -Name Spooler 
+    $stop_printspooler = Stop-Service -Name Spooler -Force
+    $PrintSpooler_PATH = "$env:SystemRoot\System32\spool\PRINTERS\*.*"
+# Windows Update
+    $Check_WindowsUpdate = Get-WindowsUpdate -Download -Hide -IgnoreReboot -NotCategory "Drivers" -ErrorAction SilentlyContinue
+    $WindowsUpdateFolder = "$($env:windir)\SoftwareDistribution\Download"
+# One-Drive
+    $Process_oneDrive = Get-Process -Name OneDrive -ErrorAction SilentlyContinue
+# Caffeine
+    $CheckCaffeine = Get-Process -Name caffeine64 -ErrorAction SilentlyContinue
+    $CaffeinePATH = "$env:ChocolateyInstall\lib\caffeine"
+# ExecutionPolicy
+    $Get_EXE_Policy = Get-ExecutionPolicy
+    $BP = 'Bypass'
+    $RS = 'RemoteSigned'
+# RebootChoice
+    $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
+# Generic
+    $script_path = minseochoi.tech/script
+    $script_generic = irm minseochoi.tech/script
+    $InvokeExpression = | Invoke-Expression
+    $ErrorSkip = -ErrorAction SilentlyContinue
+    $ErrorIgnore = -ErrorAction Ignore
+    $RunAdmin = -Verb RunAs
+    $Stop = Pause
+
 # Stop File Explorer
 Write-Host "Stopping Windows Explorer..."
 Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyle Hidden
 
 # Set Execution Policy
-    $BypassEXE_Policy = Get-ExecutionPolicy
-    if (-not $BypassEXE_Policy -eq 'Bypass') {
-        Set-ExecutionPolicy ByPass -Force
+    if (-not $Get_EXE_Policy -eq $BP) {
+        Set-ExecutionPolicy $BP -Force
     }
 
 # Set PSGallery as Trusted
@@ -63,20 +97,17 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
         "Windows Upgrade Log Files"
     )
 
-# Windows Update File PATH
-    $WindowsUpdateFolder = "$($env:windir)\SoftwareDistribution\Download"
+    
 
-# Caffeine64 set PATH
-    $CaffeinePATH = "$env:ChocolateyInstall\lib\caffeine"
+
 
 # Install Caffeine and Chocolatey for prevent workstations going to sleep
-    Start-Process powershell.exe -ArgumentList "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression" -Verb RunAs -ErrorAction Ignore
+    Start-Process powershell.exe -ArgumentList "$script_generic/install-choco $InvokeExpression" $RunAdmin $ErrorSkip
     Write-Host "Installing Caffeine"
-    Start-Process powershell.exe -ArgumentList "choco install Caffeine --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction SilentlyContinue
-    
+    Start-Process powershell.exe -ArgumentList "$cinstall 'Caffeine' $generic_install" $RunAdmin $ErrorSkip
     Write-Host "Starting Caffeine"
     Start-Process -FilePath $CaffeinePATH\caffeine64.exe
-    $CheckCaffeine = Get-Process -Name caffeine64 -ErrorAction SilentlyContinue
+    $CheckCaffeine
     if ($CheckCaffeine) {
         Write-Host 'Process 'Caffeine64' has STARTED.'
     } else {
@@ -86,23 +117,15 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
 #### Start
 
 # Keep this line of codes commented, since it needs a touch up.
-<#
+
 # Check for One-Drive Installation
-    $oneDrivePackage = Get-AppxPackage *OneDrive*
-    if ($oneDrivePackage) {
-        Write-Output "OneDrive is Installed, Recommend Running Uninstaller"
-        Write-Output "----------------------------------------------------"
-        Write-Output "irm minseochoi.tech/script/remove-onedrive.ps1"
-        Write-Output "----------------------------------------------------"
-        if ($oneDrivePackage.InstallLocation) {
-            $oneDrivePATH = $oneDrivePackage.InstallLocation
-            Write-Output "OneDrive Installation PATH: $oneDrivePATH"
-        }
-        Pause
+    if ($Process_oneDrive) {
+        Write-Output "OneDrive is currently installed, Running Uninstaller"
+        Start-Process powershell.exe -ArgumentList "$script_generic/remove-onedrive | $InvokeExpression" $RunAdmin $ErrorSkip
     } else {
-        Write-Output "OneDrive is NOT Installed."
+        Write-Output "OneDrive is NOT Installed on this workstation."
     }
-#>
+
 
 # Delete Temporary Files for All Users
     Write-Host "Removing Temporary Files"
@@ -115,8 +138,18 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
 
 # Delete old Windows installation files
     Write-Host "Deleting old Windows installation files..."
-    DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase /Quiet
+    try {
 
+        DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase /Quiet
+
+    }
+    
+    catch {
+
+        Write-Host "Error has occured while deleting old Windows installation files."
+
+    }
+    
 # Flush Cache
     Write-Host "Flushing IP Cache"
     Start-Process -FilePath ipconfig -ArgumentList '/flushdns' -WindowStyle Hidden
@@ -128,9 +161,9 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
 # Cleanup Print Queue & Delete Old Print Jobs & Restarting Print Spooler
     try {
         Write-Host "Fixing Print Spooler"
-        Stop-Service -Name Spooler -Force
-        Remove-Item -Path "$env:SystemRoot\System32\spool\PRINTERS\*.*" -ErrorAction Ignore
-        Start-Service -Name Spooler
+        $stop_printspooler
+        Remove-Item -Path $PrintSpooler_PATH $ErrorIgnore
+        $start_printspooler
     }
     catch {
         Write-Host "Error has occured while Fixing Print Spooler"
@@ -145,7 +178,7 @@ Write-Host "Fixing Workstation NTP Server"
         Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
     }
     catch {
-        Write-Output "An error occured while Fixing on Workstation's NTP Server: $($_.Exception.Message)"
+        Write-Output "An error occured while fixing on Workstation's NTP Server: $($_.Exception.Message)"
     }
 
 # Resync Time
@@ -155,7 +188,7 @@ Write-Host "Fixing Workstation NTP Server"
     # w32tm /resync /nowait /rediscover
     }
     catch {
-        Write-Output "An error occured while Resyncing on Workstation's NTP Server: $($_.Exception.Message)"
+        Write-Output "An error occured while resyncing on Workstation's NTP Server: $($_.Exception.Message)"
     }
 
 # Running Disk Cleanup
@@ -184,33 +217,36 @@ Write-Host "Fixing Workstation NTP Server"
     # sfc /scannow
 
 # Un-installation of Caffeine
-    $CheckCaffeine = Get-Process -Name caffeine64 -ErrorAction SilentlyContinue 
+    $CheckCaffeine
     Write-Host "Uninstalling Caffeine"
     if ($CheckCaffeine) {
         Stop-Process -Name 'caffeine64' -Verb RunAs -ErrorAction Ignore
-        Start-Process powershell.exe -ArgumentList "choco uninstall caffeine --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction Ignore
+        Start-Process powershell.exe -ArgumentList "$cuninstall 'caffeine' $generic_install" $RunAdmin $ErrorIgnore
     } else {
         Write-Host 'Process 'Caffeine64' is currently NOT running.'
     }
 
 # Installation and Uninstallation of Chocolatey Cleaner
     Write-Host "Installing Choco Cleaner"
-    Start-Process powershell.exe -ArgumentList "choco install choco-cleaner --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction Ignore
+    Start-Process powershell.exe -ArgumentList "$cinstall 'choco-cleaner' $generic_install" $RunAdmin $ErrorIgnore
     choco-cleaner
-    Start-Process powershell.exe -ArgumentList "choco uninstall choco-cleaner --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction Ignore
+    Start-Process powershell.exe -ArgumentList "$cuninstall 'choco-cleaner' $generic_install" $RunAdmin $ErrorIgnore
 
 # Windows Update
     Write-Host "Checking for Windows Update"
     # Check for Windows updates (excluding drivers)
-    Get-WindowsUpdate -Download -Hide -IgnoreReboot -NotCategory "Drivers" -ErrorAction SilentlyContinue
+    $Check_WindowsUpdate
    
 # Starting File Explorer
     Write-Host "Starting Windows Explorer..."
     Start-Process -FilePath 'Explorer' -WindowStyle Hidden
-    Set-ExecutionPolicy RemoteSigned -Force
+
+# Re-setting ExecutionPolicy to RemoteSigned
+    if (-not $Get_EXE_Policy -eq $RS) {
+        Set-ExecutionPolicy $RS -Force
+    }
 
 # Prompt user to reboot
-    $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
     if ($rebootChoice.ToUpper() -eq "Y") {
         Restart-Computer -Force
     } elseif ($rebootChoice.ToUpper() -eq "Yes") {
@@ -222,7 +258,7 @@ Write-Host "Fixing Workstation NTP Server"
     }
 
 # Exit
-    Pause
+    $Stop
     Exit
 
 # End
