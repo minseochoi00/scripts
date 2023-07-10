@@ -83,10 +83,6 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
         "Windows Upgrade Log Files"
     )
 
-    
-
-
-
 # Install Caffeine and Chocolatey for prevent workstations going to sleep
     Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/install-choco | Invoke-Expression" -Verb RunAs -ErrorAction SilentlyContinue
     Write-Host "Installing Caffeine"
