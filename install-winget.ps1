@@ -33,7 +33,6 @@ $OSName = if ($ComputerInfo.OSName) {
 }
 
 # Start
-Try {
     Write-Host "Checking if WinGet is installed..."
 
     if (Test-WinUtil-PATH-Checker -winget) {
@@ -77,4 +76,3 @@ Try {
         Pause
         Return
     }
-}
