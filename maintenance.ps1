@@ -213,7 +213,7 @@ Write-Host "Fixing Workstation NTP Server"
 
 # Installation and Uninstallation of Chocolatey Cleaner
     Write-Host "Installing Choco Cleaner"
-    $cinstall choco-cleaner --confirm --limit-output --no-progress -ErrorAction Ignore
+    choco install choco-cleaner --confirm --limit-output --no-progress -ErrorAction Ignore
     choco-cleaner
     Start-Process powershell.exe -ArgumentList "$cuninstall 'choco-cleaner' --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction Ignore
 
