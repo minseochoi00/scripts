@@ -77,5 +77,3 @@ Try {
         Pause
         Return
     }
-
-Set-ExecutionPolicy Unrestricted -Force
