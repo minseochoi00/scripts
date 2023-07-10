@@ -4,18 +4,12 @@
     # Choco
     $cinstall = choco install
     $cuninstall = choco uninstall
-    $generic_install = --confirm --limit-output --no-progress
 # Winget
     $winstall = winget install
     $wuninstall = winget uninstall
-# DISM - Delete old Windows installation files
-    $DISM_WIF = DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase /Quiet
 # Print Spooler
-    $start_printspooler = Start-Service -Name Spooler 
-    $stop_printspooler = Stop-Service -Name Spooler -Force
     $PrintSpooler_PATH = "$env:SystemRoot\System32\spool\PRINTERS\*.*"
 # Windows Update
-    $Check_WindowsUpdate = Get-WindowsUpdate -Download -Hide -IgnoreReboot -NotCategory "Drivers" -ErrorAction SilentlyContinue
     $WindowsUpdateFolder = "$($env:windir)\SoftwareDistribution\Download"
 # One-Drive
     $Process_oneDrive = Get-Process -Name OneDrive -ErrorAction SilentlyContinue
@@ -26,16 +20,8 @@
     $Get_EXE_Policy = Get-ExecutionPolicy
     $BP = 'Bypass'
     $RS = 'RemoteSigned'
-# RebootChoice
-    $rebootChoice = Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
 # Generic
-    $script_path = minseochoi.tech/script
-    $script_generic = irm minseochoi.tech/script
-    $InvokeExpression = | Invoke-Expression
-    $ErrorSkip = -ErrorAction SilentlyContinue
-    $ErrorIgnore = -ErrorAction Ignore
-    $RunAdmin = -Verb RunAs
-    $Stop = Pause
+    $Stop = 'Pause'
 
 # Stop File Explorer
 Write-Host "Stopping Windows Explorer..."
@@ -50,16 +36,14 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
     Start-Process powershell.exe -ArgumentList "Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted" -Verb RunAs -ErrorAction Ignore
 
 # Installing NuGet Package
-    Start-Process powershell.exe -ArgumentList "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -ErrorAction SilentlyContinue" -Verb RunAs -ErrorAction Ignore
+    Start-Process powershell.exe -ArgumentList "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force" -Verb RunAs -ErrorAction Ignore
 
 # Installing Windows Update Module
-    Start-Process powershell.exe -ArgumentList "Install-Module PSWindowsUpdate -Force -ErrorAction SilentlyContinue" -Verb RunAs -ErrorAction Ignore
+    Start-Process powershell.exe -ArgumentList "Install-Module PSWindowsUpdate -Force" -Verb RunAs -ErrorAction Ignore
     
-
 # Importing Windows Update Module
-    Start-Process powershell.exe -ArgumentList "Import-Module PSWindowsUpdate -Force -ErrorAction SilentlyContinue" -Verb RunAs -ErrorAction Ignore
+    Start-Process powershell.exe -ArgumentList "Import-Module PSWindowsUpdate -Force" -Verb RunAs -ErrorAction Ignore
     
-
 # Required Parameter for Disk Clean-up
     $SageSet = "StateFlags0099"
     $Base = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\"
@@ -104,11 +88,12 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
 
 
 # Install Caffeine and Chocolatey for prevent workstations going to sleep
-    Start-Process powershell.exe -ArgumentList "$script_generic/install-choco $InvokeExpression" $RunAdmin $ErrorSkip
+    Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/install-choco | Invoke-Expression" -Verb RunAs -ErrorAction SilentlyContinue
     Write-Host "Installing Caffeine"
-    Start-Process powershell.exe -ArgumentList "$cinstall 'Caffeine' $generic_install" $RunAdmin $ErrorSkip
+    Start-Process powershell.exe -ArgumentList "$cinstall 'Caffeine' --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction SilentlyContinue
     Write-Host "Starting Caffeine"
     Start-Process -FilePath $CaffeinePATH\caffeine64.exe
+    Wait-Process -Name caffeine64 -Timeout 15
     $CheckCaffeine
     if ($CheckCaffeine) {
         Write-Host 'Process 'Caffeine64' has STARTED.'
@@ -121,7 +106,7 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
 # Check for One-Drive Installation
     if ($Process_oneDrive) {
         Write-Output "OneDrive is currently installed, Running Uninstaller"
-        Start-Process powershell.exe -ArgumentList "$script_generic/remove-onedrive | $InvokeExpression" $RunAdmin $ErrorSkip
+        Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/remove-onedrive | | Invoke-Expression" -Verb RunAs -ErrorAction SilentlyContinue
     } else {
         Write-Output "OneDrive is NOT Installed on this workstation."
     }
@@ -140,7 +125,7 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
     Write-Host "Deleting old Windows installation files..."
     try {
 
-        $DISM_WIF
+        DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase /Quiet
 
     }
     
@@ -161,9 +146,9 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
 # Cleanup Print Queue & Delete Old Print Jobs & Restarting Print Spooler
     try {
         Write-Host "Fixing Print Spooler"
-        $stop_printspooler
-        Remove-Item -Path $PrintSpooler_PATH $ErrorIgnore
-        $start_printspooler
+        Stop-Service -Name Spooler -Force
+        Remove-Item -Path $PrintSpooler_PATH -ErrorAction Ignore
+        Start-Service -Name Spooler
     }
     catch {
         Write-Host "Error has occured while Fixing Print Spooler"
@@ -220,22 +205,22 @@ Write-Host "Fixing Workstation NTP Server"
     $CheckCaffeine
     Write-Host "Uninstalling Caffeine"
     if ($CheckCaffeine) {
-        Stop-Process -Name 'caffeine64' -Verb RunAs -ErrorAction Ignore
-        Start-Process powershell.exe -ArgumentList "$cuninstall 'caffeine' $generic_install" $RunAdmin $ErrorIgnore
+        Stop-Process -Name 'caffeine64' -ErrorAction Ignore
+        Start-Process powershell.exe -ArgumentList "$cuninstall 'caffeine' --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction Ignore
     } else {
         Write-Host 'Process 'Caffeine64' is currently NOT running.'
     }
 
 # Installation and Uninstallation of Chocolatey Cleaner
     Write-Host "Installing Choco Cleaner"
-    Start-Process powershell.exe -ArgumentList "$cinstall 'choco-cleaner' $generic_install" $RunAdmin $ErrorIgnore
+    $cinstall choco-cleaner --confirm --limit-output --no-progress -ErrorAction Ignore
     choco-cleaner
-    Start-Process powershell.exe -ArgumentList "$cuninstall 'choco-cleaner' $generic_install" $RunAdmin $ErrorIgnore
+    Start-Process powershell.exe -ArgumentList "$cuninstall 'choco-cleaner' --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction Ignore
 
 # Windows Update
     Write-Host "Checking for Windows Update"
     # Check for Windows updates (excluding drivers)
-    $Check_WindowsUpdate
+    Get-WindowsUpdate -Download -Hide -IgnoreReboot -NotCategory "Drivers" -ErrorAction SilentlyContinue
    
 # Starting File Explorer
     Write-Host "Starting Windows Explorer..."
@@ -247,6 +232,7 @@ Write-Host "Fixing Workstation NTP Server"
     }
 
 # Prompt user to reboot
+    Read-Host -Prompt "Cleanup completed. Do you want to reboot now? (Y/N)"
     if ($rebootChoice.ToUpper() -eq "Y") {
         Restart-Computer -Force
     } elseif ($rebootChoice.ToUpper() -eq "Yes") {
