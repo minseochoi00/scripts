@@ -12,7 +12,7 @@
 # Check if the local Administrator Account is ACTIVE
     $adminAccount = Get.Get-WmiObject -Class Win32_UserAccount -Filter "Name='Administrator'"
 # Set a Password for the local Administrator Account
-    $password = ""
+    $password = "l0c@l@dm1n"
 # Administrator Priveilges
     $NoAdmin = "No"
 # Query the Win32_ComputerSystem class
@@ -51,7 +51,7 @@ $services = @(
 
 foreach ($service in $services) {
 Write-Output "Trying to disable $service"
-Get-Service -Name $service | Set-Service -StartupType Disabled
+Get-Service -Name $service | Set-Service -StartupType Disabled -ErrorAction SilentlyContinue
 }
 
 try {
