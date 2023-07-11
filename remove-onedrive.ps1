@@ -1,5 +1,5 @@
-Import-Module -DisableNameChecking $PSScriptRoot\..\lib\force-mkdir.psm1
-Import-Module -DisableNameChecking $PSScriptRoot\..\lib\take-own.psm1
+Import-Module -DisableNameChecking $PSScriptRoot\..\lib\force-mkdir.psm1 -ErrorAction Ignore
+Import-Module -DisableNameChecking $PSScriptRoot\..\lib\take-own.psm1 -ErrorAction Ignore
 
 Write-Output "Kill OneDrive process"
 taskkill.exe /F /IM "OneDrive.exe"
@@ -56,5 +56,5 @@ Start-Sleep 10
 Write-Output "Removing additional OneDrive leftovers"
 foreach ($item in (Get-ChildItem "$env:WinDir\WinSxS\*onedrive*")) {
     Takeown-Folder $item.FullName
-    Remove-Item -Recurse -Force $item.FullName
+    Remove-Item -Recurse -Force $item.FullName -ErrorAction SilentlyContinue
 }
