@@ -3,9 +3,7 @@
     $HpowerPlanGUID = '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c'
     $LpowerPlanGUID = '381b4222-f694-41f0-9685-ff5bb260df2e'
 # Get the List of InstanceID with the Name "NVIDIA High Definition Audio"
-    $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId
-# Check if this workstation has battery (to determine if it is a laptop or desktop)
-    $hasBattery = Get-WmiObject -Class Win32_Battery
+    $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue).InstanceId
 # Check if the current user has administrative privileges
     $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
     $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
@@ -15,8 +13,6 @@
     $password = "l0c@l@dm1n"
 # Administrator Priveilges
     $NoAdmin = "No"
-# Query the Win32_ComputerSystem class
-    $computerSystem = Get-WmiObject -Class Win32_ComputerSystem
 
 if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     $NoAdmin = "Yes"
@@ -51,7 +47,7 @@ $services = @(
 
 foreach ($service in $services) {
 Write-Output "Trying to disable $service"
-Get-Service -Name $service | Set-Service -StartupType Disabled -ErrorAction SilentlyContinue
+Get-Service -Name $service | Set-Service -StartupType Disabled
 }
 
 try {
@@ -113,10 +109,8 @@ if ($NoAdmin -eq 'No') {
 }
 
 # Laptop
-if ($computerSystem.Model -like '*laptop*' -or $computerSystem.Model -like '*Virtual Machine*' -or $computerSystem.ChassisTypes -contains 8) {
-    
-    # Laptop
-        Write-Host "Starting a Laptop Configuration.."
+
+    Write-Host "Starting a Laptop Configuration.."
 
     # Change Power Plan to Balanced
         Write-Host "Setting Acitve Power Plan to Balanced"
@@ -144,12 +138,9 @@ if ($computerSystem.Model -like '*laptop*' -or $computerSystem.Model -like '*Vir
     }
 Pause
 return
-}
 
 # Desktop
-elseif ($computerSystem.Model -like '*desktop*') {
-    
-    # Desktop
+
         Write-Host "Starting a Desktop Configuration.."
     
     try {
@@ -180,60 +171,3 @@ elseif ($computerSystem.Model -like '*desktop*') {
 }
 
 Pause
-return
-
-# Server
-else {
-Write-Output "Configuration for Server is still in development."
-Pause
-return
-}
-
-<# if ($hasBattery) {
-    
-    # Laptop
-    Write-Host "Starting a Laptop Configuration.."
-
-    # Change Power Plan to Balanced
-        Write-Host "Setting Acitve Power Plan to Balanced"
-        # $Variable is Up above at the settings
-        powercfg.exe /setactive $LpowerPlanGUID
-
-    try {
-
-        # Disabling  NVIDIA High Definition Audio for Monitor
-            Write-Host "Disabling  NVIDIA High Definition Audio for Monitor"
-        # $Variable is Up above at the settings
-            Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
-            # Enable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
-    }
-    catch {
-        Write-Output "An error occured while disabling NVIDIA Audio" # $($_.Exception.Message)"
-    }
-
-} else {
-
-Write-Host "Starting a Desktop Configuration.."
-
-# Desktop
-
-try {
-    
-    # Set the active power plan to "High performance"
-    Write-Host "Setting Acitve Power Plan to High Performance"
-        # $Variable is Up above at the settings
-        powercfg.exe /setactive $HpowerPlanGUID
-
-    # Disabling  NVIDIA High Definition Audio for Monitor
-    Write-Host "Disabling  NVIDIA High Definition Audio for Monitor"
-        # $Variable is Up above at the settings
-        
-    Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
-        # Enable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
-}
-catch {
-    Write-Output "An error occured while working on the Desktop Tweaks: $($_.Exception.Message)"
-}
-
-}
-#>
