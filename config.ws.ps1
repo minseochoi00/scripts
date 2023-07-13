@@ -11,6 +11,8 @@
     $NVIDIA_HDA = 'True'
 # Software installation Default
     $Softwares = "False"
+# Retreive Processer's Information
+    $processor = Get-WmiObject Win32_Processor | Select-Object -ExpandProperty Name
 # ExecutionPolicy
     $Get_EXE_Policy = Get-ExecutionPolicy
     $BP = 'Bypass'
@@ -176,7 +178,14 @@ elseif ($swChoice.ToUpper() -eq "n") { $Softwares = "False" }
 else { Write-Host "You must select either of the choices." }
 
 if ($Softwares -eq "True") {
-    
+
+# Chipset
+    Write-Host "Installating Processor's Latest Chipset Driver"
+        # Determine
+        if ($processor -like '*AMD*') { choco install 'amd-ryzen-chipset' --limitoutput --no-progress} 
+        elseif ($processor -like '*Intel*')  { choco install 'intel-chipset-device-software' --limitoutput --no-progress}
+        else { Write-Host "Failed to determine processor's information." }
+
 }
 
 # Exit
