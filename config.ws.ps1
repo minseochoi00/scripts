@@ -1,9 +1,29 @@
-# Settings
-    # Define the power plan GUID for "High performance" and "Balanced"
+# env
+    # Choco
+    $cinstall = choco install
+    $cuninstall = choco uninstall
+# Winget
+    $winstall = winget install
+    $wuninstall = winget uninstall
+# Pause
+    $stop = 'pause'
+# NVIDIA High Definition Audio Default
+    $NVIDIA_HDA = 'True'
+# Software installation Default
+    $Softwares = "False"
+# ExecutionPolicy
+    $Get_EXE_Policy = Get-ExecutionPolicy
+    $BP = 'Bypass'
+    $RS = 'RemoteSigned'
+        # Set Execution Policy
+            if (-not $Get_EXE_Policy -eq $BP) { Set-ExecutionPolicy $BP -Force -ErrorAction SilentlyContinue }
+# Define the power plan GUID for "High performance" and "Balanced"
     $HpowerPlanGUID = '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c'
     $LpowerPlanGUID = '381b4222-f694-41f0-9685-ff5bb260df2e'
 # Get the List of InstanceID with the Name "NVIDIA High Definition Audio"
-    $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue).InstanceId
+    try { Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" }
+    catch { $NVIDIA_HDA = 'False'}
+    if ($NVIDIA_HDA = 'True') { $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId }
 # Check if the current user has administrative privileges
     $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
     $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
@@ -30,8 +50,6 @@
         "XboxNetApiSvc"                            # Xbox Live Networking Service
         "ndu"                                      # Windows Network Data Usage Monitor
     )
-# General Variables
-    $stop = pause
 
 # Prompt for User either Desktop or Laptop
 Read-Host -Prompt "is 'Current Workstation' Laptop(L), Desktop(D) or Server(S)"
@@ -56,11 +74,12 @@ else { Write-Host "You must select either of the choices." }
     }
 
 # Windows NTP Server Tweaks
-    Write-Host "Fixing Workstation NTP Server"
-        Start-Service 'W32Time'
-        w32tm /config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update
+    Write-Host "Fixing Workstation's NTP Server"
+        tart-Service 'W32Time'
+        tart-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
         Restart-Service W32Time
-        w32tm /config /update
+        Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
+        Start-Process -FilePath w32tm -ArgumentList '/resync /nowait /rediscover' -WindowStyle Hidden
 
 # Windows Classic Right-Click Tweak for Windows 11
     Write-Host "Enabling Windows 10 Right-Click Style in Windows 11"
@@ -143,6 +162,21 @@ else { Write-Host "You must select either of the choices." }
     Write-Host "Tweaks for Server is still in maintenance."
     Pause
     return   
+}
+
+Read-Host -Prompt "Will this workstation require any installation of softwares?"
+if ($swChoice.ToUpper() -eq "Yes") { $Softwares = "True" } 
+elseif ($swChoice.ToUpper() -eq "yes") { $Softwares = "True" } 
+elseif ($swChoice.ToUpper() -eq "Y") { $Softwares = "True" } 
+elseif ($swChoice.ToUpper() -eq "y") { $Softwares = "True" }
+elseif ($swChoice.ToUpper() -eq "No") { $Softwares = "False" } 
+elseif ($swChoice.ToUpper() -eq "no") { $Softwares = "False" }
+elseif ($swChoice.ToUpper() -eq "N") { $Softwares = "False" }
+elseif ($swChoice.ToUpper() -eq "n") { $Softwares = "False" }
+else { Write-Host "You must select either of the choices." }
+
+if ($Softwares -eq "True") {
+    
 }
 
 # Exit
