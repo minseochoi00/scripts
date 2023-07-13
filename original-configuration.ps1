@@ -47,7 +47,7 @@ $services = @(
 
 foreach ($service in $services) {
 Write-Output "Trying to disable $service"
-Get-Service -Name $service | Set-Service -StartupType Disabled
+Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled
 }
 
 try {
@@ -168,6 +168,6 @@ return
     catch {
         Write-Output "An error occured while working on the Desktop Tweaks: $($_.Exception.Message)"
     }
-}
 
 Pause
+return

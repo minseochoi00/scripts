@@ -55,6 +55,6 @@ Start-Sleep 10
 
 Write-Output "Removing additional OneDrive leftovers"
 foreach ($item in (Get-ChildItem "$env:WinDir\WinSxS\*onedrive*")) {
-    Takeown-Folder $item.FullName
+    Takeown-Folder -ErrorAction SilentlyContinue $item.FullName 
     Remove-Item -Recurse -Force $item.FullName -ErrorAction SilentlyContinue
 }
