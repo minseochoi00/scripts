@@ -7,8 +7,6 @@
 # Check if the current user has administrative privileges
     $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
     $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
-# Check if the local Administrator Account is ACTIVE
-    $adminAccount = Get.Get-WmiObject -Class Win32_UserAccount -Filter "Name='Administrator'"
 # Set a Password for the local Administrator Account
     $password = "l0c@l@dm1n"
 # Administrator Priveilges
@@ -90,14 +88,8 @@ Write-Output "An error occured while tweaking Right Click Style on Windows 11"
 Write-Output "Error: $($_.Exception.Message)"
 
 }
-
-if ($NoAdmin -eq 'No') {
-
-    if (-not $adminAccount.Enabled) {
-        Write-Error "The Local Administrator account is not active.."
-        Write-Output "Activating Local Administrator Accounts now..."
-        net user Administrator /active:yes
-    } 
+    Write-Output "Activating Local Administrator Accounts now..."
+    net user Administrator /active:yes
 
     # Setting up Saved Password of $password as Local Administrator Passwords
         $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
@@ -105,8 +97,6 @@ if ($NoAdmin -eq 'No') {
         $user.SetInfo()
 
     Write-Output "The password for the local Administrator account has been set successfully."
-
-}
 
 # Laptop
 
