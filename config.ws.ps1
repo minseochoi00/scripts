@@ -1,12 +1,20 @@
 # env
-    # Choco
+# General
+    $space = Write-Host ""
+    $stop = 'pause'
+# Choco
     $cinstall = choco install
     $cuninstall = choco uninstall
+    $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
 # Winget
     $winstall = winget install
     $wuninstall = winget uninstall
-# Pause
-    $stop = 'pause'
+    function Test-WinUtil-PATH-Checker {
+        <# .COMMENTS = This Function is for checking Winget #>
+        Param( [System.Management.Automation.SwitchParameter]$winget )
+        if($winget){ if (Test-Path ~\AppData\Local\Microsoft\WindowsApps\winget.exe) { return $true } }
+        return $false
+    }
 # NVIDIA High Definition Audio Default
     $NVIDIA_HDA = 'True'
 # Software installation Default
@@ -52,22 +60,34 @@
         "XboxNetApiSvc"                            # Xbox Live Networking Service
         "ndu"                                      # Windows Network Data Usage Monitor
     )
+# Software Installation List
+    $csoftwares =@(
+        "googlechrome"                              # Google Chrome
+        "firefox"                                   # FireFox
+    )
+
+    $wsoftwares = @(    
+        "Microsoft.VCRedist.2015+.x64"              # Microsoft C++ 2015-2022 x64
+        "Microsoft.VCRedist.2015+.x86"              # Microsoft C++ 2015-2022 x86
+        "Oracle.JavaRuntimeEnvironment"             # Java 8
+        "Microsoft.PowerShell"                      # PowerShell (Latest)
+    )
 
 # Prompt for User either Desktop or Laptop
-Read-Host -Prompt "is 'Current Workstation' Laptop(L), Desktop(D) or Server(S)"
-if ($wsChoice.ToUpper() -eq "laptop") { $laptop = "True" } 
-elseif ($wsChoice.ToUpper() -eq "desktop") { $desktop = "True" } 
-elseif ($wsChoice.ToUpper() -eq "server") { $server = "True" } 
-elseif ($wsChoice.ToUpper() -eq "Laptop") { $laptop = "True" }
-elseif ($wsChoice.ToUpper() -eq "Desktop") { $desktop = "True" } 
-elseif ($wsChoice.ToUpper() -eq "Server") { $server = "True" }
-elseif ($wsChoice.ToUpper() -eq "l") { $laptop = "True" }
-elseif ($wsChoice.ToUpper() -eq "d") { $desktop = "True" }
-elseif ($wsChoice.ToUpper() -eq "s") { $server = "True" }
-elseif ($wsChoice.ToUpper() -eq "L") { $laptop = "True" }
-elseif ($wsChoice.ToUpper() -eq "D") { $desktop = "True" }
-elseif ($wsChoice.ToUpper() -eq "S") { $server = "True" }
-else { Write-Host "You must select either of the choices." }
+    Read-Host -Prompt "is 'Current Workstation' Laptop(L), Desktop(D) or Server(S)"
+        if ($wsChoice.ToUpper() -eq "laptop") { $laptop = "True" } 
+        elseif ($wsChoice.ToUpper() -eq "desktop") { $desktop = "True" } 
+        elseif ($wsChoice.ToUpper() -eq "server") { $server = "True" } 
+        elseif ($wsChoice.ToUpper() -eq "Laptop") { $laptop = "True" }
+        elseif ($wsChoice.ToUpper() -eq "Desktop") { $desktop = "True" } 
+        elseif ($wsChoice.ToUpper() -eq "Server") { $server = "True" }
+        elseif ($wsChoice.ToUpper() -eq "l") { $laptop = "True" }
+        elseif ($wsChoice.ToUpper() -eq "d") { $desktop = "True" }
+        elseif ($wsChoice.ToUpper() -eq "s") { $server = "True" }
+        elseif ($wsChoice.ToUpper() -eq "L") { $laptop = "True" }
+        elseif ($wsChoice.ToUpper() -eq "D") { $desktop = "True" }
+        elseif ($wsChoice.ToUpper() -eq "S") { $server = "True" }
+        else { Write-Host "You must select either of the choices." }
 
 # Windows Service Tweaks
     foreach ($service in $services) {
@@ -77,8 +97,8 @@ else { Write-Host "You must select either of the choices." }
 
 # Windows NTP Server Tweaks
     Write-Host "Fixing Workstation's NTP Server"
-        tart-Service 'W32Time'
-        tart-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
+        Start-Service 'W32Time'
+        Start-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
         Restart-Service W32Time
         Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
         Start-Process -FilePath w32tm -ArgumentList '/resync /nowait /rediscover' -WindowStyle Hidden
@@ -166,27 +186,61 @@ else { Write-Host "You must select either of the choices." }
     return   
 }
 
-Read-Host -Prompt "Will this workstation require any installation of softwares?"
-if ($swChoice.ToUpper() -eq "Yes") { $Softwares = "True" } 
-elseif ($swChoice.ToUpper() -eq "yes") { $Softwares = "True" } 
-elseif ($swChoice.ToUpper() -eq "Y") { $Softwares = "True" } 
-elseif ($swChoice.ToUpper() -eq "y") { $Softwares = "True" }
-elseif ($swChoice.ToUpper() -eq "No") { $Softwares = "False" } 
-elseif ($swChoice.ToUpper() -eq "no") { $Softwares = "False" }
-elseif ($swChoice.ToUpper() -eq "N") { $Softwares = "False" }
-elseif ($swChoice.ToUpper() -eq "n") { $Softwares = "False" }
-else { Write-Host "You must select either of the choices." }
+# Ask client for Software installation on workstation
+    Read-Host -Prompt "Will this workstation require any installation of softwares?"
+        if ($swChoice.ToUpper() -eq "Yes") { $Softwares = "True" } 
+        elseif ($swChoice.ToUpper() -eq "yes") { $Softwares = "True" } 
+        elseif ($swChoice.ToUpper() -eq "Y") { $Softwares = "True" } 
+        elseif ($swChoice.ToUpper() -eq "y") { $Softwares = "True" }
+        elseif ($swChoice.ToUpper() -eq "No") { $Softwares = "False" } 
+        elseif ($swChoice.ToUpper() -eq "no") { $Softwares = "False" }
+        elseif ($swChoice.ToUpper() -eq "N") { $Softwares = "False" }
+        elseif ($swChoice.ToUpper() -eq "n") { $Softwares = "False" }
+        else { Write-Host "You must select either of the choices." }
 
-if ($Softwares -eq "True") {
+# Software Installation
+    if ($Softwares -eq "True") {
 
-# Chipset
-    Write-Host "Installating Processor's Latest Chipset Driver"
-        # Determine
-        if ($processor -like '*AMD*') { choco install 'amd-ryzen-chipset' --limitoutput --no-progress} 
-        elseif ($processor -like '*Intel*')  { choco install 'intel-chipset-device-software' --limitoutput --no-progress}
-        else { Write-Host "Failed to determine processor's information." }
+    # Chipset
+        Write-Host "Installating Processor's Latest Chipset Driver"
+            # determine and install
+            if ($processor -like '*AMD*') { choco install 'amd-ryzen-chipset' --limitoutput --no-progress} 
+            elseif ($processor -like '*Intel*')  { choco install 'intel-chipset-device-software' --limitoutput --no-progress}
+            else { Write-Host "Failed to determine processor's information." }
 
 }
+
+    # General Softwares
+        Write-Host "Installing Softwares using Installation Methods of Chocolatey & Winget"
+
+            # Checking if 'Chocolatey & Winget' is installed
+            if (-not $Test_Choco) { irm minseochoi.tech/script/install-choco }
+            if (-not Test-WinUtil-PATH-Checker -winget) { irm minseochoi.tech/script/install-winget }
+
+            # Installing software from the list from above
+                Try {
+                    foreach ($csoftware in $csoftwares) {
+                        Write-Host "Installing $csoftware"
+                        # choco install $csoftwares --limitoutput --no-progress
+                        Start-Process powershell.exe -ArgumentList "$cinstall $csoftware --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore
+                    }
+                }
+                
+                catch {
+                    Write-Host "Error has been occured while working on : $csoftware"
+                }
+    
+                Try {
+                    foreach ($wsoftware in $wsoftwares) {
+                        Write-Host "Installing $wsoftware"
+                        # winget install $wsoftwares
+                        Start-Process powershell.exe -ArgumentList "$winstall $wsoftware --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore
+                    }
+                }
+                
+                catch {
+                    Write-Host "Error has been occured while working on : $wsoftware"
+                }
 
 # Exit
 $Stop
