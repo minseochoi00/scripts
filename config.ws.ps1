@@ -2,116 +2,123 @@
 # General
     $space = Write-Host ""
     $stop = 'pause'
+
 # Choco
     $cinstall = choco install
     $cuninstall = choco uninstall
     $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
+
 # Winget
     $winstall = winget install
     $wuninstall = winget uninstall
+
     function Test-WinUtil-PATH-Checker {
         <# .COMMENTS = This Function is for checking Winget #>
-        Param( [System.Management.Automation.SwitchParameter]$winget )
-        if($winget){ if (Test-Path ~\AppData\Local\Microsoft\WindowsApps\winget.exe) { return $true } }
+        Param([System.Management.Automation.SwitchParameter]$winget)
+        if ($winget) { if (Test-Path ~\AppData\Local\Microsoft\WindowsApps\winget.exe) { return $true } }
         return $false
     }
+
 # NVIDIA High Definition Audio Default
     $NVIDIA_HDA = 'True'
+
 # Software installation Default
     $Softwares = "False"
-# Retreive Processer's Information
+
+# Retrieve Processor's Information
     $processor = Get-WmiObject Win32_Processor | Select-Object -ExpandProperty Name
+
 # ExecutionPolicy
     $Get_EXE_Policy = Get-ExecutionPolicy
     $BP = 'Bypass'
     $RS = 'RemoteSigned'
-        # Set Execution Policy
-            if (-not $Get_EXE_Policy -eq $BP) { Set-ExecutionPolicy $BP -Force -ErrorAction SilentlyContinue }
+    # Set Execution Policy
+        if (-not $Get_EXE_Policy -eq $BP) { Set-ExecutionPolicy $BP -Force -ErrorAction SilentlyContinue }
+
 # Define the power plan GUID for "High performance" and "Balanced"
     $HpowerPlanGUID = '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c'
     $LpowerPlanGUID = '381b4222-f694-41f0-9685-ff5bb260df2e'
+
 # Get the List of InstanceID with the Name "NVIDIA High Definition Audio"
-    try { Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" }
-    catch { $NVIDIA_HDA = 'False'}
-    if ($NVIDIA_HDA = 'True') { $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId }
+    try { Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" } catch { $NVIDIA_HDA = 'False' }
+    if ($NVIDIA_HDA -eq 'True') { $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId }
+
 # Check if the current user has administrative privileges
     $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
     $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
-# Administrator Priveilges
+
+# Administrator Privileges
     $NoAdmin = "No"
+
 # Set a Password for the local Administrator Account
     $password = "l0c@l@dm1n"
+
 # Workstation Choice Reset
     $laptop = "False"
     $desktop = "False"
     $server = "False"
-# Windows Service List 
+
+# Windows Service List
     $services = @(
-        "DiagTrack"                                # Connected User Experiences and Telemetry. If you're concerned with privacy and don't want to send usage data to Microsoft for analysis, then this service is one to go.
-        "fxssvc.exe"				               # Fax. As its name suggests, this is a service needed only if you want to send and receive faxes.
-        "AxInstSV"								   # AllJoyn Router Service. This is a service that lets you connect Windows to the Internet of Things and communicate with devices such as smart TVs, refrigerators, light bulbs, thermostats, etc.
-        "PcaSvc"                                   # Program Compatibility Assistant Service (Unless you're still using legacy software on your Windows 11 PC, you can easily turn off this service. This service lets you detect software incompatibility issues for old games and software. But if you're using programs and apps built for Window 11, go ahead and disable it.)
-        "dmwappushservice"						   # Device Management Wireless Application Protocol (WAP) Push message Routing Service. This service is another service that helps to collect and send user data to Microsoft. Strengthen your privacy by disabling it, it is recommended that you do so. 
-        "Remote Registry"                          # Remote Registry. This service lets any user access and modify the Windows registry. It is highly recommended that you disable this service for security purposes. Your ability to edit the registry locally (or as admin) won't be affected. 
-        "WMPNetworkSvc"                            # Windows Media Player Network Sharing Service
-        "StiSvc"                                   # Windows Image Acquisition. This service is important for people who connect scanners and digital cameras to their PC. But if you don't have one of those, or are never planning on getting one, disable it by all means.
-        "XblAuthManager"                           # Xbox Live Auth Manager. If you don't use Xbox app to play games, then you don't need any of the Xbox services.
-        "XblGameSave"                              # Xbox Live Game Save Service
-        "XboxNetApiSvc"                            # Xbox Live Networking Service
-        "ndu"                                      # Windows Network Data Usage Monitor
+        "DiagTrack",             # Connected User Experiences and Telemetry
+        "fxssvc.exe",            # Fax
+        "AxInstSV",              # AllJoyn Router Service
+        "PcaSvc",                # Program Compatibility Assistant Service
+        "dmwappushservice",      # Device Management Wireless Application Protocol (WAP) Push message Routing Service
+        "Remote Registry",       # Remote Registry
+        "WMPNetworkSvc",         # Windows Media Player Network Sharing Service
+        "StiSvc",                # Windows Image Acquisition
+        "XblAuthManager",        # Xbox Live Auth Manager
+        "XblGameSave",           # Xbox Live Game Save Service
+        "XboxNetApiSvc",         # Xbox Live Networking Service
+        "ndu"                    # Windows Network Data Usage Monitor
     )
+
 # Software Installation List
-    $csoftwares =@(
-        "googlechrome"                              # Google Chrome
-        "firefox"                                   # FireFox
+    $csoftwares = @(
+        "googlechrome",          # Google Chrome
+        "firefox"                # Firefox
     )
 
     $wsoftwares = @(    
-        "Microsoft.VCRedist.2015+.x64"              # Microsoft C++ 2015-2022 x64
-        "Microsoft.VCRedist.2015+.x86"              # Microsoft C++ 2015-2022 x86
-        "Oracle.JavaRuntimeEnvironment"             # Java 8
-        "Microsoft.PowerShell"                      # PowerShell (Latest)
+        "Microsoft.VCRedist.2015+.x64",    # Microsoft C++ 2015-2022 x64
+        "Microsoft.VCRedist.2015+.x86",    # Microsoft C++ 2015-2022 x86
+        "Oracle.JavaRuntimeEnvironment",   # Java 8
+        "Microsoft.PowerShell"             # PowerShell (Latest)
     )
 
+# ----------------------------------------------------------------------------------------------------------------------------------------
+
 # Prompt for User either Desktop or Laptop
-    Read-Host -Prompt "is 'Current Workstation' Laptop(L), Desktop(D) or Server(S)"
-        if ($wsChoice.ToUpper() -eq "laptop") { $laptop = "True" } 
-        elseif ($wsChoice.ToUpper() -eq "desktop") { $desktop = "True" } 
-        elseif ($wsChoice.ToUpper() -eq "server") { $server = "True" } 
-        elseif ($wsChoice.ToUpper() -eq "Laptop") { $laptop = "True" }
-        elseif ($wsChoice.ToUpper() -eq "Desktop") { $desktop = "True" } 
-        elseif ($wsChoice.ToUpper() -eq "Server") { $server = "True" }
-        elseif ($wsChoice.ToUpper() -eq "l") { $laptop = "True" }
-        elseif ($wsChoice.ToUpper() -eq "d") { $desktop = "True" }
-        elseif ($wsChoice.ToUpper() -eq "s") { $server = "True" }
-        elseif ($wsChoice.ToUpper() -eq "L") { $laptop = "True" }
-        elseif ($wsChoice.ToUpper() -eq "D") { $desktop = "True" }
-        elseif ($wsChoice.ToUpper() -eq "S") { $server = "True" }
-        else { Write-Host "You must select either of the choices." }
+    if ($wsChoice.ToUpper() -eq "LAPTOP" -or $wsChoice.ToUpper() -eq "L") { $laptop = "True" } 
+    elseif ($wsChoice.ToUpper() -eq "DESKTOP" -or $wsChoice.ToUpper() -eq "D") { $desktop = "True" } 
+    elseif ($wsChoice.ToUpper() -eq "SERVER" -or $wsChoice.ToUpper() -eq "S") { $server = "True" } 
+    else { 
+        Write-Host "You must select either Laptop (L), Desktop (D), or Server (S)." 
+        return
+    }
 
 # Windows Service Tweaks
     foreach ($service in $services) {
         Write-Output "Tweaking $service"
-        Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled
+        Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled 
     }
 
 # Windows NTP Server Tweaks
     Write-Host "Fixing Workstation's NTP Server"
-        Start-Service 'W32Time'
-        Start-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
-        Restart-Service W32Time
-        Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
-        Start-Process -FilePath w32tm -ArgumentList '/resync /nowait /rediscover' -WindowStyle Hidden
+    Start-Service 'W32Time'
+    Start-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
+    Restart-Service W32Time
+    Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
+    Start-Process -FilePath w32tm -ArgumentList '/resync /nowait /rediscover' -WindowStyle Hidden
 
 # Windows Classic Right-Click Tweak for Windows 11
     Write-Host "Enabling Windows 10 Right-Click Style in Windows 11"
     if ((Get-CimInstance -ClassName Win32_OperatingSystem).Version -notmatch "^10") {
         Write-Host "Right-click tweak is only intended for Windows 11"
-
     } else {
-
-    # Adding Registry to Workstation for Classic Right Click
-    Write-Host "Tweaking to Classic Right-Click for Windows 11"
+        # Adding Registry to Workstation for Classic Right Click
+        Write-Host "Tweaking to Classic Right-Click for Windows 11"
         reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
         # Restarting Windows Explorer
         Get-Process explorer | Stop-Process
@@ -119,131 +126,121 @@
 
 # Windows Default Administrator Account Tweak
     # Activating Local Administrator Account    
-        Write-Output "Activating Local Administrator Accounts..."
-        net user Administrator /active:yes
-    
+    Write-Output "Activating Local Administrator Accounts..."
+    net user Administrator /active:yes
+
     # Set Local Administrator Account Password
-        $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
-        $user.SetPassword($password)
-        $user.SetInfo()
-        Write-Output "The password for the local Administrator account has been set successfully."
+    $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
+    $user.SetPassword($password)
+    $user.SetInfo()
+    Write-Output "The password for the local Administrator account has been set successfully."
 
 # Laptop
     if ($laptop -eq "True") {
-
         Write-Host "Starting a Laptop Configuration.."
 
-        # Change Power Plan to Balanced
-            Write-Host "Tweaking Power Plan for Laptop"
-            powercfg.exe /setactive $LpowerPlanGUID
-    
-            # 'Display Turn OFF' Value
-            powercfg /change monitor-timeout-ac '30' -ErrorAction SilentlyContinue
-            powercfg /change monitor-timeout-dc '15' -ErrorAction SilentlyContinue
-    
-            # Sleep Value
-            powercfg /change standby-timeout-ac '0' -ErrorAction SilentlyContinue
-            powercfg /change standby-timeout-dc '0' -ErrorAction SilentlyContinue
-    
-            # Disabling  NVIDIA High Definition Audio for Monitor
-                Write-Host "Trying to disable 'NVIDIA High Definition Audio'"
-            # $Variable is Up above at the settings
-                Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue
-                # Enable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
+    # Power Plan Tweaks
+        Write-Host "Tweaking Power Plan for Laptop"
+        powercfg.exe /setactive $LpowerPlanGUID
+
+        # 'Display Turn OFF' Value
+        powercfg /change monitor-timeout-ac '30'
+        powercfg /change monitor-timeout-dc '15'
+
+        # Sleep Value
+        powercfg /change standby-timeout-ac '0'
+        powercfg /change standby-timeout-dc '0'
+
+    # Disabling NVIDIA High Definition Audio for Monitor
+        Write-Host "Trying to disable 'NVIDIA High Definition Audio'"
+        Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue
+        # Enable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
+
     Pause
     return
 }
 
 # Desktop
-    if ($desktop -eq "True") {
-               
-        # Change Power Plan to High Performance
-        Write-Host "Tweaking Power Plan for Desktop"
-            # $Variable is Up above at the settings
-            powercfg.exe /setactive $HpowerPlanGUID
+elseif ($desktop -eq "True") {
+    # Change Power Plan to High Performance
+    Write-Host "Tweaking Power Plan for Desktop"
+    powercfg.exe /setactive $HpowerPlanGUID
 
-        
-        # 'Display Turn OFF' Value
-        powercfg /change monitor-timeout-ac '30'
+    # 'Display Turn OFF' Value
+    powercfg /change monitor-timeout-ac '30'
 
-        # Sleep Value
-        powercfg /change standby-timeout-ac '0'
-    
-        # Disabling  NVIDIA High Definition Audio for Monitor
-        Write-Host "Disabling  NVIDIA High Definition Audio for Monitor"
-            # $Variable is Up above at the settings
-            
-        Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue
-            # Enable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
+    # Sleep Value
+    powercfg /change standby-timeout-ac '0'
+
+    # Disabling NVIDIA High Definition Audio for Monitor
+    Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
+    Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue
+    # Enable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false
+
     Pause
     return
 }
 
 # Server
-    if ($server -eq "True") {
-    Write-Host "Tweaks for Server is still in maintenance."
+elseif ($server -eq "True") {
+    Write-Host "Tweaks for Server are still in maintenance."
     Pause
     return   
 }
 
+else { Write-Host "No Options has been selected. Please make your selections." }
+
 # Ask client for Software installation on workstation
-    Read-Host -Prompt "Will this workstation require any installation of softwares?"
-        if ($swChoice.ToUpper() -eq "Yes") { $Softwares = "True" } 
-        elseif ($swChoice.ToUpper() -eq "yes") { $Softwares = "True" } 
-        elseif ($swChoice.ToUpper() -eq "Y") { $Softwares = "True" } 
-        elseif ($swChoice.ToUpper() -eq "y") { $Softwares = "True" }
-        elseif ($swChoice.ToUpper() -eq "No") { $Softwares = "False" } 
-        elseif ($swChoice.ToUpper() -eq "no") { $Softwares = "False" }
-        elseif ($swChoice.ToUpper() -eq "N") { $Softwares = "False" }
-        elseif ($swChoice.ToUpper() -eq "n") { $Softwares = "False" }
-        else { Write-Host "You must select either of the choices." }
+    if ($swChoice.ToUpper() -eq "YES" -or $swChoice.ToUpper() -eq "Y") { $Softwares = "True" } 
+    elseif ($swChoice.ToUpper() -eq "NO" -or $swChoice.ToUpper() -eq "N") { $Softwares = "False" } 
+    else { 
+        Write-Host "You must select either Yes (Y) or No (N)." 
+        return
+    }
+
 
 # Software Installation
     if ($Softwares -eq "True") {
-
-    # Chipset
-        Write-Host "Installating Processor's Latest Chipset Driver"
-            # determine and install
-            if ($processor -like '*AMD*') { choco install 'amd-ryzen-chipset' --limitoutput --no-progress} 
-            elseif ($processor -like '*Intel*')  { choco install 'intel-chipset-device-software' --limitoutput --no-progress}
-            else { Write-Host "Failed to determine processor's information." }
-
-}
+        # Chipset
+        Write-Host "Installing Processor's Latest Chipset Driver"
+        # determine and install
+        if ($processor -like '*AMD*') { Start-Process powershell.exe -ArgumentList "$cinstall 'amd-ryzen-chipset' --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore } 
+        elseif ($processor -like '*Intel*') { Start-Process powershell.exe -ArgumentList "$cinstall 'intel-chipset-device-software' --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore } 
+        else { 
+            Write-Host "Failed to determine processor's information." 
+        }
 
     # General Softwares
         Write-Host "Installing Softwares using Installation Methods of Chocolatey & Winget"
 
-            # Checking if 'Chocolatey & Winget' is installed
-            if (-not $Test_Choco) { irm minseochoi.tech/script/install-choco }
-            if (-not Test-WinUtil-PATH-Checker -winget) { irm minseochoi.tech/script/install-winget }
+    # Checking if 'Chocolatey & Winget' is installed
+        if (-not $Test_Choco) { irm minseochoi.tech/script/install-choco }
+        if (-not Test-WinUtil-PATH-Checker -winget) { irm minseochoi.tech/script/install-winget }
 
-            # Installing software from the list from above
-                Try {
-                    foreach ($csoftware in $csoftwares) {
-                        Write-Host "Installing $csoftware"
-                        # choco install $csoftwares --limitoutput --no-progress
-                        Start-Process powershell.exe -ArgumentList "$cinstall $csoftware --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore
-                    }
-                }
-                
-                catch {
-                    Write-Host "Error has been occured while working on : $csoftware"
-                }
-    
-                Try {
-                    foreach ($wsoftware in $wsoftwares) {
-                        Write-Host "Installing $wsoftware"
-                        # winget install $wsoftwares
-                        Start-Process powershell.exe -ArgumentList "$winstall $wsoftware --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore
-                    }
-                }
-                
-                catch {
-                    Write-Host "Error has been occured while working on : $wsoftware"
-                }
+    # Installing software from the list from above
+        Try {
+            foreach ($csoftware in $csoftwares) {
+                Write-Host "Installing $csoftware"
+                # choco install $csoftwares --limitoutput --no-progress
+                Start-Process powershell.exe -ArgumentList "$cinstall $csoftware --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore
+            }
+        } catch {
+            Write-Host "Error occurred while working on: $csoftware"
+        }
+
+        Try {
+            foreach ($wsoftware in $wsoftwares) {
+                Write-Host "Installing $wsoftware"
+                # winget install $wsoftwares
+                Start-Process powershell.exe -ArgumentList "$winstall $wsoftware --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore
+            }
+        } catch {
+            Write-Host "Error occurred while working on: $wsoftware"
+        }
+    }
 
 # Exit
-$Stop
-Exit
+    $Stop
+    Exit
 
 # End
