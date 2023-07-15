@@ -19,6 +19,10 @@
         return $false
     }
 
+# Retreieve Computer Name & UserName
+    $computerName = $env:COMPUTERNAME
+    $userName = $env:USERNAME
+
 # NVIDIA High Definition Audio Default
     $NVIDIA_HDA = 'True'
 
@@ -45,10 +49,6 @@
 
 # Check if the current user has administrative privileges
     $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
-    $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
-
-# Administrator Privileges
-    $NoAdmin = "No"
 
 # Set a Password for the local Administrator Account
     $password = "l0c@l@dm1n"
@@ -90,6 +90,7 @@
 # ----------------------------------------------------------------------------------------------------------------------------------------
 
 # Prompt for User either Desktop or Laptop
+    Read-Host -Prompt "Is $computerName / $userName a LAPTOP(L), DESKTOP (D) or SERVER (S)? "
     if ($wsChoice.ToUpper() -eq "LAPTOP" -or $wsChoice.ToUpper() -eq "L") { $laptop = "True" } 
     elseif ($wsChoice.ToUpper() -eq "DESKTOP" -or $wsChoice.ToUpper() -eq "D") { $desktop = "True" } 
     elseif ($wsChoice.ToUpper() -eq "SERVER" -or $wsChoice.ToUpper() -eq "S") { $server = "True" } 
@@ -191,13 +192,13 @@ elseif ($server -eq "True") {
 else { Write-Host "No Options has been selected. Please make your selections." }
 
 # Ask client for Software installation on workstation
+    Read-Host -Prompt "Will $computerName / $userName require a General Application 'Auto-Install'? "
     if ($swChoice.ToUpper() -eq "YES" -or $swChoice.ToUpper() -eq "Y") { $Softwares = "True" } 
     elseif ($swChoice.ToUpper() -eq "NO" -or $swChoice.ToUpper() -eq "N") { $Softwares = "False" } 
     else { 
         Write-Host "You must select either Yes (Y) or No (N)." 
         return
     }
-
 
 # Software Installation
     if ($Softwares -eq "True") {
@@ -215,7 +216,7 @@ else { Write-Host "No Options has been selected. Please make your selections." }
 
     # Checking if 'Chocolatey & Winget' is installed
         if (-not $Test_Choco) { irm minseochoi.tech/script/install-choco }
-        if (-not Test-WinUtil-PATH-Checker -winget) { irm minseochoi.tech/script/install-winget }
+        if (Test-WinUtil-PATH-Checker -winget) { <#No Need#> } else {irm minseochoi.tech/script/script/install-winget}
 
     # Installing software from the list from above
         Try {
