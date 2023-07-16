@@ -2,33 +2,43 @@
 
 # env
     # Choco
-    $cinstall = choco install
-    $cuninstall = choco uninstall
-# Winget
-    $winstall = winget install
-    $wuninstall = winget uninstall
-# Print Spooler
-    $PrintSpooler_PATH = "$env:SystemRoot\System32\spool\PRINTERS\*.*"
-# Windows Update
-    $WindowsUpdateFolder = "$($env:windir)\SoftwareDistribution\Download"
-# One-Drive
-    $Process_oneDrive = Get-Process -Name OneDrive -ErrorAction SilentlyContinue
-# Caffeine
-    $CheckCaffeine = Get-Process -Name caffeine64 -ErrorAction SilentlyContinue
-    $CaffeinePATH = "$env:ChocolateyInstall\lib\caffeine"
-# ExecutionPolicy
-    $Get_EXE_Policy = Get-ExecutionPolicy
-    $BP = 'Bypass'
-    $RS = 'RemoteSigned'
-# Generic
-    $Stop = 'Pause'
+        $cinstall = choco install
+        $cuninstall = choco uninstall
+    # Winget
+        $winstall = winget install
+        $wuninstall = winget uninstall
+    # Print Spooler
+        $PrintSpooler_PATH = "$env:SystemRoot\System32\spool\PRINTERS\*.*"
+    # Windows Update
+        $WindowsUpdateFolder = "$($env:windir)\SoftwareDistribution\Download"
+    # One-Drive
+        $Process_oneDrive = Get-Process -Name OneDrive -ErrorAction SilentlyContinue
+    # Caffeine
+        $CheckCaffeine = Get-Process -Name caffeine64 -ErrorAction SilentlyContinue
+        $CaffeinePATH = "$env:ChocolateyInstall\lib\caffeine"
+    # ExecutionPolicy
+        $BP = 'Bypass'
+        $RS = 'RemoteSigned'
+    # Generic
+        $Stop = 'Pause'
+    # Check for Chocolatey and Winget Installation
+        if (-not($Test_Choco)) { Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/install-choco" -Verb RunAs }
+        if (-not (Test-WinUtil-PATH-Checker -winget)) { Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/script/install-winget" }
+    # NTP Server Tweaks
+        $serviceName = "W32Time"
+        $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+        
+
+# ------------------------------------------------------------------------------------------------------------------------
+
+# Start
 
 # Stop File Explorer
-Write-Host "Stopping Windows Explorer..."
-Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyle Hidden
+    Write-Host "Stopping Windows Explorer..."
+    if (Get-Process -Name Explorer -ErrorAction SilentlyContinue) { taskkill /f /im explorer.exe }
 
 # Set Execution Policy
-    if (-not $Get_EXE_Policy -eq $BP) {
+    if (-not (Get-ExecutionPolicy) -eq $BP) {
         Set-ExecutionPolicy $BP -Force
     }
 
@@ -84,13 +94,14 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
     )
 
 # Install Caffeine and Chocolatey for prevent workstations going to sleep
-    Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/install-choco | Invoke-Expression" -Verb RunAs -ErrorAction SilentlyContinue
     Write-Host "Installing Caffeine"
     Start-Process powershell.exe -ArgumentList "$cinstall 'Caffeine' --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction SilentlyContinue
     Write-Host "Starting Caffeine"
-    Start-Process -FilePath $CaffeinePATH\caffeine64.exe
-    Wait-Process -Name caffeine64 -Timeout 15
-    $CheckCaffeine
+    if (Test-Path $CaffeinePATH) { 
+        Start-Process -FilePath $CaffeinePATH\caffeine64.exe
+        Wait-Process -Name caffeine64 -Timeout 15
+        $CheckCaffeine
+    }
     if ($CheckCaffeine) {
         Write-Host 'Process 'Caffeine64' has STARTED.'
     } else {
@@ -101,10 +112,10 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
 
 # Check for One-Drive Installation
     if ($Process_oneDrive) {
-        Write-Output "OneDrive is currently installed, Running Uninstaller"
-        Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/remove-onedrive | | Invoke-Expression" -Verb RunAs -ErrorAction SilentlyContinue
+        Write-Output "OneDrive is currently 'RUNNING', 'STARTING Uninstaller'"
+        Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/remove-onedrive | iex" -Verb RunAs -ErrorAction SilentlyContinue
     } else {
-        Write-Output "OneDrive is NOT Installed on this workstation."
+        Write-Output "OneDrive is currently 'NOT RUNNING' on this workstation."
     }
 
 
@@ -119,17 +130,8 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
 
 # Delete old Windows installation files
     Write-Host "Deleting old Windows installation files..."
-    try {
-
-        DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase /Quiet
-
-    }
-    
-    catch {
-
-        Write-Host "Error has occured while deleting old Windows installation files."
-
-    }
+    try { DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase /Quiet }
+    catch { Write-Host "Error has occured while deleting old Windows installation files." }
     
 # Flush Cache
     Write-Host "Flushing IP Cache"
@@ -140,37 +142,23 @@ Start-Process -FilePath taskkill -ArgumentList '/f /im explorer.exe' -WindowStyl
     Clear-RecycleBin -DriveLetter C -Force -ErrorAction Ignore
 
 # Cleanup Print Queue & Delete Old Print Jobs & Restarting Print Spooler
-    try {
         Write-Host "Fixing Print Spooler"
         Stop-Service -Name Spooler -Force
         Remove-Item -Path $PrintSpooler_PATH -ErrorAction Ignore
         Start-Service -Name Spooler
-    }
-    catch {
-        Write-Host "Error has occured while Fixing Print Spooler"
-    }
 
 # Fix NTP Server
-Write-Host "Fixing Workstation NTP Server"
-    try {
-        Start-Service 'W32Time'
-        Start-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
-        Restart-Service W32Time
-        Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
-    }
-    catch {
-        Write-Output "An error occured while fixing on Workstation's NTP Server: $($_.Exception.Message)"
-    }
+    Write-Host "Fixing Workstation's NTP Server"
+    if ($service -eq $null) { Start-Service -Name $serviceName }
+    Start-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
+    Restart-Service -Name $serviceName
+    Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
+    Start-Process -FilePath w32tm -ArgumentList '/resync /nowait /rediscover' -WindowStyle Hidden
+
 
 # Resync Time
-    try {
     Write-Host "Resyncing Time"
     Start-Process -FilePath w32tm -ArgumentList '/resync /nowait /rediscover' -WindowStyle Hidden
-    # w32tm /resync /nowait /rediscover
-    }
-    catch {
-        Write-Output "An error occured while resyncing on Workstation's NTP Server: $($_.Exception.Message)"
-    }
 
 # Running Disk Cleanup
     Write-Host "Starting Disk Cleanup"
@@ -188,20 +176,15 @@ Write-Host "Fixing Workstation NTP Server"
     Remove-ItemProperty -Path $($Base+$Location) -Name $SageSet -Force -ea silentlycontinue | Out-Null
     }
 
-# Running Disk Defragmentation
-    Write-Host "Performing a disk defragmentation..."
-    Start-Process -FilePath "defrag.exe" -ArgumentList "-c" -Wait -WindowStyle Hidden -ErrorAction SilentlyContinue
-
 # Check and repair system files
     Write-Host "Checking and repairing system files..."
     Start-Process -FilePath sfc -ArgumentList '/scannow' -WindowStyle Hidden
-    # sfc /scannow
 
 # Un-installation of Caffeine
     $CheckCaffeine
     Write-Host "Uninstalling Caffeine"
     if ($CheckCaffeine) {
-        Stop-Process -Name 'caffeine64' -ErrorAction Ignore
+        Stop-Process -Name 'caffeine64'
         Start-Process powershell.exe -ArgumentList "$cuninstall 'caffeine' --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction Ignore
     } else {
         Write-Host 'Process 'Caffeine64' is currently NOT running.'
@@ -220,10 +203,10 @@ Write-Host "Fixing Workstation NTP Server"
    
 # Starting File Explorer
     Write-Host "Starting Windows Explorer..."
-    Start-Process -FilePath 'Explorer' -WindowStyle Hidden
+    if (-not(Get-Process -Name explorer -ErrorAction SilentlyContinue)) { Start Explorer.exe }
 
 # Re-setting ExecutionPolicy to RemoteSigned
-    if (-not $Get_EXE_Policy -eq $RS) {
+    if (-not (Get-ExecutionPolicy) -eq $RS) {
         Set-ExecutionPolicy $RS -Force
     }
 
