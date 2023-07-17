@@ -5,14 +5,9 @@
     $clean = Clear-Host
 
 # Choco
-    $cinstall = choco install
-    $cuninstall = choco uninstall
     $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
 
 # Winget
-    $winstall = winget install
-    $wuninstall = winget uninstall
-
     function Test-WinUtil-PATH-Checker {
         <# .COMMENTS = This Function is for checking Winget #>
         Param([System.Management.Automation.SwitchParameter]$winget)
@@ -126,9 +121,9 @@ $clean
     } else {
         # Adding Registry to Workstation for Classic Right Click
         Write-Host "Tweaking 'Classic Right-Click' for Windows 11"
-        reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve -Force
+        reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
         # Restarting Windows Explorer
-        if (Get-Process explorer) { Stop-Process explorer }
+        if (Get-Process explorer) { Stop-Process -name explorer }
     }
 
 # Windows Default Administrator Account Tweak
@@ -166,7 +161,7 @@ $clean
 
     # Disabling NVIDIA High Definition Audio for Monitor
         Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
-        Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue
+        if (-not($audioDeviceId -eq $null)) { Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue }
 }
 
 # Desktop
@@ -183,7 +178,7 @@ $clean
 
         # Disabling NVIDIA High Definition Audio for Monitor
         Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
-        Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue
+        if (-not($audioDeviceId -eq $null)) { Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue }
 }
 
 # Server
@@ -206,8 +201,8 @@ $clean
         # Chipset
         Write-Host "Installing Processor's Latest Chipset Driver"
         # determine and install
-        if ($processor -like '*AMD*') { Start-Process powershell.exe -ArgumentList "$cinstall 'amd-ryzen-chipset' --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore } 
-        elseif ($processor -like '*Intel*') { Start-Process powershell.exe -ArgumentList "$cinstall 'intel-chipset-device-software' --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore } 
+        if ($processor -like '*AMD*') { Start-Process powershell.exe -ArgumentList "choco install 'amd-ryzen-chipset' --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore } 
+        elseif ($processor -like '*Intel*') { Start-Process powershell.exe -ArgumentList "choco install 'intel-chipset-device-software' --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore } 
         else { 
             Write-Host "Failed to determine processor's information." 
         }
@@ -216,14 +211,14 @@ $clean
         Write-Host "Installing Softwares using Installation Methods of Chocolatey & Winget"
 
     # Checking if 'Chocolatey & Winget' is installed
-        if (-not($Test_Choco)) { Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/install-choco" -Verb RunAs }
+        if (-not ($Test_Choco)) { Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/install-choco" -Verb RunAs }
         if (-not (Test-WinUtil-PATH-Checker -winget)) { Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/script/install-winget" }
 
     # Installing software from the list from above
         Try {
             foreach ($csoftware in $csoftwares) {
                 Write-Host "Installing $csoftware"
-                Start-Process powershell.exe -ArgumentList "$cinstall $csoftware --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore
+                Start-Process powershell.exe -ArgumentList "choco install $csoftware --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore
             }
         } catch {
             Write-Host "Error occurred while working on: $csoftware"
@@ -232,7 +227,7 @@ $clean
         Try {
             foreach ($wsoftware in $wsoftwares) {
                 Write-Host "Installing $wsoftware"
-                Start-Process powershell.exe -ArgumentList "$winstall $wsoftware --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore
+                Start-Process powershell.exe -ArgumentList "winget install $wsoftware --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore
             }
         } catch {
             Write-Host "Error occurred while working on: $wsoftware"
