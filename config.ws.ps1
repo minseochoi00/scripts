@@ -128,7 +128,7 @@ $space
         Write-Host "Tweaking 'Classic Right-Click' for Windows 11"
         reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
         # Restarting Windows Explorer
-        if (Get-Process explorer) { Stop-Process -name explorer }
+        if (Get-Process explorer) { Stop-Process -name explorer -force}
     }
 
 $space
@@ -200,15 +200,15 @@ $space
 # Ask client for Software installation on workstation
     do {
         $swChoice = Read-Host -Prompt "Will $computerName / $userName require a General Application 'Auto-Install'?: "
-        if ($swChoice.ToUpper() -eq "YES" -or $swChoice.ToUpper() -eq "Y") { $Softwares = "True" } 
-        elseif ($swChoice.ToUpper() -eq "NO" -or $swChoice.ToUpper() -eq "N") { $Softwares = "False" } 
+        if ($swChoice.ToUpper() -eq "YES" -or $swChoice.ToUpper() -eq "Y") { $Softwares = $true } 
+        elseif ($swChoice.ToUpper() -eq "NO" -or $swChoice.ToUpper() -eq "N") { $Softwares = $false } 
         else { 
             Write-Host "You must select either Yes (Y) or No (N)." 
         }
-    } while (-not ($Softwares -eq "True" -or $Softwares -eq "False"))
+    } while (-not ($Softwares -eq $true -or $Softwares -eq $false))
 
 # Software Installation
-    if ($Softwares) {
+    if ($Softwares -eq $true) {
         # Chipset
         Write-Host "Installing Processor's Latest Chipset Driver"
         # determine and install
