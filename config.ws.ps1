@@ -98,6 +98,7 @@ do {
 } while (-not ($laptop -eq "True" -or $desktop -eq "True" -or $server -eq "True"))
 
 $clean
+$space
 
 # Windows Service Tweaks
     foreach ($service in $services) {
@@ -105,6 +106,8 @@ $clean
         # Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled 
         Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled -ErrorAction SilentlyContinue
     }
+
+$space
 
 # Windows NTP Server Tweaks
     Write-Host "Fixing Workstation's NTP Server"
@@ -114,17 +117,21 @@ $clean
     Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
     Start-Process -FilePath w32tm -ArgumentList '/resync /nowait /rediscover' -WindowStyle Hidden
 
-# Windows Classic Right-Click Tweak for Windows 11
+$space
+
+    # Windows Classic Right-Click Tweak for Windows 11
     Write-Host "Enabling Windows 10 Right-Click Style in Windows 11"
     if ((Get-CimInstance -ClassName Win32_OperatingSystem).Version -notmatch "^10") {
         Write-Host "Right-Click tweak is 'ONLY' intended for Windows 11"
     } else {
         # Adding Registry to Workstation for Classic Right Click
         Write-Host "Tweaking 'Classic Right-Click' for Windows 11"
-        reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
+        Start-Process -FilePath powershell -ArgumentList 'reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve' -Verb RunAs -WindowStyle Hidden
         # Restarting Windows Explorer
         if (Get-Process explorer) { Stop-Process -name explorer }
     }
+
+$space
 
 # Windows Default Administrator Account Tweak
     # Activating Local Administrator Account    
@@ -141,9 +148,11 @@ $clean
         $user.SetPassword($password)
         $user.SetInfo()
         $AdminPW = $true
-    if ($AdminPW) { Write-Host " Local Administrator Account's Password has been changed to its default value " } else { Write-Host "Password Value has not been set. Local Administrator Account's Password has not been changed." }
+    if ($AdminPW) { Write-Host "Local Administrator Account's Password has been changed to its default value " } else { Write-Host "Password Value has not been set. Local Administrator Account's Password has not been changed." }
 
-# Laptop
+$space
+
+    # Laptop
     if ($laptop) {
         Write-Host "Starting a Laptop Configuration.."
 
@@ -185,6 +194,8 @@ $clean
     if ($server) {
         Write-Host "Tweaks for Server are still in maintenance."
 }
+
+$space
 
 # Ask client for Software installation on workstation
     do {
