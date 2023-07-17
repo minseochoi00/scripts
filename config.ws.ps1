@@ -1,7 +1,7 @@
 # env
+    Write-Host "Setting up the required variables..."
 # General
     $space = Write-Host ""
-    $stop = 'pause'
     $clean = Clear-Host
 
 # Choco
@@ -16,8 +16,8 @@
     function Test-WinUtil-PATH-Checker {
         <# .COMMENTS = This Function is for checking Winget #>
         Param([System.Management.Automation.SwitchParameter]$winget)
-        if ($winget) { if (Test-Path ~\AppData\Local\Microsoft\WindowsApps\winget.exe) { return $TRUE } }
-        return $FALSE
+        if ($winget) { if (Test-Path ~\AppData\Local\Microsoft\WindowsApps\winget.exe) { return $true } }
+        return $false
     }
 
 # Retreieve Computer Name & UserName
@@ -45,16 +45,18 @@
     $LpowerPlanGUID = '381b4222-f694-41f0-9685-ff5bb260df2e'
 
 # Get the List of InstanceID with the Name "NVIDIA High Definition Audio"
-    if (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue) { $NVIDIA_HDA = $TRUE } else { $NVIDIA_HDA = $FALSE }
+    if (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue) { $NVIDIA_HDA = $true } else { $NVIDIA_HDA = $false }
     if ($NVIDIA_HDA) { $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId }
 
 # Set a Password for the local Administrator Account
     $password = "l0c@l@dm1n"
+    $AdminActive = $false
+    $AdminPW = $false
 
 # Workstation Choice Reset
-    $laptop = $FALSE
-    $desktop = $FALSE
-    $server = $FALSE
+    $laptop = $false
+    $desktop = $false
+    $server = $false
 
 # Windows Service List
     $services = @(
@@ -92,9 +94,9 @@ $clean
 # Prompt for User either Desktop or Laptop
 do {
     $wsChoice = Read-Host -Prompt "Is $computerName / $userName a LAPTOP(L), DESKTOP (D) or SERVER (S)?: "
-    if ($wsChoice.ToUpper() -eq "LAPTOP" -or $wsChoice.ToUpper() -eq "L") { $laptop = $TRUE } 
-    elseif ($wsChoice.ToUpper() -eq "DESKTOP" -or $wsChoice.ToUpper() -eq "D") { $desktop = $TRUE } 
-    elseif ($wsChoice.ToUpper() -eq "SERVER" -or $wsChoice.ToUpper() -eq "S") { $server = $TRUE } 
+    if ($wsChoice.ToUpper() -eq "LAPTOP" -or $wsChoice.ToUpper() -eq "L") { $laptop = $true } 
+    elseif ($wsChoice.ToUpper() -eq "DESKTOP" -or $wsChoice.ToUpper() -eq "D") { $desktop = $true } 
+    elseif ($wsChoice.ToUpper() -eq "SERVER" -or $wsChoice.ToUpper() -eq "S") { $server = $true } 
     else { 
         Write-Host "You must select either Laptop (L), Desktop (D), or Server (S)." 
     }
@@ -104,8 +106,9 @@ $clean
 
 # Windows Service Tweaks
     foreach ($service in $services) {
-        Write-Output "Tweaking $service"
-        Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled 
+        Write-Host "Tweaking $service"
+        # Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled 
+        Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled -ErrorAction SilentlyContinue
     }
 
 # Windows NTP Server Tweaks
@@ -123,27 +126,27 @@ $clean
     } else {
         # Adding Registry to Workstation for Classic Right Click
         Write-Host "Tweaking 'Classic Right-Click' for Windows 11"
-        reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
+        reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve -Force
         # Restarting Windows Explorer
         if (Get-Process explorer) { Stop-Process explorer }
     }
 
 # Windows Default Administrator Account Tweak
     # Activating Local Administrator Account    
-    Write-Output "Activating Local Administrator Account..."
+    Write-Host "Activating Local Administrator Account..."
     if ((net user Administrator | Select-String -Pattern "Account active               No")) {
     net user Administrator /active:yes
-    $AdminActive = $TRUE
+    $AdminActive = $true
     }
-    if ($AdminActive) { Write-Output "Local Administrator Account is NOW active" } else { Write-Output "Local Administrator Account is ALREADY active"}
+    if ($AdminActive) { Write-Host "Local Administrator Account is NOW active" } else { Write-Host "Local Administrator Account is ALREADY active"}
     
     # Set Local Administrator Account Password
-    Write-Output "Local Administrator Account's Password is Changing to its default value"
+    Write-Host "Local Administrator Account's Password is Changing to its default value"
         $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
         $user.SetPassword($password)
         $user.SetInfo()
-        $AdminPW = $TRUE
-    if ($AdminPW) { Write-Output " Local Administrator Account's Password has been changed to its default value " } else { Write-Output "Password Value has not been set. Local Administrator Account's Password has not been changed." }
+        $AdminPW = $true
+    if ($AdminPW) { Write-Host " Local Administrator Account's Password has been changed to its default value " } else { Write-Host "Password Value has not been set. Local Administrator Account's Password has not been changed." }
 
 # Laptop
     if ($laptop) {
@@ -163,10 +166,7 @@ $clean
 
     # Disabling NVIDIA High Definition Audio for Monitor
         Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
-        Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$FALSE -ErrorAction SilentlyContinue
-
-    $stop
-    return
+        Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue
 }
 
 # Desktop
@@ -183,17 +183,12 @@ $clean
 
         # Disabling NVIDIA High Definition Audio for Monitor
         Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
-        Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$FALSE -ErrorAction SilentlyContinue
-
-    $stop
-    return
+        Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue
 }
 
 # Server
     if ($server) {
         Write-Host "Tweaks for Server are still in maintenance."
-        $stop
-        return   
 }
 
 # Ask client for Software installation on workstation
@@ -232,7 +227,6 @@ $clean
             }
         } catch {
             Write-Host "Error occurred while working on: $csoftware"
-            return
         }
 
         Try {
@@ -242,13 +236,11 @@ $clean
             }
         } catch {
             Write-Host "Error occurred while working on: $wsoftware"
-            return
         }
     }
 
 # Exit
-    $Stop
+    pause
     Exit
-    return
 
 # End
