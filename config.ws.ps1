@@ -43,10 +43,13 @@
     if (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue) { $NVIDIA_HDA = $true } else { $NVIDIA_HDA = $false }
     if ($NVIDIA_HDA) { $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId }
 
-# Set a Password for the local Administrator Account
+# Administrator Account Tweka
     $password = "l0c@l@dm1n"
     $AdminActive = $false
     $AdminPW = $false
+    
+    # Check if the current user has administrative privileges
+        $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
 # Workstation Choice Reset
     $laptop = $false
@@ -102,7 +105,7 @@ $space
 
 # Windows Service Tweaks
     foreach ($service in $services) {
-        Write-Host "Tweaking Services.. ($services)"
+        Write-Host "Tweaking Services.. ($service)"
         # Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled 
         Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled -ErrorAction SilentlyContinue
     }
@@ -144,10 +147,12 @@ $space
     
     # Set Local Administrator Account Password
     Write-Host "Local Administrator Account's Password is Changing to its default value"
+    if ($isAdmin) {
         $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
         $user.SetPassword($password)
         $user.SetInfo()
         $AdminPW = $true
+    } else { Write-Host "This $userName does not have previlage." }
     if ($AdminPW) { Write-Host "Local Administrator Account's Password has been changed to its default value " } else { Write-Host "Password Value has not been set. Local Administrator Account's Password has not been changed." }
 
 $space
