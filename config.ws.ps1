@@ -212,6 +212,21 @@ $space
         }
     } while (-not ($Softwares -eq $true -or $Softwares -eq $false))
 
+# Check for Administrator Previlage
+    if (-not ($isAdmin)) {
+    # Prompt for credentials
+    $cred = Get-Credential -Message "Please enter the credentials of an account with administrative privileges."
+
+    # Validate the credentials
+    $principal = New-Object Security.Principal.WindowsPrincipal $cred.GetNetworkCredential().UserName
+    $isAdmin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+        if (-not $isAdmin) {
+            Write-Host "The provided account does not have administrative privileges."
+            exit
+        }
+    }
+
 # Software Installation
     if ($Softwares -eq $true) {
         # Chipset
