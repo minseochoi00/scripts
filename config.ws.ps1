@@ -50,7 +50,6 @@
 
 # Set a Password for the local Administrator Account
     $password = "l0c@l@dm1n"
-    $EMPTY_password = ""
 
 # Workstation Choice Reset
     $laptop = $FALSE
