@@ -20,8 +20,8 @@
     $userName = $env:USERNAME
 
 # NTP Server Tweaks
-    $serviceName = "W32Time"
-    $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+    $NTPserviceName = "W32Time"
+    $NTPservice = Get-Service -Name $NTPserviceName -ErrorAction SilentlyContinue
 
 # Software installation Default
     $Softwares = "False"
@@ -95,14 +95,14 @@ do {
     else { 
         Write-Host "You must select either Laptop (L), Desktop (D), or Server (S)." 
     }
-} while (-not ($laptop -eq "True" -or $desktop -eq "True" -or $server -eq "True"))
+} while (-not ($laptop -eq $true -or $desktop -eq $true -or $server -eq $true))
 
 $clean
 $space
 
 # Windows Service Tweaks
     foreach ($service in $services) {
-        Write-Host "Tweaking $service"
+        Write-Host "Tweaking Services.. ($services)"
         # Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled 
         Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled -ErrorAction SilentlyContinue
     }
@@ -111,7 +111,7 @@ $space
 
 # Windows NTP Server Tweaks
     Write-Host "Fixing Workstation's NTP Server"
-    if ($service -eq $null) { Start-Service -Name $serviceName }
+    if ($NTPservice -eq $null) { Start-Service -Name $NTPserviceName }
     Start-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
     Restart-Service W32Time
     Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
