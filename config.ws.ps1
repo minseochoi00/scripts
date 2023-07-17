@@ -126,7 +126,7 @@ $space
     } else {
         # Adding Registry to Workstation for Classic Right Click
         Write-Host "Tweaking 'Classic Right-Click' for Windows 11"
-        Start-Process -FilePath powershell -ArgumentList 'reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve' -Verb RunAs -WindowStyle Hidden
+        reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
         # Restarting Windows Explorer
         if (Get-Process explorer) { Stop-Process -name explorer }
     }
