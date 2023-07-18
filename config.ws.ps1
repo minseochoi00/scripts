@@ -229,11 +229,14 @@ Write-Host ""
         # Chipset
         Write-Host "Installing Processor's Latest Chipset Driver"
         # determine and install
-        if ($processor -like '*AMD*') { Start-Process powershell.exe -ArgumentList "choco install 'amd-ryzen-chipset' --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore } 
-        elseif ($processor -like '*Intel*') { Start-Process powershell.exe -ArgumentList "choco install 'intel-chipset-device-software' --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore } 
-        else { 
-            Write-Host "Failed to determine processor's information." 
-        }
+        if ($processor -like '*AMD*') { 
+            choco install 'amd-ryzen-chipset' --limitoutput --no-progress
+            if (-not(choco list -e 'amd-ryzen-chipset')) {{ Write-Host "Failed to Install AMD Chipset" }}
+        } 
+        if ($processor -like '*Intel*') { 
+            choco install 'intel-chipset-device-software' --limitoutput --no-progress
+            if (-not(choco list -e 'intel-chipset-device-software')) {{ Write-Host "Failed to Install Intel Chipset" }}
+        } 
 
     # General Softwares
         Write-Host "Installing Softwares using Installation Methods of Chocolatey & Winget"
