@@ -254,7 +254,7 @@ Write-Host ""
             
         foreach ($wsoftware in $wsoftwares) {
                 Write-Host "Installing $wsoftware"
-                winget install $wsoftware --accept-package-agreements --accept-source -agreements --uninstall-previous --silent
+                winget install $wsoftware --accept-package-agreements --accept-source-agreements --uninstall-previous --silent
                 if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" }
             }
         }
