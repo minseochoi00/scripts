@@ -1,8 +1,5 @@
 # env
     Write-Host "Setting up the required variables..."
-# General
-    $space = Write-Host ""
-    $clean = Clear-Host
 
 # Choco
     $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
@@ -87,7 +84,7 @@
 
 # ----------------------------------------------------------------------------------------------------------------------------------------
 
-$clean
+Clear-Host
 
 # Prompt for User either Desktop or Laptop
 do {
@@ -100,8 +97,8 @@ do {
     }
 } while (-not ($laptop -eq $true -or $desktop -eq $true -or $server -eq $true))
 
-$clean
-$space
+Clear-Host
+Write-Host ""
 
 # Windows Service Tweaks
     foreach ($service in $services) {
@@ -110,7 +107,7 @@ $space
         Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled -ErrorAction SilentlyContinue
     }
 
-$space
+Write-Host ""
 
 # Windows NTP Server Tweaks
     Write-Host "Fixing Workstation's NTP Server"
@@ -120,7 +117,7 @@ $space
     Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
     Start-Process -FilePath w32tm -ArgumentList '/resync /nowait /rediscover' -WindowStyle Hidden
 
-$space
+Write-Host ""
 
     # Windows Classic Right-Click Tweak for Windows 11
     Write-Host "Enabling Windows 10 Right-Click Style in Windows 11"
@@ -134,7 +131,7 @@ $space
         if (Get-Process explorer) { Stop-Process -name explorer -force}
     }
 
-$space
+Write-Host ""
 
 # Windows Default Administrator Account Tweak
     # Activating Local Administrator Account    
@@ -155,7 +152,7 @@ $space
     } else { Write-Host "This $userName does not have previlage." }
     if ($AdminPW) { Write-Host "Local Administrator Account's Password has been changed to its default value " } else { Write-Host "Password Value has not been set. Local Administrator Account's Password has not been changed." }
 
-$space
+Write-Host ""
 
     # Laptop
     if ($laptop) {
@@ -200,7 +197,7 @@ $space
         Write-Host "Tweaks for Server are still in maintenance."
 }
 
-$space
+Write-Host ""
 
 # Ask client for Software installation on workstation
     do {
@@ -242,28 +239,22 @@ $space
         Write-Host "Installing Softwares using Installation Methods of Chocolatey & Winget"
 
     # Checking if 'Chocolatey & Winget' is installed
-        if (-not ($Test_Choco)) { Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/install-choco" -Verb RunAs }
-        if (-not (Test-WinUtil-PATH-Checker -winget)) { Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/script/install-winget" }
+        if (-not ($Test_Choco)) { irm minseochoi.tech/script/install-choco }
+        if (-not (Test-WinUtil-PATH-Checker -winget)) { irm minseochoi.tech/script/script/install-winget }
 
     # Installing software from the list from above
-        Try {
             foreach ($csoftware in $csoftwares) {
                 Write-Host "Installing $csoftware"
-                Start-Process powershell.exe -ArgumentList "choco install $csoftware --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore
+                choco install $csoftware --limitoutput --no-progress
+                if (-not(choco list -e $csoftware)) { { Write-Host "Failed to Install $csoftware" } }
             }
-        } catch {
-            Write-Host "Error occurred while working on: $csoftware"
-        }
-
-        Try {
-            foreach ($wsoftware in $wsoftwares) {
+            
+        foreach ($wsoftware in $wsoftwares) {
                 Write-Host "Installing $wsoftware"
-                Start-Process powershell.exe -ArgumentList "winget install $wsoftware --limitoutput --no-progress" -Verb RunAs -ErrorAction Ignore
+                winget install $wsoftware --accept-package-agreements --accept-source -agreements --uninstall-previous --silent
+                if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" }
             }
-        } catch {
-            Write-Host "Error occurred while working on: $wsoftware"
         }
-    }
 
 # Exit
     pause
