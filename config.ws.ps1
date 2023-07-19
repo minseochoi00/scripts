@@ -103,7 +103,6 @@ Write-Host ""
 # Windows Service Tweaks
     foreach ($service in $services) {
         Write-Host "Tweaking Services.. ($service)"
-        # Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled 
         Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled -ErrorAction SilentlyContinue
     }
 
@@ -113,7 +112,7 @@ Write-Host ""
     Write-Host "Fixing Workstation's NTP Server"
     if ($NTPservice -eq $null) { Start-Service -Name $NTPserviceName }
     Start-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
-    Restart-Service W32Time
+    Restart-Service -Name $NTPserviceName
     Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
     Start-Process -FilePath w32tm -ArgumentList '/resync /nowait /rediscover' -WindowStyle Hidden
 
@@ -128,7 +127,7 @@ Write-Host ""
         Write-Host "Tweaking 'Classic Right-Click' for Windows 11"
         reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
         # Restarting Windows Explorer
-        if (Get-Process explorer) { Stop-Process -name explorer -force}
+        if (Get-Process explorer) { Stop-Process -name explorer -force }
     }
 
 Write-Host ""
@@ -140,7 +139,7 @@ Write-Host ""
     net user Administrator /active:yes
     $AdminActive = $true
     }
-    if ($AdminActive) { Write-Host "Local Administrator Account is NOW active" } else { Write-Host "Local Administrator Account is ALREADY active"}
+    if ($AdminActive) { Write-Host "Local Administrator Account is NOW active" } else { Write-Host "Local Administrator Account is ALREADY active" }
     
     # Set Local Administrator Account Password
     Write-Host "Local Administrator Account's Password is Changing to its default value"
@@ -209,21 +208,6 @@ Write-Host ""
         }
     } while (-not ($Softwares -eq $true -or $Softwares -eq $false))
 
-# Check for Administrator Previlage
-    if (-not ($isAdmin)) {
-    # Prompt for credentials
-    $cred = Get-Credential -Message "Please enter the credentials of an account with administrative privileges."
-
-    # Validate the credentials
-    $principal = New-Object Security.Principal.WindowsPrincipal $cred.GetNetworkCredential().UserName
-    $isAdmin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-
-        if (-not $isAdmin) {
-            Write-Host "The provided account does not have administrative privileges."
-            exit
-        }
-    }
-
 # Software Installation
     if ($Softwares -eq $true) {
         # Chipset
@@ -255,12 +239,7 @@ Write-Host ""
         foreach ($wsoftware in $wsoftwares) {
                 Write-Host "Installing $wsoftware"
                 winget install $wsoftware --accept-package-agreements --accept-source-agreements --uninstall-previous --silent
-                if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" }
-            }
-        }
-
-# Exit
-    pause
-    Exit
+                if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" } }
+    }
 
 # End
