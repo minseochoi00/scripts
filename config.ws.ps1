@@ -57,6 +57,7 @@
         $desktop = $false
         $server = $false
         $initial = $false
+        $skip = $false
 
     # Windows Service List
         $services = @(
@@ -102,10 +103,11 @@ do {
     elseif ($wsChoice.ToUpper() -eq "DESKTOP" -or $wsChoice.ToUpper() -eq "D") { $desktop = $true } 
     elseif ($wsChoice.ToUpper() -eq "SERVER" -or $wsChoice.ToUpper() -eq "S") { $server = $true }
     elseif ($wsChoice.ToUpper() -eq "I" -or $wsChoice.ToUpper() -eq "i") { $initial = $true }
+    elseif ($wsChoice.ToUpper() -eq "S" -or $wsChoice.ToUpper() -eq "s") { $skip = $true }
     else { 
         Write-Host "You must select either Laptop (L), Desktop (D), or Server (S)." 
     }
-} while (-not ($laptop -eq $true -or $desktop -eq $true -or $server -eq $true -or $initial -eq $true))
+} while (-not ($laptop -eq $true -or $desktop -eq $true -or $server -eq $true -or $initial -eq $true -or $skip -eq $true))
 
 Clear-Host
 Write-Host ""
