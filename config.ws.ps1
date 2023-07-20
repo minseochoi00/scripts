@@ -1,7 +1,7 @@
 # env
     Write-Host "Setting up the required variables..."
 
-    # Update Time - Jul 20 2023 #3 - beta
+    # Update Time - Jul 20 2023 #4 - beta
 
     # Choco
     $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
