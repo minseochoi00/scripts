@@ -1,7 +1,7 @@
 # env
     Write-Host "Setting up the required variables..."
 
-    # Update Time - Jul 20 2023
+    # Update Time - Jul 20 2023 #2
 
     # Choco
     $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
@@ -218,43 +218,38 @@ Write-Host ""
 
 # Software Installation
     if ($Softwares) {
-        # AMD Chipset
-        if ($processor -like '*AMD*') {
-            if (choco list -e 'amd-ryzen-chipset') {
-                Write-Host ""
-                Write-Host "AMD Chipset is already installed." 
-            } else {
-                Write-Host ""
-                Write-Host "Installing AMD's Latest Chipset Driver"
-                Start-Process -FilePath PowerShell -ArgumentList 'choco install 'amd-ryzen-chipset' --limitoutput --no-progress' -Verb RunAs
-                    if (-not(choco list -e 'amd-ryzen-chipset')) { Write-Host "Failed to Install AMD Chipset" }
-            }
-        }
-
-        # Intel Chipset
-        if ($processor -like '*Intel*') {
-            if (choco list -e 'intel-chipset-device-software') {
-                Write-Host ""
-                Write-Host "Intel Chipset is already installed." 
-            } else {
-                Write-Host ""
-                Write-Host "Installing Intel's Latest Chipset Driver"
-                Start-Process -FilePath PowerShell -ArgumentList 'choco install 'intel-chipset-device-software' --limitoutput --no-progress' -Verb RunAs
-                    if (-not(choco list -e 'intel-chipset-device-software')) { Write-Host "Failed to Install Intel Chipset" }
-            }
-        }
 
     # General Softwares
         Write-Host ""
         Write-Host "Installing Softwares using Installation Methods of Chocolatey & Winget"
 
+    # AMD Chipset
+    if ($processor -like '*AMD*') {
+        if (choco list -e 'amd-ryzen-chipset') {
+            Write-Host "AMD Chipset is already installed." 
+        } else {
+            Write-Host "Installing AMD's Latest Chipset Driver"
+            Start-Process -FilePath PowerShell -ArgumentList 'choco install 'amd-ryzen-chipset' --limitoutput --no-progress' -Verb RunAs
+                if (-not(choco list -e 'amd-ryzen-chipset')) { Write-Host "Failed to Install AMD Chipset" }
+        }
+    }
+
+    # Intel Chipset
+    if ($processor -like '*Intel*') {
+        if (choco list -e 'intel-chipset-device-software') {
+            Write-Host "Intel Chipset is already installed." 
+        } else {
+            Write-Host "Installing Intel's Latest Chipset Driver"
+            Start-Process -FilePath PowerShell -ArgumentList 'choco install 'intel-chipset-device-software' --limitoutput --no-progress' -Verb RunAs
+                if (-not(choco list -e 'intel-chipset-device-software')) { Write-Host "Failed to Install Intel Chipset" }
+        }
+    }
+
     # Installing software from the list from above
         foreach ($csoftware in $csoftwares) {
             if (choco list -e $csoftware) {
-                Write-Host ""
                 Write-Host "$csoftware is already installed." 
             } else {
-                Write-Host ""
                 Write-Host "Installing $csoftware"
                 Start-Process -FilePath PowerShell -ArgumentList 'choco install $csoftware --limitoutput --no-progress' -Verb RunAs
                 if (-not(choco list -e $csoftware)) { { Write-Host "Failed to Install $csoftware" } }
@@ -264,10 +259,8 @@ Write-Host ""
             
         foreach ($wsoftware in $wsoftwares) {
             if (winget list -q $wsoftware) {
-                Write-Host ""
                 Write-Host "$wsoftware is already installed."
         } else {
-                Write-Host ""
                 Write-Host "Installing $wsoftware"
                 Start-Process -FilePath PowerShell -ArgumentList 'winget install $wsoftware --accept-source-agreements --silent' -Verb RunAs
                 if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" }
