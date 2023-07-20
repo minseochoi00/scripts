@@ -1,30 +1,25 @@
 # env
     Write-Host "Setting up the required variables..."
 
-    # Update Time - Jul 20 2023 #5 - beta
+    # Update Time - Jul 20 2023 Version 5
 
     # Choco
-    $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
-
-    # Winget
-        function Test-WinUtil-PATH-Checker {
-            <# .COMMENTS = This Function is for checking Winget #>
-            Param([System.Management.Automation.SwitchParameter]$winget)
-            if ($winget) { if (Test-Path ~\AppData\Local\Microsoft\WindowsApps\winget.exe) { return $true } }
-            return $false
-        }
-        $ErrorWingetSearch = "No installed package found matching input criteria."
+        # Checking if Chocolatey is installed.
+            $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
+        
+        # if Chocolatey is not installed, installed them.
+            if (-not ($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
 
     # Retreieve Computer Name & UserName
-        $computerName = $env:COMPUTERNAME
-        $userName = $env:USERNAME
+        $computerName = $env:COMPUTERNAME       # Retreieving Current Computer's Name
+        $userName = $env:USERNAME               # Retrieeving Current User's Name
 
     # NTP-Server Tweaks
         $NTPserviceName = "W32Time"
         $NTPservice = Get-Service -Name $NTPserviceName -ErrorAction SilentlyContinue
 
-    # Software installation Default
-        $Softwares = "False"
+    # Software installation
+        $Softwares = $false            # Default Variable = Auto Installation of Default Softwares.
 
     # Retrieve Processor's Information
         $processor = Get-WmiObject Win32_Processor | Select-Object -ExpandProperty Name
@@ -33,22 +28,24 @@
         $M = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
 
     # ExecutionPolicy
+        $GEP = Get-ExecutionPolicy
         $BP = 'Bypass'
         # Set Execution Policy
-            if (-not (Get-ExecutionPolicy) -eq $BP) { Set-ExecutionPolicy $BP -Force -ErrorAction SilentlyContinue }
+            if (-not ($GEP -eq $BP)) { Set-ExecutionPolicy $BP -Force -ErrorAction SilentlyContinue }
 
     # Define thse power plan GUID for "High performance" and "Balanced"
         $HpowerPlanGUID = '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c'
         $LpowerPlanGUID = '381b4222-f694-41f0-9685-ff5bb260df2e'
 
     # Get the List of InstanceID with the Name "NVIDIA High Definition Audio"
-        if (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue) { $NVIDIA_HDA = $true } else { $NVIDIA_HDA = $false }
-        if ($NVIDIA_HDA) { $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId }
+        if (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue) { 
+            $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId 
+        }
 
     # Administrator Account Tweka
-        $password = "l0c@l@dm1n"
-        $AdminActive = $false
-        $AdminPW = $false
+        $password = "l0c@l@dm1n"    # Generic Password that it will be reset to.
+        $AdminActive = $false       # Default Variable = Checking if Local Administrator account is in 'active' status.
+        $AdminPW = $false           # Default Variable = Checking if Local Administrator's Password has been 'changed'.
     
         # Check if the current user has administrative privileges
             $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -56,9 +53,9 @@
     # Workstation Choice Reset
         $laptop = $false
         $desktop = $false
-        $server = $false
         $initial = $false
         $skip = $false
+        $lcds = $false
 
     # Windows Service List
         $services = @(
@@ -90,6 +87,10 @@
             "dellcommandupdate"      # Dell Update Command
         )
 
+        $lcds_softwares = @(
+            "vlc"                    # VLC Media Player
+        )
+
 # ----------------------------------------------------------------------------------------------------------------------------------------
 
 Clear-Host
@@ -101,15 +102,16 @@ do {
     elseif ($wsChoice.ToUpper() -eq "DESKTOP" -or $wsChoice.ToUpper() -eq "D") { $desktop = $true } 
     elseif ($wsChoice.ToUpper() -eq "I" -or $wsChoice.ToUpper() -eq "i") { $initial = $true }
     elseif ($wsChoice.ToUpper() -eq "S" -or $wsChoice.ToUpper() -eq "s") { $skip = $true }
+    elseif ($wsChoice.ToUpper() -eq "LCDS" -or $wsChoice.ToUpper() -eq "lcds") { $lcds = $true }
     else { 
         Write-Host "You must select either Laptop (L), Desktop (D), or Server (S)." 
     }
-} while (-not ($laptop -eq $true -or $desktop -eq $true -or $server -eq $true -or $initial -eq $true -or $skip -eq $true))
+} while (-not ($laptop -eq $true -or $desktop -eq $true -or $server -eq $true -or $initial -eq $true -or $skip -eq $true -or $lcds -eq $true))
 
 Clear-Host
 Write-Host ""
 
-if ($initial -or $laptop -or $desktop) {
+if ($initial -or $laptop -or $desktop -or $lcds) {
     # Windows Service Tweaks
         foreach ($service in $services) {
             Write-Host "Tweaking Services.. ($service)"
@@ -164,7 +166,7 @@ if ($initial -or $laptop -or $desktop) {
     Write-Host ""
 }
 
-    # Laptop
+# Laptop
     if ($laptop) {
         Write-Host "Starting a Laptop Configuration.."
 
@@ -187,6 +189,8 @@ if ($initial -or $laptop -or $desktop) {
 
 # Desktop
     if ($desktop) {
+        Write-Host "Starting a Desktop Configuration.."
+
         # Change Power Plan to High Performance
         Write-Host "Tweaking Power Plan for Desktop"
         powercfg.exe /setactive $HpowerPlanGUID
@@ -214,16 +218,11 @@ Write-Host ""
         }
     } while (-not ($Softwares -eq $true -or $Softwares -eq $false))
 
-    # Checking if 'Chocolatey & Winget' is installed
-    if (-not ($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
-    if (-not (Test-WinUtil-PATH-Checker -winget)) { Invoke-RestMethod minseochoi.tech/script/install-winget | Invoke-Expression }
-
 # Software Installation
     if ($Softwares) {
 
     # General Softwares
-        Write-Host ""
-        Write-Host "Installing Softwares using Installation Methods of Chocolatey & Winget"
+        Write-Host "Installing Softwares using Installation Methods of Chocolatey"
 
     # AMD Chipset
     if ($processor -like '*AMD*') {
@@ -258,19 +257,6 @@ Write-Host ""
                 if (choco list -e $csoftware) { Write-Host "Successfully install $csoftware" }
             }
         }
-            
-        foreach ($wsoftware in $wsoftwares) {
-            $check_wsoftware = winget list -q $wsoftware --accept-source-agreements
-            if (-not($check_wsoftware -eq $ErrorWingetSearch)) {
-                Write-Host "$wsoftware is already installed."
-        } else {
-                Write-Host "Installing $wsoftware"
-                Start-Process -FilePath PowerShell -ArgumentList 'winget install $wsoftware --accept-source-agreements --silent' -Verb RunAs
-                $check_wsoftware = winget list -q $wsoftware --accept-source-agreements
-                if ($check_wsoftware -eq $ErrorWingetSearch) { Write-Host "Failed to Install $wsoftware" }
-                else { Write-Host "Successfully install $wsoftware" }
-            }
-        }
 
         if ($M -like '*Dell*') {
             foreach ($dell_software in $dell_softwares) {
@@ -281,6 +267,19 @@ Write-Host ""
                     Start-Process -FilePath PowerShell -ArgumentList 'choco install $dell_software --limitoutput --no-progress' -Verb RunAs
                     if (-not(choco list -e $dell_software)) { { Write-Host "Failed to Install $dell_software" } }
                     if (choco list -e $dell_software) { Write-Host "Successfully install $dell_software" }
+                }
+            }
+        }
+
+        if ($lcds) {
+            foreach ($lcds_software in $lcds_softwares) {
+                if (choco list -e $lcds_software){
+                    Write-Host "$lcds_software is already installed."
+                } else {
+                    Write-Host "Installing $lcds_software"
+                    Start-Process -FilePath PowerShell -ArgumentList 'choco install $lcds_software --limitoutput --no-progress' -Verb RunAs
+                    if (-not(choco list -e $lcds_software)) { { Write-Host "Failed to Install $lcds_software" } }
+                    if (choco list -e $lcds_software) { Write-Host "Successfully install $lcds_software" }
                 }
             }
         }
