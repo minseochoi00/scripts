@@ -2,11 +2,15 @@
 
 # env
     # Choco
-        $cinstall = choco install
-        $cuninstall = choco uninstall
+    $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
+
     # Winget
-        $winstall = winget install
-        $wuninstall = winget uninstall
+        function Test-WinUtil-PATH-Checker {
+            <# .COMMENTS = This Function is for checking Winget #>
+            Param([System.Management.Automation.SwitchParameter]$winget)
+            if ($winget) { if (Test-Path ~\AppData\Local\Microsoft\WindowsApps\winget.exe) { return $true } }
+            return $false
+        }
     # Print Spooler
         $PrintSpooler_PATH = "$env:SystemRoot\System32\spool\PRINTERS\*.*"
     # Windows Update
@@ -22,13 +26,12 @@
     # Generic
         $Stop = 'Pause'
     # Check for Chocolatey and Winget Installation
-        if (-not($Test_Choco)) { Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/install-choco" -Verb RunAs }
-        if (-not (Test-WinUtil-PATH-Checker -winget)) { Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/script/install-winget" }
+        if (-not($Test_Choco)) { Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/install-choco | iex" -Verb RunAs }
+        if (-not (Test-WinUtil-PATH-Checker -winget)) { Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/script/install-winget | iex" -Verb RunAs }
     # NTP Server Tweaks
         $serviceName = "W32Time"
         $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
         
-
 # ------------------------------------------------------------------------------------------------------------------------
 
 # Start
@@ -46,56 +49,56 @@
     Start-Process powershell.exe -ArgumentList "Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted" -Verb RunAs -ErrorAction Ignore
 
 # Installing NuGet Package
-    Start-Process powershell.exe -ArgumentList "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force" -Verb RunAs -ErrorAction Ignore
+    Start-Process powershell.exe -ArgumentList "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Confirm $false" -Verb RunAs -ErrorAction Ignore
 
 # Installing Windows Update Module
-    Start-Process powershell.exe -ArgumentList "Install-Module PSWindowsUpdate -Force" -Verb RunAs -ErrorAction Ignore
+    Start-Process powershell.exe -ArgumentList "Install-Module PSWindowsUpdate -Confirm $false"  -Verb RunAs -ErrorAction Ignore
     
 # Importing Windows Update Module
-    Start-Process powershell.exe -ArgumentList "Import-Module PSWindowsUpdate -Force" -Verb RunAs -ErrorAction Ignore
+    Start-Process powershell.exe -ArgumentList "Import-Module PSWindowsUpdate -Confirm $false"  -Verb RunAs -ErrorAction Ignore
     
 # Required Parameter for Disk Clean-up
     $SageSet = "StateFlags0099"
     $Base = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\"
     $Locations= @(
-        "Active Setup Temp Folders"
-        "BranchCache"
-        "Downloaded Program Files"
-        "GameNewsFiles"
-        "GameStatisticsFiles"
-        "GameUpdateFiles"
-        "Internet Cache Files"
-        "Memory Dump Files"
-        "Offline Pages Files"
-        "Old ChkDsk Files"
-        "D3D Shader Cache"
-        "Delivery Optimization Files"
-        "Diagnostic Data Viewer database files"
-        #"Previous Installations"
-        #"Recycle Bin"
-        "Service Pack Cleanup"
-        "Setup Log Files"
-        "System error memory dump files"
-        "System error minidump files"
-        "Temporary Files"
-        "Temporary Setup Files"
-        "Temporary Sync Files"
-        "Thumbnail Cache"
-        "Update Cleanup"
-        "Upgrade Discarded Files"
-        "User file versions"
-        "Windows Defender"
-        "Windows Error Reporting Archive Files"
-        "Windows Error Reporting Queue Files"
-        "Windows Error Reporting System Archive Files"
-        "Windows Error Reporting System Queue Files"
-        "Windows ESD installation files"
+        "Active Setup Temp Folders",
+        "BranchCache",
+        "Downloaded Program Files",
+        "GameNewsFiles",
+        "GameStatisticsFiles",
+        "GameUpdateFiles",
+        "Internet Cache Files",
+        "Memory Dump Files",
+        "Offline Pages Files",
+        "Old ChkDsk Files",
+        "D3D Shader Cache",
+        "Delivery Optimization Files",
+        "Diagnostic Data Viewer database files",
+        #"Previous Installations",
+        #"Recycle Bin",
+        "Service Pack Cleanup",
+        "Setup Log Files",
+        "System error memory dump files",
+        "System error minidump files",
+        "Temporary Files",
+        "Temporary Setup Files",
+        "Temporary Sync Files",
+        "Thumbnail Cache",
+        "Update Cleanup",
+        "Upgrade Discarded Files",
+        "User file versions",
+        "Windows Defender",
+        "Windows Error Reporting Archive Files",
+        "Windows Error Reporting Queue Files",
+        "Windows Error Reporting System Archive Files",
+        "Windows Error Reporting System Queue Files",
+        "Windows ESD installation files",
         "Windows Upgrade Log Files"
     )
 
 # Install Caffeine and Chocolatey for prevent workstations going to sleep
     Write-Host "Installing Caffeine"
-    Start-Process powershell.exe -ArgumentList "$cinstall 'Caffeine' --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction SilentlyContinue
+    Start-Process powershell.exe -ArgumentList "choco install 'Caffeine' --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction SilentlyContinue
     Write-Host "Starting Caffeine"
     if (Test-Path $CaffeinePATH) { 
         Start-Process -FilePath $CaffeinePATH\caffeine64.exe
@@ -149,7 +152,7 @@
 
 # Fix NTP Server
     Write-Host "Fixing Workstation's NTP Server"
-    if ($service -eq $null) { Start-Service -Name $serviceName }
+    if ($null -eq $service) { Start-Service -Name $serviceName }
     Start-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
     Restart-Service -Name $serviceName
     Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
@@ -185,7 +188,7 @@
     Write-Host "Uninstalling Caffeine"
     if ($CheckCaffeine) {
         Stop-Process -Name 'caffeine64'
-        Start-Process powershell.exe -ArgumentList "$cuninstall 'caffeine' --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction Ignore
+        Start-Process powershell.exe -ArgumentList "choco uninstall 'caffeine' --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction Ignore
     } else {
         Write-Host 'Process 'Caffeine64' is currently NOT running.'
     }
@@ -194,7 +197,7 @@
     Write-Host "Installing Choco Cleaner"
     choco install choco-cleaner --confirm --limit-output --no-progress -ErrorAction Ignore
     choco-cleaner
-    Start-Process powershell.exe -ArgumentList "$cuninstall 'choco-cleaner' --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction Ignore
+    Start-Process powershell.exe -ArgumentList "choco uninstall 'choco-cleaner' --confirm --limit-output --no-progress" -Verb RunAs -ErrorAction Ignore
 
 # Windows Update
     Write-Host "Checking for Windows Update"
@@ -203,7 +206,7 @@
    
 # Starting File Explorer
     Write-Host "Starting Windows Explorer..."
-    if (-not(Get-Process -Name explorer -ErrorAction SilentlyContinue)) { Start Explorer.exe }
+    if (-not(Get-Process -Name explorer -ErrorAction SilentlyContinue)) { Start-Process Explorer.exe }
 
 # Re-setting ExecutionPolicy to RemoteSigned
     if (-not (Get-ExecutionPolicy) -eq $RS) {

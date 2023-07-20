@@ -16,7 +16,7 @@
     $computerName = $env:COMPUTERNAME
     $userName = $env:USERNAME
 
-# NTP Server Tweaks
+# NTP-Server Tweaks
     $NTPserviceName = "W32Time"
     $NTPservice = Get-Service -Name $NTPserviceName -ErrorAction SilentlyContinue
 
@@ -28,7 +28,6 @@
 
 # ExecutionPolicy
     $BP = 'Bypass'
-    $RS = 'RemoteSigned'
     # Set Execution Policy
         if (-not (Get-ExecutionPolicy) -eq $BP) { Set-ExecutionPolicy $BP -Force -ErrorAction SilentlyContinue }
 
@@ -52,6 +51,7 @@
     $laptop = $false
     $desktop = $false
     $server = $false
+    $initial = $false
 
 # Windows Service List
     $services = @(
@@ -91,55 +91,57 @@ do {
     $wsChoice = Read-Host -Prompt "Is $computerName / $userName a LAPTOP(L), DESKTOP (D) or SERVER (S)?: "
     if ($wsChoice.ToUpper() -eq "LAPTOP" -or $wsChoice.ToUpper() -eq "L") { $laptop = $true } 
     elseif ($wsChoice.ToUpper() -eq "DESKTOP" -or $wsChoice.ToUpper() -eq "D") { $desktop = $true } 
-    elseif ($wsChoice.ToUpper() -eq "SERVER" -or $wsChoice.ToUpper() -eq "S") { $server = $true } 
+    elseif ($wsChoice.ToUpper() -eq "SERVER" -or $wsChoice.ToUpper() -eq "S") { $server = $true }
+    elseif ($wsChoice.ToUpper() -eq "I" -or $wsChoice.ToUpper() -eq "i") { $initial = $true }
     else { 
         Write-Host "You must select either Laptop (L), Desktop (D), or Server (S)." 
     }
-} while (-not ($laptop -eq $true -or $desktop -eq $true -or $server -eq $true))
+} while (-not ($laptop -eq $true -or $desktop -eq $true -or $server -eq $true -or $initial -eq $true))
 
 Clear-Host
 Write-Host ""
 
-# Windows Service Tweaks
-    foreach ($service in $services) {
-        Write-Host "Tweaking Services.. ($service)"
-        Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled -ErrorAction SilentlyContinue
-    }
+if ($initial -or $laptop -or $desktop -or $server) {
+    # Windows Service Tweaks
+        foreach ($service in $services) {
+            Write-Host "Tweaking Services.. ($service)"
+            Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled -ErrorAction SilentlyContinue
+        }
 
-Write-Host ""
+    Write-Host ""
 
-# Windows NTP Server Tweaks
-    Write-Host "Fixing Workstation's NTP Server"
-    if ($NTPservice -eq $null) { Start-Service -Name $NTPserviceName }
-    Start-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
-    Restart-Service -Name $NTPserviceName
-    Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
-    Start-Process -FilePath w32tm -ArgumentList '/resync /nowait /rediscover' -WindowStyle Hidden
+    # Windows NTP Server Tweaks
+        Write-Host "Fixing Workstation's NTP Server"
+        if ($null -eq $NTPservice) { Start-Service -Name $NTPserviceName }
+        Start-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
+        if ($isAdmin) { Restart-Service -Name $NTPserviceName } else { Write-Host "Administrative Previlage require to restart $NTPserviceName." }
+        Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
+        Start-Process -FilePath w32tm -ArgumentList '/resync /nowait /rediscover' -WindowStyle Hidden
 
-Write-Host ""
+    Write-Host ""
 
-    # Windows Classic Right-Click Tweak for Windows 11
-    Write-Host "Enabling Windows 10 Right-Click Style in Windows 11"
-    if ((Get-CimInstance -ClassName Win32_OperatingSystem).Version -notmatch "^10") {
-        Write-Host "Right-Click tweak is 'ONLY' intended for Windows 11"
-    } else {
-        # Adding Registry to Workstation for Classic Right Click
-        Write-Host "Tweaking 'Classic Right-Click' for Windows 11"
-        reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
-        # Restarting Windows Explorer
-        if (Get-Process explorer) { Stop-Process -name explorer -force }
-    }
+        # Windows Classic Right-Click Tweak for Windows 11
+        Write-Host "Enabling Windows 10 Right-Click Style in Windows 11"
+        if ((Get-CimInstance -ClassName Win32_OperatingSystem).Version -notmatch "^10") {
+            Write-Host "Right-Click tweak is 'ONLY' intended for Windows 11"
+        } else {
+            # Adding Registry to Workstation for Classic Right Click
+            Write-Host "Tweaking 'Classic Right-Click' for Windows 11"
+            reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
+            # Restarting Windows Explorer
+            if (Get-Process explorer) { Stop-Process -name explorer -force }
+        }
 
-Write-Host ""
+    Write-Host ""
 
-# Windows Default Administrator Account Tweak
-    # Activating Local Administrator Account    
-    Write-Host "Activating Local Administrator Account..."
-    if ((net user Administrator | Select-String -Pattern "Account active               No")) {
-    net user Administrator /active:yes
-    $AdminActive = $true
-    }
-    if ($AdminActive) { Write-Host "Local Administrator Account is NOW active" } else { Write-Host "Local Administrator Account is ALREADY active" }
+    # Windows Default Administrator Account Tweak
+        # Activating Local Administrator Account    
+        Write-Host "Activating Local Administrator Account..."
+        if ((net user Administrator | Select-String -Pattern "Account active               No")) {
+        net user Administrator /active:yes
+        $AdminActive = $true
+        }
+        if ($AdminActive) { Write-Host "Local Administrator Account is NOW active" } else { Write-Host "Local Administrator Account is ALREADY active" }
     
     # Set Local Administrator Account Password
     Write-Host "Local Administrator Account's Password is Changing to its default value"
@@ -151,7 +153,8 @@ Write-Host ""
     } else { Write-Host "This $userName does not have previlage." }
     if ($AdminPW) { Write-Host "Local Administrator Account's Password has been changed to its default value " } else { Write-Host "Password Value has not been set. Local Administrator Account's Password has not been changed." }
 
-Write-Host ""
+    Write-Host ""
+}
 
     # Laptop
     if ($laptop) {
@@ -171,7 +174,7 @@ Write-Host ""
 
     # Disabling NVIDIA High Definition Audio for Monitor
         Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
-        if (-not($audioDeviceId -eq $null)) { Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue }
+        if (-not($null -eq $audioDeviceId )) { Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue }
 }
 
 # Desktop
@@ -188,14 +191,13 @@ Write-Host ""
 
         # Disabling NVIDIA High Definition Audio for Monitor
         Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
-        if (-not($audioDeviceId -eq $null)) { Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue }
+        if (-not($null -eq $audioDeviceId)) { Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue }
 }
 
 # Server
     if ($server) {
         Write-Host "Tweaks for Server are still in maintenance."
 }
-
 Write-Host ""
 
 # Ask client for Software installation on workstation
@@ -208,6 +210,10 @@ Write-Host ""
         }
     } while (-not ($Softwares -eq $true -or $Softwares -eq $false))
 
+    # Checking if 'Chocolatey & Winget' is installed
+    if (-not ($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
+    if (-not (Test-WinUtil-PATH-Checker -winget)) { Invoke-RestMethod minseochoi.tech/script/script/install-winget | Invoke-Expression }
+
 # Software Installation
     if ($Softwares -eq $true) {
         # Chipset
@@ -215,31 +221,30 @@ Write-Host ""
         # determine and install
         if ($processor -like '*AMD*') { 
             choco install 'amd-ryzen-chipset' --limitoutput --no-progress
-            if (-not(choco list -e 'amd-ryzen-chipset')) {{ Write-Host "Failed to Install AMD Chipset" }}
+                if (-not(choco list -e 'amd-ryzen-chipset')) {{ Write-Host "Failed to Install AMD Chipset" }}
         } 
         if ($processor -like '*Intel*') { 
             choco install 'intel-chipset-device-software' --limitoutput --no-progress
-            if (-not(choco list -e 'intel-chipset-device-software')) {{ Write-Host "Failed to Install Intel Chipset" }}
+                if (-not(choco list -e 'intel-chipset-device-software')) {{ Write-Host "Failed to Install Intel Chipset" }}
         } 
 
     # General Softwares
         Write-Host "Installing Softwares using Installation Methods of Chocolatey & Winget"
 
-    # Checking if 'Chocolatey & Winget' is installed
-        if (-not ($Test_Choco)) { irm minseochoi.tech/script/install-choco }
-        if (-not (Test-WinUtil-PATH-Checker -winget)) { irm minseochoi.tech/script/script/install-winget }
-
     # Installing software from the list from above
-            foreach ($csoftware in $csoftwares) {
-                Write-Host "Installing $csoftware"
-                choco install $csoftware --limitoutput --no-progress
-                if (-not(choco list -e $csoftware)) { { Write-Host "Failed to Install $csoftware" } }
-            }
+        foreach ($csoftware in $csoftwares) {
+            Write-Host "Installing $csoftware"
+            choco install $csoftware --limitoutput --no-progress
+            if (-not(choco list -e $csoftware)) { { Write-Host "Failed to Install $csoftware" } }
+            if (choco list -e $csoftware) { Write-Host "Successfully install $csoftware" }
+        }
             
         foreach ($wsoftware in $wsoftwares) {
-                Write-Host "Installing $wsoftware"
-                winget install $wsoftware --accept-package-agreements --accept-source-agreements --uninstall-previous --silent
-                if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" } }
-    }
+            Write-Host "Installing $wsoftware"
+            winget install $wsoftware --accept-package-agreements --accept-source-agreements --uninstall-previous --silent
+            if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" } 
+            if (winget list -q $wsoftware) { Write-Host "Successfully install $wsoftware" }
+        }
+}
 
 # End
