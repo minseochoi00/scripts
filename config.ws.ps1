@@ -229,7 +229,7 @@ Write-Host ""
         if ($processor -like '*Intel*') {
             if (choco list -e 'intel-chipset-device-software') { Write-Host "Intel Chipset is already installed." }
             else { choco install 'intel-chipset-device-software' --limitoutput --no-progress
-                if (-not(choco list -e 'intel-chipset-device-software')) {{ Write-Host "Failed to Install Intel Chipset" }}}s
+                if (-not(choco list -e 'intel-chipset-device-software')) {{ Write-Host "Failed to Install Intel Chipset" }}}
         }
 
     # General Softwares
