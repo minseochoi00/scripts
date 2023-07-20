@@ -234,17 +234,19 @@ Write-Host ""
     # Installing software from the list from above
         foreach ($csoftware in $csoftwares) {
             Write-Host "Installing $csoftware"
-            choco install $csoftware --limitoutput --no-progress
+            Start-Process -FilePath PowerShell -ArgumentList 'choco install $csoftware --limitoutput --no-progress' -Verb RunAs
             if (-not(choco list -e $csoftware)) { { Write-Host "Failed to Install $csoftware" } }
             if (choco list -e $csoftware) { Write-Host "Successfully install $csoftware" }
         }
             
         foreach ($wsoftware in $wsoftwares) {
             Write-Host "Installing $wsoftware"
-            winget install $wsoftware --accept-package-agreements --accept-source-agreements --uninstall-previous --silent
+            Start-Process -FilePath PowerShell -ArgumentList 'winget install $wsoftware --accept-package-agreements --accept-source-agreements --silent' -Verb RunAs
             if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" } 
             if (winget list -q $wsoftware) { Write-Host "Successfully install $wsoftware" }
         }
 }
+
+return
 
 # End
