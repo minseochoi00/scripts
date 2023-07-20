@@ -204,10 +204,6 @@ if ($initial -or $laptop -or $desktop) {
         if (-not($null -eq $audioDeviceId)) { Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue }
 }
 
-# Server
-    if ($server) {
-        Write-Host "Tweaks for Server are still in maintenance."
-}
 Write-Host ""
 
 # Ask client for Software installation on workstation
@@ -266,7 +262,7 @@ Write-Host ""
         }
             
         foreach ($wsoftware in $wsoftwares) {
-            if (winget list -q $wsoftware) {
+            if (winget list -q $wsoftware --accept-source-agreements) {
                 Write-Host "$wsoftware is already installed."
         } else {
                 Write-Host "Installing $wsoftware"
@@ -278,7 +274,7 @@ Write-Host ""
 
         if ($M -like '*Dell*') {
             foreach ($dell_software in $dell_softwares) {
-                if (winget list -q $dell_software) { 
+                if (winget list -q $dell_software --accept-source-agreements) { 
                     Write-Host "$dell_software is already installed." 
                 } else {
                     Write-Host "Installing $dell_software"
