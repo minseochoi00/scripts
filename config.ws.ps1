@@ -79,18 +79,15 @@
     # Software Installation List
         $csoftwares = @(
             "googlechrome",          # Google Chrome
-            "firefox"                # Firefox
-        )
-
-        $wsoftwares = @(    
-            "Microsoft.VCRedist.2015+.x64",    # Microsoft C++ 2015-2022 x64
-            "Microsoft.VCRedist.2015+.x86",    # Microsoft C++ 2015-2022 x86
-            "Oracle.JavaRuntimeEnvironment",   # Java 8
-            "Microsoft.PowerShell"             # PowerShell (Latest)
+            "firefox",               # Firefox
+            "vcredist140",           # Microsoft C++ 2015-2022 
+            "javaruntime",           # Java Runtime Environment
+            "powershell-core"        # Microsoft PowerShell
+            
         )
 
         $dell_softwares = @(
-            "Dell.CommandUpdate.Universal"             # Dell Command Update for Universal
+            "dellcommandupdate"      # Dell Update Command
         )
 
 # ----------------------------------------------------------------------------------------------------------------------------------------
@@ -277,15 +274,13 @@ Write-Host ""
 
         if ($M -like '*Dell*') {
             foreach ($dell_software in $dell_softwares) {
-                $check_dell_software = winget list -q $dell_software --accept-source-agreements
-                if (-not($check_dell_software -eq $ErrorWingetSearch)) { 
+                if (choco list -e $dell_software) {
                     Write-Host "$dell_software is already installed." 
                 } else {
                     Write-Host "Installing $dell_software"
-                    Start-Process -FilePath PowerShell -ArgumentList 'winget install $dell_software --accept-source-agreements --silent' -Verb RunAs
-                    $check_dell_software = winget list -q $dell_software --accept-source-agreements
-                    if ($check_dell_software -eq $ErrorWingetSearch) { Write-Host "Failed to Install $dell_software" }
-                    else { Write-Host "Successfully install $dell_software" }
+                    Start-Process -FilePath PowerShell -ArgumentList 'choco install $dell_software --limitoutput --no-progress' -Verb RunAs
+                    if (-not(choco list -e $dell_software)) { { Write-Host "Failed to Install $dell_software" } }
+                    if (choco list -e $dell_software) { Write-Host "Successfully install $dell_software" }
                 }
             }
         }
