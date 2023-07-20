@@ -1,7 +1,7 @@
 # env
     Write-Host "Setting up the required variables..."
 
-    # Update Time - Jul 20 2023 #2
+    # Update Time - Jul 20 2023 #3 - beta
 
     # Choco
     $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
@@ -27,6 +27,9 @@
 
     # Retrieve Processor's Information
         $processor = Get-WmiObject Win32_Processor | Select-Object -ExpandProperty Name
+
+    # Retreieve Computer's Manufacturer
+        $M = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
 
     # ExecutionPolicy
         $BP = 'Bypass'
@@ -82,6 +85,10 @@
             "Microsoft.VCRedist.2015+.x86",    # Microsoft C++ 2015-2022 x86
             "Oracle.JavaRuntimeEnvironment",   # Java 8
             "Microsoft.PowerShell"             # PowerShell (Latest)
+        )
+
+        $dell_softwares = @(
+            "Dell.CommandUpdate.Universal"             # Dell Command Update for Universal
         )
 
 # ----------------------------------------------------------------------------------------------------------------------------------------
@@ -265,6 +272,18 @@ Write-Host ""
                 Start-Process -FilePath PowerShell -ArgumentList 'winget install $wsoftware --accept-source-agreements --silent' -Verb RunAs
                 if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" }
                 if (winget list -q $wsoftware) { Write-Host "Successfully install $wsoftware" }
+            }
+        }
+
+        if ($M -like '*Dell*') {
+            foreach ($dell_software in $dell_softwares) {
+                if (winget list -q $dell_software) { Write-Host "$dell_software is already installed." }
+                else {
+                    Write-Host "Installing $dell_software"
+                    Start-Process -FilePath PowerShell -ArgumentList 'winget install $dell_software --accept-source-agreements --silent' -Verb RunAs
+                    if (-not(winget list -q $dell_software)) { Write-Host "Failed to Install $dell_software" }
+                    if (winget list -q $dell_software) { Write-Host "Successfully install $dell_software" }
+                }
             }
         }
 }
