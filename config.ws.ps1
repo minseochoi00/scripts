@@ -1,7 +1,7 @@
 # env
     Write-Host "Setting up the required variables..."
 
-    # Update Time - Jul 20 2023 #4 - beta
+    # Update Time - Jul 20 2023 #5 - beta
 
     # Choco
     $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
@@ -13,6 +13,7 @@
             if ($winget) { if (Test-Path ~\AppData\Local\Microsoft\WindowsApps\winget.exe) { return $true } }
             return $false
         }
+        $ErrorWingetSearch = "No installed package found matching input criteria."
 
     # Retreieve Computer Name & UserName
         $computerName = $env:COMPUTERNAME
@@ -262,25 +263,29 @@ Write-Host ""
         }
             
         foreach ($wsoftware in $wsoftwares) {
-            if (winget list -q $wsoftware --accept-source-agreements) {
+            $check_wsoftware = winget list -q $wsoftware --accept-source-agreements
+            if (-not($check_wsoftware -eq $ErrorWingetSearch)) {
                 Write-Host "$wsoftware is already installed."
         } else {
                 Write-Host "Installing $wsoftware"
                 Start-Process -FilePath PowerShell -ArgumentList 'winget install $wsoftware --accept-source-agreements --silent' -Verb RunAs
-                if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" }
-                if (winget list -q $wsoftware) { Write-Host "Successfully install $wsoftware" }
+                $check_wsoftware = winget list -q $wsoftware --accept-source-agreements
+                if ($check_wsoftware -eq $ErrorWingetSearch) { Write-Host "Failed to Install $wsoftware" }
+                else { Write-Host "Successfully install $wsoftware" }
             }
         }
 
         if ($M -like '*Dell*') {
             foreach ($dell_software in $dell_softwares) {
-                if (winget list -q $dell_software --accept-source-agreements) { 
+                $check_dell_software = winget list -q $dell_software --accept-source-agreements
+                if (-not($check_dell_software -eq $ErrorWingetSearch)) { 
                     Write-Host "$dell_software is already installed." 
                 } else {
                     Write-Host "Installing $dell_software"
                     Start-Process -FilePath PowerShell -ArgumentList 'winget install $dell_software --accept-source-agreements --silent' -Verb RunAs
-                    if (-not(winget list -q $dell_software)) { Write-Host "Failed to Install $dell_software" }
-                    if (winget list -q $dell_software) { Write-Host "Successfully install $dell_software" }
+                    $check_dell_software = winget list -q $dell_software --accept-source-agreements
+                    if ($check_dell_software -eq $ErrorWingetSearch) { Write-Host "Failed to Install $dell_software" }
+                    else { Write-Host "Successfully install $dell_software" }
                 }
             }
         }
