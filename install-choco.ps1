@@ -22,7 +22,7 @@ if ((Get-Command -Name choco -ErrorAction Ignore) -and ($current_chocoVersion = 
     Write-Host ""
 
     Write-Host "Chocolatey is not currently installed. Installing chocolatey..."
-    Start-Process -FilePath PowerShell -ArgumentList 'Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))' -Verb RunAs
+    Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
     choco feature enable -n allowGlobalConfirmation
     Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
     refreshenv
