@@ -279,8 +279,9 @@ Write-Host ""
 
         if ($M -like '*Dell*') {
             foreach ($dell_software in $dell_softwares) {
-                if (winget list -q $dell_software) { Write-Host "$dell_software is already installed." }
-                else {
+                if (winget list -q $dell_software) { 
+                    Write-Host "$dell_software is already installed." 
+                } else {
                     Write-Host "Installing $dell_software"
                     Start-Process -FilePath PowerShell -ArgumentList 'winget install $dell_software --accept-source-agreements --silent' -Verb RunAs
                     if (-not(winget list -q $dell_software)) { Write-Host "Failed to Install $dell_software" }
