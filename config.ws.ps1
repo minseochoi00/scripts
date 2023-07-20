@@ -241,8 +241,8 @@ Write-Host ""
             
         foreach ($wsoftware in $wsoftwares) {
             Write-Host "Installing $wsoftware"
-            Start-Process -FilePath PowerShell -ArgumentList 'winget install $wsoftware --accept-package-agreements --accept-source-agreements --silent' -Verb RunAs
-            if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" } 
+            Start-Process -FilePath PowerShell -ArgumentList 'winget install $wsoftware --accept-source-agreements --silent' -Verb RunAs
+            if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" }
             if (winget list -q $wsoftware) { Write-Host "Successfully install $wsoftware" }
         }
 }
