@@ -1,86 +1,88 @@
 # env
     Write-Host "Setting up the required variables..."
 
-# Choco
+    # Update Time - Jul 20 2023
+
+    # Choco
     $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
 
-# Winget
-    function Test-WinUtil-PATH-Checker {
-        <# .COMMENTS = This Function is for checking Winget #>
-        Param([System.Management.Automation.SwitchParameter]$winget)
-        if ($winget) { if (Test-Path ~\AppData\Local\Microsoft\WindowsApps\winget.exe) { return $true } }
-        return $false
-    }
+    # Winget
+        function Test-WinUtil-PATH-Checker {
+            <# .COMMENTS = This Function is for checking Winget #>
+            Param([System.Management.Automation.SwitchParameter]$winget)
+            if ($winget) { if (Test-Path ~\AppData\Local\Microsoft\WindowsApps\winget.exe) { return $true } }
+            return $false
+        }
 
-# Retreieve Computer Name & UserName
-    $computerName = $env:COMPUTERNAME
-    $userName = $env:USERNAME
+    # Retreieve Computer Name & UserName
+        $computerName = $env:COMPUTERNAME
+        $userName = $env:USERNAME
 
-# NTP-Server Tweaks
-    $NTPserviceName = "W32Time"
-    $NTPservice = Get-Service -Name $NTPserviceName -ErrorAction SilentlyContinue
+    # NTP-Server Tweaks
+        $NTPserviceName = "W32Time"
+        $NTPservice = Get-Service -Name $NTPserviceName -ErrorAction SilentlyContinue
 
-# Software installation Default
-    $Softwares = "False"
+    # Software installation Default
+        $Softwares = "False"
 
-# Retrieve Processor's Information
-    $processor = Get-WmiObject Win32_Processor | Select-Object -ExpandProperty Name
+    # Retrieve Processor's Information
+        $processor = Get-WmiObject Win32_Processor | Select-Object -ExpandProperty Name
 
-# ExecutionPolicy
-    $BP = 'Bypass'
-    # Set Execution Policy
-        if (-not (Get-ExecutionPolicy) -eq $BP) { Set-ExecutionPolicy $BP -Force -ErrorAction SilentlyContinue }
+    # ExecutionPolicy
+        $BP = 'Bypass'
+        # Set Execution Policy
+            if (-not (Get-ExecutionPolicy) -eq $BP) { Set-ExecutionPolicy $BP -Force -ErrorAction SilentlyContinue }
 
-# Define thse power plan GUID for "High performance" and "Balanced"
-    $HpowerPlanGUID = '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c'
-    $LpowerPlanGUID = '381b4222-f694-41f0-9685-ff5bb260df2e'
+    # Define thse power plan GUID for "High performance" and "Balanced"
+        $HpowerPlanGUID = '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c'
+        $LpowerPlanGUID = '381b4222-f694-41f0-9685-ff5bb260df2e'
 
-# Get the List of InstanceID with the Name "NVIDIA High Definition Audio"
-    if (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue) { $NVIDIA_HDA = $true } else { $NVIDIA_HDA = $false }
-    if ($NVIDIA_HDA) { $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId }
+    # Get the List of InstanceID with the Name "NVIDIA High Definition Audio"
+        if (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue) { $NVIDIA_HDA = $true } else { $NVIDIA_HDA = $false }
+        if ($NVIDIA_HDA) { $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId }
 
-# Administrator Account Tweka
-    $password = "l0c@l@dm1n"
-    $AdminActive = $false
-    $AdminPW = $false
+    # Administrator Account Tweka
+        $password = "l0c@l@dm1n"
+        $AdminActive = $false
+        $AdminPW = $false
     
-    # Check if the current user has administrative privileges
-        $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+        # Check if the current user has administrative privileges
+            $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
-# Workstation Choice Reset
-    $laptop = $false
-    $desktop = $false
-    $server = $false
-    $initial = $false
+    # Workstation Choice Reset
+        $laptop = $false
+        $desktop = $false
+        $server = $false
+        $initial = $false
 
-# Windows Service List
-    $services = @(
-        "DiagTrack",             # Connected User Experiences and Telemetry
-        "fxssvc.exe",            # Fax
-        "AxInstSV",              # AllJoyn Router Service
-        "PcaSvc",                # Program Compatibility Assistant Service
-        "dmwappushservice",      # Device Management Wireless Application Protocol (WAP) Push message Routing Service
-        "Remote Registry",       # Remote Registry
-        "WMPNetworkSvc",         # Windows Media Player Network Sharing Service
-        "StiSvc",                # Windows Image Acquisition
-        "XblAuthManager",        # Xbox Live Auth Manager
-        "XblGameSave",           # Xbox Live Game Save Service
-        "XboxNetApiSvc",         # Xbox Live Networking Service
-        "ndu"                    # Windows Network Data Usage Monitor
-    )
+    # Windows Service List
+        $services = @(
+            "DiagTrack",             # Connected User Experiences and Telemetry
+            "fxssvc.exe",            # Fax
+            "AxInstSV",              # AllJoyn Router Service
+            "PcaSvc",                # Program Compatibility Assistant Service
+            "dmwappushservice",      # Device Management Wireless Application Protocol (WAP) Push message Routing Service
+            "Remote Registry",       # Remote Registry
+            "WMPNetworkSvc",         # Windows Media Player Network Sharing Service
+            "StiSvc",                # Windows Image Acquisition
+            "XblAuthManager",        # Xbox Live Auth Manager
+            "XblGameSave",           # Xbox Live Game Save Service
+            "XboxNetApiSvc",         # Xbox Live Networking Service
+            "ndu"                    # Windows Network Data Usage Monitor
+        )
 
-# Software Installation List
-    $csoftwares = @(
-        "googlechrome",          # Google Chrome
-        "firefox"                # Firefox
-    )
+    # Software Installation List
+        $csoftwares = @(
+            "googlechrome",          # Google Chrome
+            "firefox"                # Firefox
+        )
 
-    $wsoftwares = @(    
-        "Microsoft.VCRedist.2015+.x64",    # Microsoft C++ 2015-2022 x64
-        "Microsoft.VCRedist.2015+.x86",    # Microsoft C++ 2015-2022 x86
-        "Oracle.JavaRuntimeEnvironment",   # Java 8
-        "Microsoft.PowerShell"             # PowerShell (Latest)
-    )
+        $wsoftwares = @(    
+            "Microsoft.VCRedist.2015+.x64",    # Microsoft C++ 2015-2022 x64
+            "Microsoft.VCRedist.2015+.x86",    # Microsoft C++ 2015-2022 x86
+            "Oracle.JavaRuntimeEnvironment",   # Java 8
+            "Microsoft.PowerShell"             # PowerShell (Latest)
+        )
 
 # ----------------------------------------------------------------------------------------------------------------------------------------
 
