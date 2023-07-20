@@ -98,10 +98,9 @@ Clear-Host
 
 # Prompt for User either Desktop or Laptop
 do {
-    $wsChoice = Read-Host -Prompt "Is $computerName / $userName a LAPTOP(L), DESKTOP (D) or SERVER (S)?: "
+    $wsChoice = Read-Host -Prompt "Is $computerName / $userName a LAPTOP(L), DESKTOP (D)?: "
     if ($wsChoice.ToUpper() -eq "LAPTOP" -or $wsChoice.ToUpper() -eq "L") { $laptop = $true } 
     elseif ($wsChoice.ToUpper() -eq "DESKTOP" -or $wsChoice.ToUpper() -eq "D") { $desktop = $true } 
-    elseif ($wsChoice.ToUpper() -eq "SERVER" -or $wsChoice.ToUpper() -eq "S") { $server = $true }
     elseif ($wsChoice.ToUpper() -eq "I" -or $wsChoice.ToUpper() -eq "i") { $initial = $true }
     elseif ($wsChoice.ToUpper() -eq "S" -or $wsChoice.ToUpper() -eq "s") { $skip = $true }
     else { 
@@ -112,7 +111,7 @@ do {
 Clear-Host
 Write-Host ""
 
-if ($initial -or $laptop -or $desktop -or $server) {
+if ($initial -or $laptop -or $desktop) {
     # Windows Service Tweaks
         foreach ($service in $services) {
             Write-Host "Tweaking Services.. ($service)"
