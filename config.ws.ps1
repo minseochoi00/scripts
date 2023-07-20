@@ -217,39 +217,62 @@ Write-Host ""
     if (-not (Test-WinUtil-PATH-Checker -winget)) { Invoke-RestMethod minseochoi.tech/script/install-winget | Invoke-Expression }
 
 # Software Installation
-    if ($Softwares -eq $true) {
-        # Chipset
-        Write-Host "Installing Processor's Latest Chipset Driver"
-        # determine and install
-        if ($processor -like '*AMD*') { 
-            if (choco list -e 'amd-ryzen-chipset') { Write-Host "AMD Chipset is already installed." }
-            else { choco install 'amd-ryzen-chipset' --limitoutput --no-progress 
-                if (-not(choco list -e 'amd-ryzen-chipset')) {{ Write-Host "Failed to Install AMD Chipset" }}}
-        } 
+    if ($Softwares) {
+        # AMD Chipset
+        if ($processor -like '*AMD*') {
+            if (choco list -e 'amd-ryzen-chipset') {
+                Write-Host ""
+                Write-Host "AMD Chipset is already installed." 
+            } else {
+                Write-Host ""
+                Write-Host "Installing AMD's Latest Chipset Driver"
+                Start-Process -FilePath PowerShell -ArgumentList 'choco install 'amd-ryzen-chipset' --limitoutput --no-progress' -Verb RunAs
+                    if (-not(choco list -e 'amd-ryzen-chipset')) { Write-Host "Failed to Install AMD Chipset" }
+            }
+        }
+
+        # Intel Chipset
         if ($processor -like '*Intel*') {
-            if (choco list -e 'intel-chipset-device-software') { Write-Host "Intel Chipset is already installed." }
-            else { choco install 'intel-chipset-device-software' --limitoutput --no-progress
-                if (-not(choco list -e 'intel-chipset-device-software')) {{ Write-Host "Failed to Install Intel Chipset" }}}
+            if (choco list -e 'intel-chipset-device-software') {
+                Write-Host ""
+                Write-Host "Intel Chipset is already installed." 
+            } else {
+                Write-Host ""
+                Write-Host "Installing Intel's Latest Chipset Driver"
+                Start-Process -FilePath PowerShell -ArgumentList 'choco install 'intel-chipset-device-software' --limitoutput --no-progress' -Verb RunAs
+                    if (-not(choco list -e 'intel-chipset-device-software')) { Write-Host "Failed to Install Intel Chipset" }
+            }
         }
 
     # General Softwares
+        Write-Host ""
         Write-Host "Installing Softwares using Installation Methods of Chocolatey & Winget"
 
     # Installing software from the list from above
         foreach ($csoftware in $csoftwares) {
-            Write-Host "Installing $csoftware"
-            if (choco list -e $csoftware) { Write-Host "$csoftware is already installed." }
-            else { Start-Process -FilePath PowerShell -ArgumentList 'choco install $csoftware --limitoutput --no-progress' -Verb RunAs
+            if (choco list -e $csoftware) {
+                Write-Host ""
+                Write-Host "$csoftware is already installed." 
+            } else {
+                Write-Host ""
+                Write-Host "Installing $csoftware"
+                Start-Process -FilePath PowerShell -ArgumentList 'choco install $csoftware --limitoutput --no-progress' -Verb RunAs
                 if (-not(choco list -e $csoftware)) { { Write-Host "Failed to Install $csoftware" } }
-                if (choco list -e $csoftware) { Write-Host "Successfully install $csoftware" }}
+                if (choco list -e $csoftware) { Write-Host "Successfully install $csoftware" }
+            }
         }
             
         foreach ($wsoftware in $wsoftwares) {
-            Write-Host "Installing $wsoftware"
-            if (winget list -q $wsoftware) { Write-Host "$csoftware is already installed." }
-            else { Start-Process -FilePath PowerShell -ArgumentList 'winget install $wsoftware --accept-source-agreements --silent' -Verb RunAs
+            if (winget list -q $wsoftware) {
+                Write-Host ""
+                Write-Host "$wsoftware is already installed."
+        } else {
+                Write-Host ""
+                Write-Host "Installing $wsoftware"
+                Start-Process -FilePath PowerShell -ArgumentList 'winget install $wsoftware --accept-source-agreements --silent' -Verb RunAs
                 if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" }
-                if (winget list -q $wsoftware) { Write-Host "Successfully install $wsoftware" }}
+                if (winget list -q $wsoftware) { Write-Host "Successfully install $wsoftware" }
+            }
         }
 }
 
