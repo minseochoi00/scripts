@@ -212,7 +212,7 @@ Write-Host ""
 
     # Checking if 'Chocolatey & Winget' is installed
     if (-not ($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
-    if (-not (Test-WinUtil-PATH-Checker -winget)) { Invoke-RestMethod minseochoi.tech/script/script/install-winget | Invoke-Expression }
+    if (-not (Test-WinUtil-PATH-Checker -winget)) { Invoke-RestMethod minseochoi.tech/script/install-winget | Invoke-Expression }
 
 # Software Installation
     if ($Softwares -eq $true) {
@@ -221,14 +221,14 @@ Write-Host ""
         # determine and install
         if ($processor -like '*AMD*') { 
             if (choco list -e 'amd-ryzen-chipset') { Write-Host "AMD Chipset is already installed." }
-            else { choco install 'amd-ryzen-chipset' --limitoutput --no-progress }
-                if (-not(choco list -e 'amd-ryzen-chipset')) {{ Write-Host "Failed to Install AMD Chipset" }}
+            else { choco install 'amd-ryzen-chipset' --limitoutput --no-progress 
+                if (-not(choco list -e 'amd-ryzen-chipset')) {{ Write-Host "Failed to Install AMD Chipset" }}}
         } 
-        if ($processor -like '*Intel*') { 
+        if ($processor -like '*Intel*') {
             if (choco list -e 'intel-chipset-device-software') { Write-Host "Intel Chipset is already installed." }
-            else { choco install 'intel-chipset-device-software' --limitoutput --no-progress }
-                if (-not(choco list -e 'intel-chipset-device-software')) {{ Write-Host "Failed to Install Intel Chipset" }}
-        } 
+            else { choco install 'intel-chipset-device-software' --limitoutput --no-progress
+                if (-not(choco list -e 'intel-chipset-device-software')) {{ Write-Host "Failed to Install Intel Chipset" }}}s
+        }
 
     # General Softwares
         Write-Host "Installing Softwares using Installation Methods of Chocolatey & Winget"
@@ -237,17 +237,17 @@ Write-Host ""
         foreach ($csoftware in $csoftwares) {
             Write-Host "Installing $csoftware"
             if (choco list -e $csoftware) { Write-Host "$csoftware is already installed." }
-            else { Start-Process -FilePath PowerShell -ArgumentList 'choco install $csoftware --limitoutput --no-progress' -Verb RunAs }
-            if (-not(choco list -e $csoftware)) { { Write-Host "Failed to Install $csoftware" } }
-            if (choco list -e $csoftware) { Write-Host "Successfully install $csoftware" }
+            else { Start-Process -FilePath PowerShell -ArgumentList 'choco install $csoftware --limitoutput --no-progress' -Verb RunAs
+                if (-not(choco list -e $csoftware)) { { Write-Host "Failed to Install $csoftware" } }
+                if (choco list -e $csoftware) { Write-Host "Successfully install $csoftware" }}
         }
             
         foreach ($wsoftware in $wsoftwares) {
             Write-Host "Installing $wsoftware"
             if (winget list -q $wsoftware) { Write-Host "$csoftware is already installed." }
-            else { Start-Process -FilePath PowerShell -ArgumentList 'winget install $wsoftware --accept-source-agreements --silent' -Verb RunAs}
-            if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" }
-            if (winget list -q $wsoftware) { Write-Host "Successfully install $wsoftware" }
+            else { Start-Process -FilePath PowerShell -ArgumentList 'winget install $wsoftware --accept-source-agreements --silent' -Verb RunAs
+                if (-not(winget list -q $wsoftware)) { Write-Host "Failed to Install $wsoftware" }
+                if (winget list -q $wsoftware) { Write-Host "Successfully install $wsoftware" }}
         }
 }
 
