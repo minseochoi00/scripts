@@ -8,7 +8,7 @@
             $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
         
         # if Chocolatey is not installed, installed them.
-            if (-not ($Test_Choco)) { Start-Process -FilePath PowerShell -ArgumentList "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression" -Verb RunAs }
+            if (-not ($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
 
     # Retreieve Computer Name & UserName
         $computerName = $env:COMPUTERNAME       # Retreieving Current Computer's Name
@@ -77,6 +77,10 @@
         )
 
     # Software Installation List
+
+        $amd_chipset = "amd-ryzen-chipset"
+        $intel_chipset = "intel-chipset-device-software"    
+
         $csoftwares = @(
             "googlechrome",          # Google Chrome
             "firefox",               # Firefox
@@ -232,13 +236,13 @@ Write-Host ""
 
     # AMD Chipset
     if ($processor -like '*AMD*') {
-        if (choco list | sls "amd-ryzen-chipset") {
+        if (choco list | sls $amd_chipset) {
             Write-Host "AMD Chipset is already installed." 
         } else {
             Write-Host "Installing AMD's Latest Chipset Driver"
-            Start-Process -FilePath choco -ArgumentList "install "amd-ryzen-chipset" --limitoutput --no-progress" -Verb RunAs
-                Wait-Process -Name Choco
-                    if (choco list | sls "amd-ryzen-chipset") { Write-Host "Successfully installed AMD Chipset" }
+            Start-Process -FilePath choco -ArgumentList "install $amd_chipset --limitoutput --no-progress" -Verb RunAs
+                Wait-Process -Name Choco -ErrorAction SilentlyContinue
+                    if (choco list | sls $amd_chipset) { Write-Host "Successfully installed AMD Chipset" }
                     else { Write-Host "Failed to install AMD Chipset" 
             }
         }
@@ -246,13 +250,13 @@ Write-Host ""
 
     # Intel Chipset
     if ($processor -like '*Intel*') {
-        if (choco list | sls "intel-chipset-device-software") {
+        if (choco list | sls $intel_chipset) {
             Write-Host "Intel Chipset is already installed." 
         } else {
             Write-Host "Installing Intel's Latest Chipset Driver"
-            Start-Process -FilePath choco -ArgumentList "install "intel-chipset-device-software" --limitoutput --no-progress" -Verb RunAs
-                Wait-Process -Name Choco
-                    if (choco list | sls "intel-chipset-device-software") { Write-Host "Successfully installed Intel Chipset" }
+            Start-Process -FilePath choco -ArgumentList "install $intel_chipset --limitoutput --no-progress" -Verb RunAs
+                Wait-Process -Name Choco -ErrorAction SilentlyContinue
+                    if (choco list | sls $intel_chipset) { Write-Host "Successfully installed Intel Chipset" }
                     else { Write-Host "Failed to install Intel Chipset" 
             }
         }
@@ -265,7 +269,7 @@ Write-Host ""
             } else {
                 Write-Host "Installing $csoftware"
                 Start-Process -FilePath choco -ArgumentList "install $csoftware --limitoutput --no-progress" -Verb RunAs
-                    Wait-Process -Name Choco
+                    Wait-Process -Name Choco -ErrorAction SilentlyContinue
                         if (choco list | sls $csoftware) { Write-Host "Successfully installed $csoftware" }    
                         else { Write-Host "Failed to install $csoftware" 
                     } 
@@ -279,7 +283,7 @@ Write-Host ""
                 } else {
                     Write-Host "Installing $dell_software"
                     Start-Process -FilePath choco -ArgumentList "install $dell_software --limitoutput --no-progress" -Verb RunAs
-                        Wait-Process -Name Choco
+                        Wait-Process -Name Choco -ErrorAction SilentlyContinue
                             if (choco list | sls $dell_software) { Write-Host "Successfully installed $dell_software" }
                             else { Write-Host "Failed to install $dell_software" 
                         }
@@ -294,7 +298,7 @@ Write-Host ""
                 } else {
                     Write-Host "Installing $lcds_software"
                     Start-Process -FilePath choco -ArgumentList "install $lcds_software --limitoutput --no-progress" -Verb RunAs
-                        Wait-Process -Name Choco
+                        Wait-Process -Name Choco -ErrorAction SilentlyContinue
                             if (choco list | sls $lcds_software) { Write-Host "Successfully installed $lcds_software" }
                             else { Write-Host "Failed to install $lcds_software"
                         }
