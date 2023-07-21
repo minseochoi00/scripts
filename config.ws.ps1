@@ -8,7 +8,7 @@
             $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
         
         # if Chocolatey is not installed, installed them.
-            if (-not ($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
+            if (-not ($Test_Choco)) { Start-Process -FilePath PowerShell -ArgumentList "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression" -Verb RunAs }
 
     # Retreieve Computer Name & UserName
         $computerName = $env:COMPUTERNAME       # Retreieving Current Computer's Name
@@ -31,19 +31,22 @@
         $GEP = Get-ExecutionPolicy
         $BP = "Bypass"
         # Set Execution Policy
-            if (-not ($GEP -eq $BP)) { Set-ExecutionPolicy $BP -Force -ErrorAction SilentlyContinue }
+            if (-not ($GEP -eq $BP)) { Set-ExecutionPolicy $BP -Force }
 
     # Define thse power plan GUID for "High performance" and "Balanced"
         $HpowerPlanGUID = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
         $LpowerPlanGUID = "381b4222-f694-41f0-9685-ff5bb260df2e"
 
     # Get the List of InstanceID with the Name "NVIDIA High Definition Audio"
-        if (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue) { 
+        $VaudioDeviceID = $false
+        if (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio") {
+            $VaudioDeviceID = $true
             $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId 
         }
 
     # Administrator Account Tweka
         $password = "l0c@l@dm1n"    # Generic Password that it will be reset to.
+        $Empty_password = ""        # Default Variable = Checking if the $password is empty
         $AdminActive = $false       # Default Variable = Checking if Local Administrator account is in 'active' status.
         $AdminPW = $false           # Default Variable = Checking if Local Administrator's Password has been 'changed'.
     
@@ -155,12 +158,15 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
     
     # Set Local Administrator Account Password
     Write-Host "Local Administrator Account's Password is Changing to its default value"
-    if ($isAdmin) {
-        $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
-        $user.SetPassword($password)
-        $user.SetInfo()
-        $AdminPW = $true
-    } else { Write-Host "This $userName does not have previlage." }
+    if ($Empty_password -eq $password) { Write-Host "Password has not been set." }
+    else { 
+        if ($isAdmin) {
+            $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
+            $user.SetPassword($password)
+            $user.SetInfo()
+            $AdminPW = $true
+        } else { Write-Host "This $userName does not have previlage." }
+    }
     if ($AdminPW) { Write-Host "Local Administrator Account's Password has been changed to its default value " } else { Write-Host "Password Value has not been set. Local Administrator Account's Password has not been changed." }
 
     Write-Host ""
@@ -184,7 +190,7 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
 
     # Disabling NVIDIA High Definition Audio for Monitor
         Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
-        if (-not($null -eq $audioDeviceId )) { Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue }
+        if ($VaudioDeviceId) { Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue }
 }
 
 # Desktop
@@ -203,7 +209,7 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
 
         # Disabling NVIDIA High Definition Audio for Monitor
         Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
-        if (-not($null -eq $audioDeviceId)) { Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue }
+        if ($VaudioDeviceId) { Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue }
 }
 
 Write-Host ""
@@ -231,8 +237,10 @@ Write-Host ""
         } else {
             Write-Host "Installing AMD's Latest Chipset Driver"
             Start-Process -FilePath choco -ArgumentList "install "amd-ryzen-chipset" --limitoutput --no-progress" -Verb RunAs
-                if (choco list | sls "amd-ryzen-chipset") { Write-Host "Successfully installed AMD Chipset" }
-                if (-not(choco list | sls "amd-ryzen-chipset")) { Write-Host "Failed to install AMD Chipset" }
+                Wait-Process -Name Choco
+                    if (choco list | sls "amd-ryzen-chipset") { Write-Host "Successfully installed AMD Chipset" }
+                    else { Write-Host "Failed to install AMD Chipset" 
+            }
         }
     }
 
@@ -243,8 +251,10 @@ Write-Host ""
         } else {
             Write-Host "Installing Intel's Latest Chipset Driver"
             Start-Process -FilePath choco -ArgumentList "install "intel-chipset-device-software" --limitoutput --no-progress" -Verb RunAs
-                if (choco list | sls "intel-chipset-device-software") { Write-Host "Successfully installed Intel Chipset" }
-                if (-not(choco list | sls "intel-chipset-device-software")) { Write-Host "Failed to install Intel Chipset" }
+                Wait-Process -Name Choco
+                    if (choco list | sls "intel-chipset-device-software") { Write-Host "Successfully installed Intel Chipset" }
+                    else { Write-Host "Failed to install Intel Chipset" 
+            }
         }
     }
 
@@ -255,8 +265,10 @@ Write-Host ""
             } else {
                 Write-Host "Installing $csoftware"
                 Start-Process -FilePath choco -ArgumentList "install $csoftware --limitoutput --no-progress" -Verb RunAs
-                if (-not(choco list | sls $csoftware)) { { Write-Host "Failed to install $csoftware" } }
-                if (choco list | sls $csoftware) { Write-Host "Successfully installed $csoftware" }
+                    Wait-Process -Name Choco
+                        if (choco list | sls $csoftware) { Write-Host "Successfully installed $csoftware" }    
+                        else { Write-Host "Failed to install $csoftware" 
+                    } 
             }
         }
 
@@ -267,8 +279,10 @@ Write-Host ""
                 } else {
                     Write-Host "Installing $dell_software"
                     Start-Process -FilePath choco -ArgumentList "install $dell_software --limitoutput --no-progress" -Verb RunAs
-                    if (-not(choco list | sls $dell_software)) { { Write-Host "Failed to install $dell_software" } }
-                    if (choco list | sls $dell_software) { Write-Host "Successfully installed $dell_software" }
+                        Wait-Process -Name Choco
+                            if (choco list | sls $dell_software) { Write-Host "Successfully installed $dell_software" }
+                            else { Write-Host "Failed to install $dell_software" 
+                        }
                 }
             }
         }
@@ -280,8 +294,10 @@ Write-Host ""
                 } else {
                     Write-Host "Installing $lcds_software"
                     Start-Process -FilePath choco -ArgumentList "install $lcds_software --limitoutput --no-progress" -Verb RunAs
-                    if (-not(choco list | sls $lcds_software)) { { Write-Host "Failed to install $lcds_software" } }
-                    if (choco list | sls $lcds_software) { Write-Host "Successfully installed $lcds_software" }
+                        Wait-Process -Name Choco
+                            if (choco list | sls $lcds_software) { Write-Host "Successfully installed $lcds_software" }
+                            else { Write-Host "Failed to install $lcds_software"
+                        }
                 }
             }
         }
