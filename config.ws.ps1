@@ -29,13 +29,13 @@
 
     # ExecutionPolicy
         $GEP = Get-ExecutionPolicy
-        $BP = 'Bypass'
+        $BP = "Bypass"
         # Set Execution Policy
             if (-not ($GEP -eq $BP)) { Set-ExecutionPolicy $BP -Force -ErrorAction SilentlyContinue }
 
     # Define thse power plan GUID for "High performance" and "Balanced"
-        $HpowerPlanGUID = '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c'
-        $LpowerPlanGUID = '381b4222-f694-41f0-9685-ff5bb260df2e'
+        $HpowerPlanGUID = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
+        $LpowerPlanGUID = "381b4222-f694-41f0-9685-ff5bb260df2e"
 
     # Get the List of InstanceID with the Name "NVIDIA High Definition Audio"
         if (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue) { 
@@ -123,10 +123,10 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
     # Windows NTP Server Tweaks
         Write-Host "Fixing Workstation's NTP Server"
         if ($null -eq $NTPservice) { Start-Service -Name $NTPserviceName }
-        Start-Process -FilePath w32tm -ArgumentList '/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update' -WindowStyle Hidden
+        Start-Process -FilePath w32tm -ArgumentList "/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update" -WindowStyle Hidden
         if ($isAdmin) { Restart-Service -Name $NTPserviceName } else { Write-Host "Administrative Previlage require to restart $NTPserviceName." }
-        Start-Process -FilePath w32tm -ArgumentList '/config /update' -WindowStyle Hidden
-        Start-Process -FilePath w32tm -ArgumentList '/resync /nowait /rediscover' -WindowStyle Hidden
+        Start-Process -FilePath w32tm -ArgumentList "/config /update" -WindowStyle Hidden
+        Start-Process -FilePath w32tm -ArgumentList "/resync /nowait /rediscover" -WindowStyle Hidden
 
     Write-Host ""
 
@@ -175,12 +175,12 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
         powercfg.exe /setactive $LpowerPlanGUID
 
         # 'Display Turn OFF' Value
-        powercfg /change monitor-timeout-ac '30'
-        powercfg /change monitor-timeout-dc '15'
+        powercfg /change monitor-timeout-ac "30"
+        powercfg /change monitor-timeout-dc "15"
 
         # Sleep Value
-        powercfg /change standby-timeout-ac '0'
-        powercfg /change standby-timeout-dc '0'
+        powercfg /change standby-timeout-ac "0"
+        powercfg /change standby-timeout-dc "0"
 
     # Disabling NVIDIA High Definition Audio for Monitor
         Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
@@ -196,10 +196,10 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
         powercfg.exe /setactive $HpowerPlanGUID
 
         # 'Display Turn OFF' Value
-        powercfg /change monitor-timeout-ac '30'
+        powercfg /change monitor-timeout-ac "30"
 
         # Sleep Value
-        powercfg /change standby-timeout-ac '0'
+        powercfg /change standby-timeout-ac "0"
 
         # Disabling NVIDIA High Definition Audio for Monitor
         Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
@@ -230,9 +230,9 @@ Write-Host ""
             Write-Host "AMD Chipset is already installed." 
         } else {
             Write-Host "Installing AMD's Latest Chipset Driver"
-            Start-Process -FilePath PowerShell -ArgumentList 'choco install "amd-ryzen-chipset" --limitoutput --no-progress' -Verb RunAs
-                if (choco list | sls 'amd-ryzen-chipset') { Write-Host "Successfully installed AMD Chipset" }
-                if (-not(choco list | sls 'amd-ryzen-chipset')) { Write-Host "Failed to install AMD Chipset" }
+            Start-Process -FilePath choco -ArgumentList "install "amd-ryzen-chipset" --limitoutput --no-progress" -Verb RunAs
+                if (choco list | sls "amd-ryzen-chipset") { Write-Host "Successfully installed AMD Chipset" }
+                if (-not(choco list | sls "amd-ryzen-chipset")) { Write-Host "Failed to install AMD Chipset" }
         }
     }
 
@@ -242,9 +242,9 @@ Write-Host ""
             Write-Host "Intel Chipset is already installed." 
         } else {
             Write-Host "Installing Intel's Latest Chipset Driver"
-            Start-Process -FilePath PowerShell -ArgumentList 'choco install "intel-chipset-device-software" --limitoutput --no-progress' -Verb RunAs
-                if (choco list | sls 'intel-chipset-device-software') { Write-Host "Successfully installed Intel Chipset" }
-                if (-not(choco list | sls 'intel-chipset-device-software')) { Write-Host "Failed to install Intel Chipset" }
+            Start-Process -FilePath choco -ArgumentList "install "intel-chipset-device-software" --limitoutput --no-progress" -Verb RunAs
+                if (choco list | sls "intel-chipset-device-software") { Write-Host "Successfully installed Intel Chipset" }
+                if (-not(choco list | sls "intel-chipset-device-software")) { Write-Host "Failed to install Intel Chipset" }
         }
     }
 
@@ -254,7 +254,7 @@ Write-Host ""
                 Write-Host "$csoftware is already installed." 
             } else {
                 Write-Host "Installing $csoftware"
-                Start-Process -FilePath PowerShell -ArgumentList 'choco install $csoftware --limitoutput --no-progress' -Verb RunAs
+                Start-Process -FilePath choco -ArgumentList "install $csoftware --limitoutput --no-progress" -Verb RunAs
                 if (-not(choco list | sls $csoftware)) { { Write-Host "Failed to install $csoftware" } }
                 if (choco list | sls $csoftware) { Write-Host "Successfully installed $csoftware" }
             }
@@ -266,7 +266,7 @@ Write-Host ""
                     Write-Host "$dell_software is already installed." 
                 } else {
                     Write-Host "Installing $dell_software"
-                    Start-Process -FilePath PowerShell -ArgumentList 'choco install $dell_software --limitoutput --no-progress' -Verb RunAs
+                    Start-Process -FilePath choco -ArgumentList "install $dell_software --limitoutput --no-progress" -Verb RunAs
                     if (-not(choco list | sls $dell_software)) { { Write-Host "Failed to install $dell_software" } }
                     if (choco list | sls $dell_software) { Write-Host "Successfully installed $dell_software" }
                 }
@@ -279,7 +279,7 @@ Write-Host ""
                     Write-Host "$lcds_software is already installed."
                 } else {
                     Write-Host "Installing $lcds_software"
-                    Start-Process -FilePath PowerShell -ArgumentList 'choco install $lcds_software --limitoutput --no-progress' -Verb RunAs
+                    Start-Process -FilePath choco -ArgumentList "install $lcds_software --limitoutput --no-progress" -Verb RunAs
                     if (-not(choco list | sls $lcds_software)) { { Write-Host "Failed to install $lcds_software" } }
                     if (choco list | sls $lcds_software) { Write-Host "Successfully installed $lcds_software" }
                 }
