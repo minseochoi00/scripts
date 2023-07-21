@@ -226,60 +226,62 @@ Write-Host ""
 
     # AMD Chipset
     if ($processor -like '*AMD*') {
-        if (choco list -e 'amd-ryzen-chipset') {
+        if (choco list | sls "amd-ryzen-chipset") {
             Write-Host "AMD Chipset is already installed." 
         } else {
             Write-Host "Installing AMD's Latest Chipset Driver"
-            Start-Process -FilePath PowerShell -ArgumentList 'choco install 'amd-ryzen-chipset' --limitoutput --no-progress' -Verb RunAs
-                if (-not(choco list -e 'amd-ryzen-chipset')) { Write-Host "Failed to Install AMD Chipset" }
+            Start-Process -FilePath PowerShell -ArgumentList 'choco install "amd-ryzen-chipset" --limitoutput --no-progress' -Verb RunAs
+                if (choco list | sls 'amd-ryzen-chipset') { Write-Host "Successfully installed AMD Chipset" }
+                if (-not(choco list | sls 'amd-ryzen-chipset')) { Write-Host "Failed to install AMD Chipset" }
         }
     }
 
     # Intel Chipset
     if ($processor -like '*Intel*') {
-        if (choco list -e 'intel-chipset-device-software') {
+        if (choco list | sls "intel-chipset-device-software") {
             Write-Host "Intel Chipset is already installed." 
         } else {
             Write-Host "Installing Intel's Latest Chipset Driver"
-            Start-Process -FilePath PowerShell -ArgumentList 'choco install 'intel-chipset-device-software' --limitoutput --no-progress' -Verb RunAs
-                if (-not(choco list -e 'intel-chipset-device-software')) { Write-Host "Failed to Install Intel Chipset" }
+            Start-Process -FilePath PowerShell -ArgumentList 'choco install "intel-chipset-device-software" --limitoutput --no-progress' -Verb RunAs
+                if (choco list | sls 'intel-chipset-device-software') { Write-Host "Successfully installed Intel Chipset" }
+                if (-not(choco list | sls 'intel-chipset-device-software')) { Write-Host "Failed to install Intel Chipset" }
         }
     }
 
     # Installing software from the list from above
         foreach ($csoftware in $csoftwares) {
-            if (choco list -e $csoftware) {
+            if (choco list | sls $csoftware) {
                 Write-Host "$csoftware is already installed." 
             } else {
                 Write-Host "Installing $csoftware"
                 Start-Process -FilePath PowerShell -ArgumentList 'choco install $csoftware --limitoutput --no-progress' -Verb RunAs
-                if (-not(choco list -e $csoftware)) { { Write-Host "Failed to Install $csoftware" } }
-                if (choco list -e $csoftware) { Write-Host "Successfully install $csoftware" }
+                if (-not(choco list | sls $csoftware)) { { Write-Host "Failed to install $csoftware" } }
+                if (choco list | sls $csoftware) { Write-Host "Successfully installed $csoftware" }
             }
         }
 
         if ($M -like '*Dell*') {
             foreach ($dell_software in $dell_softwares) {
-                if (choco list -e $dell_software) {
+                if (choco list | sls $dell_software) {
                     Write-Host "$dell_software is already installed." 
                 } else {
                     Write-Host "Installing $dell_software"
                     Start-Process -FilePath PowerShell -ArgumentList 'choco install $dell_software --limitoutput --no-progress' -Verb RunAs
-                    if (-not(choco list -e $dell_software)) { { Write-Host "Failed to Install $dell_software" } }
-                    if (choco list -e $dell_software) { Write-Host "Successfully install $dell_software" }
+                    if (-not(choco list | sls $dell_software)) { { Write-Host "Failed to install $dell_software" } }
+                    if (choco list | sls $dell_software) { Write-Host "Successfully installed $dell_software" }
                 }
             }
         }
 
         if ($lcds) {
             foreach ($lcds_software in $lcds_softwares) {
-                if (choco list -e $lcds_software){
+                if (choco list | sls $lcds_software){
                     Write-Host "$lcds_software is already installed."
                 } else {
                     Write-Host "Installing $lcds_software"
                     Start-Process -FilePath PowerShell -ArgumentList 'choco install $lcds_software --limitoutput --no-progress' -Verb RunAs
-                    if (-not(choco list -e $lcds_software)) { { Write-Host "Failed to Install $lcds_software" } }
-                    if (choco list -e $lcds_software) { Write-Host "Successfully install $lcds_software" }
+                    if (-not(choco list | sls $lcds_software)) { { Write-Host "Failed to install $lcds_software" } }
+                    if (choco list | sls $lcds_software) { Write-Host "Successfully installed $lcds_software" }
                 }
             }
         }
