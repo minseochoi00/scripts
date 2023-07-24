@@ -7,6 +7,7 @@ $CPU = (Get-CimInstance -ClassName Win32_Processor).Name
 $RAM = [math]::Round((Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)
 $drives = Get-CimInstance -ClassName Win32_LogicalDisk | Select-Object DeviceID, VolumeName, FreeSpace
 $SerialNumber = (Get-WmiObject -Class Win32_BIOS).SerialNumber
+$Domain = (Get-CimInstance -ClassName Win32_ComputerSystem).Domain
 $clean = Clear-Host
 
 
@@ -20,6 +21,9 @@ foreach ($drive in $drives) {
     }
 }
 
+if ($null -eq $Domain) { $Error_Domain = $true }
+
+
 # Get all graphics devices on the system
 $graphics_devices = Get-CimInstance -Class Win32_VideoController
 
@@ -29,16 +33,18 @@ $clean
 Write-Host "Computer Name: $ComputerName"
 Write-Host "Operating System: $OSName"
 Write-Host "$OSInstallDate"
+if (-not($Error_Domain)) { Write-Host "Domain: $Domain" }
 Write-Host "System Model: $Model"
 Write-Host "Serial Number: $SerialNumber"
 Write-Host ""
 Write-Host "CPU: $CPU"
 Write-Host "RAM: $RAM GB"
 Write-Host "Drive Information:`n$($driveInfo -join '')"
+Write-Host ""
+
 # Check if there are any graphics devices available
 if ($graphics_devices) {
     # Print the name and description of each graphics device
-    Write-Host ""
     Write-Output "Graphics devices:"
     foreach ($device in $graphics_devices) {
         Write-Output "    Name: $($device.Name)"
