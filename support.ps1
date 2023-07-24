@@ -20,7 +20,6 @@ foreach ($drive in $drives) {
         $driveInfo += "$($drive.DeviceID) Free Space: $($freeSpaceGB) GB`n"
     }
 }
-
 if ($null -eq $Domain) { $Error_Domain = $true }
 
 
