@@ -117,7 +117,7 @@ do {
     else { 
         Write-Host "You must select either Laptop (L), Desktop (D), or Server (S)." 
     }
-} while (-not ($laptop -eq $true -or $desktop -eq $true -or $server -eq $true -or $initial -eq $true -or $skip -eq $true -or $lcds -eq $true))
+} while (-not ($laptop -eq $true -or $desktop -eq $true -or $initial -eq $true -or $skip -eq $true -or $lcds -eq $true))
 
 Clear-Host
 Write-Host ""
@@ -296,7 +296,7 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
                 }
             }
         }
-
+<#
         if ($M -like '*Lenovo*') {
             foreach ($lenovo_software in $lenovo_softwares) {
                 if (choco list | sls $lenovo_software) {
@@ -312,7 +312,7 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
                 }
             }
         }
-
+#>
         if ($lcds) {
             foreach ($lcds_software in $lcds_softwares) {
                 if (choco list | sls $lcds_software){
