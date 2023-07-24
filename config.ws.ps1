@@ -113,7 +113,6 @@ do {
     elseif ($wsChoice.ToUpper() -eq "DESKTOP" -or $wsChoice.ToUpper() -eq "D") { $desktop = $true } 
     elseif ($wsChoice.ToUpper() -eq "I" -or $wsChoice.ToUpper() -eq "i") { $initial = $true }
     elseif ($wsChoice.ToUpper() -eq "S" -or $wsChoice.ToUpper() -eq "s") { $skip = $true }
-    elseif ($wsChoice.ToUpper() -eq "LCDS" -or $wsChoice.ToUpper() -eq "lcds") { $lcds = $true }
     else { 
         Write-Host "You must select either Laptop (L), Desktop (D), or Server (S)." 
     }
@@ -229,10 +228,13 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
         $swChoice = Read-Host -Prompt "Will $computerName / $userName require a General Application 'Auto-Install'?: "
         if ($swChoice.ToUpper() -eq "YES" -or $swChoice.ToUpper() -eq "Y") { $Softwares = $true } 
         elseif ($swChoice.ToUpper() -eq "NO" -or $swChoice.ToUpper() -eq "N") { $Softwares = $false } 
+        elseif ($swChoice.ToUpper() -eq "lcds" -or $swChoice.ToUpper() -eq "LCDS") { $lcds = $true }
         else { 
             Write-Host "You must select either Yes (Y) or No (N)." 
         }
-    } while (-not ($Softwares -eq $true -or $Softwares -eq $false))
+    } while (-not ($Softwares -eq $true -or $Softwares -eq $false -or $lcds -eq $true))
+
+    if ($lcds) { $softwares = $true }
 
 # Software Installation
     if ($Softwares) {
