@@ -297,7 +297,7 @@ Write-Host ""
 
         if ($M -like '*Lenovo*') {
             foreach ($lenovo_software in $lenovo_softwares) {
-                if (choco | list | sls $lenovo_software) {
+                if (choco list | sls $lenovo_software) {
                     Write-Host "$lenovo_software is already installed."
                 } else {
                     Write-Host "Installing $lenovo_software"
