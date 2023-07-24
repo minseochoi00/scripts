@@ -184,7 +184,7 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
     if ($laptop) {
         Write-Host "Starting a Laptop Configuration.."
 
-    # Power Plan Tweaks
+        # Power Plan Tweaks
         Write-Host "Tweaking Power Plan for Laptop"
         powercfg.exe /setactive $LpowerPlanGUID
 
@@ -196,9 +196,11 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
         powercfg /change standby-timeout-ac "0"
         powercfg /change standby-timeout-dc "0"
 
-    # Disabling NVIDIA High Definition Audio for Monitor
+        # Disabling NVIDIA High Definition Audio for Monitor
         Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
         if ($VaudioDeviceId) { Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue }
+
+        Write-Host ""
 }
 
 # Desktop
@@ -218,9 +220,9 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
         # Disabling NVIDIA High Definition Audio for Monitor
         Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
         if ($VaudioDeviceId) { Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue }
+        
+        Write-Host ""
 }
-
-Write-Host ""
 
 # Ask client for Software installation on workstation
     do {
