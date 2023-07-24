@@ -82,20 +82,24 @@
         $intel_chipset = "intel-chipset-device-software"    
 
         $csoftwares = @(
-            "googlechrome",          # Google Chrome
-            "firefox",               # Firefox
-            "vcredist140",           # Microsoft C++ 2015-2022 
-            "javaruntime",           # Java Runtime Environment
-            "powershell-core"        # Microsoft PowerShell
+            "googlechrome",                             # Google Chrome
+            "firefox",                                  # Firefox
+            "vcredist140",                              # Microsoft C++ 2015-2022 
+            "javaruntime",                              # Java Runtime Environment
+            "powershell-core"                           # Microsoft PowerShell
             
         )
 
         $dell_softwares = @(
-            "dellcommandupdate"      # Dell Update Command
+            "dellcommandupdate"                         # Dell Update Command
+        )
+
+        $lenovo_softwares = @(
+            "lenovo-thinkvantage-system-update"         # Lenovo Vantage
         )
 
         $lcds_softwares = @(
-            "vlc"                    # VLC Media Player
+            "vlc"                                       # VLC Media Player
         )
 
 # ----------------------------------------------------------------------------------------------------------------------------------------
@@ -286,6 +290,22 @@ Write-Host ""
                         Wait-Process -Name Choco -ErrorAction SilentlyContinue
                             if (choco list | sls $dell_software) { Write-Host "Successfully installed $dell_software" }
                             else { Write-Host "Failed to install $dell_software" 
+                        }
+                }
+            }
+        }
+
+        if ($M -like '*Lenovo*') {
+            foreach ($lenovo_software in $lenovo_softwares) {
+                if (choco | list | sls $lenovo_software) {
+                    Write-Host "$lenovo_software is already installed."
+                } else {
+                    Write-Host "Installing $lenovo_software"
+                    Write-Host "Installing $lenovo_software"
+                    Start-Process -FilePath choco -ArgumentList "install $lenovo_software --limitoutput --no-progress" -Verb RunAs
+                        Wait-Process -Name Choco -ErrorAction SilentlyContinue
+                            if (choco list | sls $lenovo_software) { Write-Host "Successfully installed $lenovo_software" }
+                            else { Write-Host "Failed to install $lenovo_software" 
                         }
                 }
             }
