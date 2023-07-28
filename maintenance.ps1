@@ -4,7 +4,7 @@
     # Choco
     $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
         # Check for Chocolatey and Winget Installation
-            if (-not($Test_Choco)) { Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/install-choco | iex" -Verb RunAs }
+            if (-not($Test_Choco)) { irm minseochoi.tech/script/install-choco | iex }
     # Print Spooler
         $PrintSpooler_PATH = "$env:SystemRoot\System32\spool\PRINTERS\*.*"
     # Windows Update
