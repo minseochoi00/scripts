@@ -99,6 +99,16 @@
             "vlc"                                       # VLC Media Player
         )
 
+        $chodae_softwares = @(
+            "obs-studio --version 29.1.3",              # OBS Version of 29.1.3
+            "obs-ndi",                                  # OBS NDI Integration
+            #"streamdeck",                               # Stream-Deck
+            "cloudstation",                             # Synology Cloud Station
+            "slack"                                     # Slack
+            #"x32-edit"                                  # X32-Edit
+            #"zoom"                                      # Zoom
+        )
+
 # ----------------------------------------------------------------------------------------------------------------------------------------
 
 Clear-Host
@@ -226,12 +236,14 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
         if ($swChoice.ToUpper() -eq "YES" -or $swChoice.ToUpper() -eq "Y") { $Softwares = $true } 
         elseif ($swChoice.ToUpper() -eq "NO" -or $swChoice.ToUpper() -eq "N") { $Softwares = $false } 
         elseif ($swChoice.ToUpper() -eq "lcds" -or $swChoice.ToUpper() -eq "LCDS") { $lcds = $true }
+        elseif ($swChoice.ToUpper() -eq "chodae" -or $swChoice.ToUpper() -eq "CHODAE" { $chodae = $true })
         else { 
             Write-Host "You must select either Yes (Y) or No (N)." 
         }
-    } while (-not ($Softwares -eq $true -or $Softwares -eq $false -or $lcds -eq $true))
+    } while (-not ($Softwares -eq $true -or $Softwares -eq $false -or $lcds -eq $true -or $chodae -eq $true))
 
     if ($lcds) { $softwares = $true }
+    if ($chodae) { $softwares = $true }
 
 # Software Installation
     if ($Softwares) {
@@ -306,6 +318,21 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
                         Wait-Process -Name Choco -ErrorAction SilentlyContinue
                             if (choco list | sls $lcds_software) { Write-Host "Successfully installed $lcds_software" }
                             else { Write-Host "Failed to install $lcds_software"
+                        }
+                }
+            }
+        }
+
+        if ($chodae) {
+            foreach ($chodae_software in $chodae_softwares) {
+                if (choco list | sls $chodae_software){
+                    Write-Host "$chodae_software is already installed."
+                } else {
+                    Write-Host "Installing $chodae_software"
+                    Start-Process -FilePath choco -ArgumentList "install $chodae_software --limitoutput --no-progress" -Verb RunAs
+                        Wait-Process -Name Choco -ErrorAction SilentlyContinue
+                            if (choco list | sls $chodae_software) { Write-Host "Successfully installed $chodae_software" }
+                            else { Write-Host "Failed to install $chodae_software"
                         }
                 }
             }
