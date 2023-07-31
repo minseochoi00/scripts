@@ -236,7 +236,7 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
         if ($swChoice.ToUpper() -eq "YES" -or $swChoice.ToUpper() -eq "Y") { $Softwares = $true } 
         elseif ($swChoice.ToUpper() -eq "NO" -or $swChoice.ToUpper() -eq "N") { $Softwares = $false } 
         elseif ($swChoice.ToUpper() -eq "lcds" -or $swChoice.ToUpper() -eq "LCDS") { $lcds = $true }
-        elseif ($swChoice.ToUpper() -eq "chodae" -or $swChoice.ToUpper() -eq "CHODAE" { $chodae = $true })
+        elseif ($swChoice.ToUpper() -eq "chodae" -or $swChoice.ToUpper() -eq "CHODAE") { $chodae = $true }
         else { 
             Write-Host "You must select either Yes (Y) or No (N)." 
         }
