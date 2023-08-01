@@ -36,8 +36,7 @@ try {
 
     Write-Host "Starting Print Spooler Service"
     Start-Service -Name Spooler
-
-    Pause
+    
     Return
 
 }
