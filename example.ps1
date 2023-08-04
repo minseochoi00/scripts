@@ -1,5 +1,5 @@
 # env
-Write-Host "Version: Aug 3 2023 Version 1"
+Write-Host "Version: Aug.2023 Version 2"
 Write-Host "Setting up the required variables..."
 
 # Choco
@@ -50,7 +50,7 @@ Write-Host "Setting up the required variables..."
         $GEP = Get-ExecutionPolicy
         $BP = "Bypass"
             # Set Execution Policy
-                if (-not ($ -eq $BP)) { Set-ExecutionPolicy $BP -Force }
+                if (-not ($GEP -eq $BP)) { Set-ExecutionPolicy $BP -Force }
     # Workstation Choice Reset
         $laptop = $false
         $desktop = $false
@@ -181,6 +181,7 @@ else {
 if ($AdminPW) { Write-Host "Local Administrator Account's Password has been changed to its default value " } else { Write-Host "Password Value has not been set. Local Administrator Account's Password has not been changed." }
 
 Write-Host ""
+}
 
 # Laptop
 if ($laptop) {
@@ -228,6 +229,7 @@ if ($desktop) {
 
 # Ask client for Software installation on workstation
 do {
+    Write-Host ""
     $swChoice = Read-Host -Prompt "Will $computerName / $userName require a General Application 'Auto-Install'?: "
     
     if ($swChoice -eq "YES" -or $swChoice -eq "Y") { $Softwares = $true } 
@@ -249,75 +251,75 @@ if ($Softwares) {
 
 # AMD Chipset
 if ($processor -like '*AMD*') {
-    if (choco list | sls $amd_chipset) {
+    if (choco list | Select-String $amd_chipset) {
         Write-Host "AMD Chipset is already installed."
     } else {
         Write-Host -NoNewline "Installing AMD's Latest Chipset Driver.."
         Start-Process -FilePath choco -ArgumentList "install $amd_chipset --limitoutput --no-progress" -Verb RunAs
             Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                if (choco list --local-only | Select-String $amd_chipset) { Write-Host " Installed" } else { Write-Host " Failed" }
+                if (choco list | Select-String $amd_chipset) { Write-Host " Installed" } else { Write-Host " Failed" }
         }
     }
 
 # Intel Chipset
 if ($processor -like '*Intel*') {
-    if (choco list | sls $intel_chipset) {
+    if (choco list | Select-String $intel_chipset) {
         Write-Host "Intel Chipset is already installed." 
     } else {
         Write-Host -NoNewline "Installing Intel's Latest Chipset Driver.."
         Start-Process -FilePath choco -ArgumentList "install $intel_chipset --limitoutput --no-progress" -Verb RunAs
             Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                if (choco list --local-only | Select-String $intel_chipset) { Write-Host " Installed" } else { Write-Host " Failed" }
+                if (choco list | Select-String $intel_chipset) { Write-Host " Installed" } else { Write-Host " Failed" }
         }
     }
 
 # Installing software from the list from above
     foreach ($csoftware in $csoftwares) {
-        if (choco list | sls $csoftware) {
+        if (choco list | Select-String $csoftware) {
             Write-Host "$csoftware is already installed." 
         } else {
             Write-Host -NoNewline "Installing ($csoftware).."
             Start-Process -FilePath choco -ArgumentList "install $csoftware --limitoutput --no-progress" -Verb RunAs
                 Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                if (choco list --local-only | Select-String $csoftware) { Write-Host " Installed" } else { Write-Host " Failed" }
+                if (choco list | Select-String $csoftware) { Write-Host " Installed" } else { Write-Host " Failed" }
         } 
     }
 
     if ($M -like '*Dell*') {
         foreach ($dell_software in $dell_softwares) {
-            if (choco list | sls $dell_software) {
+            if (choco list | Select-String $dell_software) {
                 Write-Host "$dell_software is already installed." 
             } else {
                 Write-Host "Installing $dell_software"
                 Start-Process -FilePath choco -ArgumentList "install $dell_software --limitoutput --no-progress" -Verb RunAs
                 Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                if (choco list --local-only | Select-String $dell_software) { Write-Host " Installed" } else { Write-Host " Failed" }
+                if (choco list | Select-String $dell_software) { Write-Host " Installed" } else { Write-Host " Failed" }
             }
         }
     }
 
     if ($lcds) {
         foreach ($lcds_software in $lcds_softwares) {
-            if (choco list | sls $lcds_software){
+            if (choco list | Select-String $lcds_software){
                 Write-Host "$lcds_software is already installed."
             } else {
                 Write-Host "Installing $lcds_software"
                 Start-Process -FilePath choco -ArgumentList "install $lcds_software --limitoutput --no-progress" -Verb RunAs
                 Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                if (choco list --local-only | Select-String $lcds_software) { Write-Host " Installed" } else { Write-Host " Failed" }
+                if (choco list | Select-String $lcds_software) { Write-Host " Installed" } else { Write-Host " Failed" }
             }
         }
     }
 
     if ($chodae) {
         foreach ($chodae_software in $chodae_softwares) {
-            if (choco list | sls $chodae_software){
+            if (choco list | Select-String $chodae_software){
                 Write-Host "$chodae_software is already installed."
             } else {
                 Write-Host "Installing $chodae_software"
                 Start-Process -FilePath choco -ArgumentList "install $chodae_software --limitoutput --no-progress" -Verb RunAs
                     Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                    if (choco list --local-only | Select-String $chodae_software) { Write-Host " Installed" } else { Write-Host " Failed" }
+                    if (choco list | Select-String $chodae_software) { Write-Host " Installed" } else { Write-Host " Failed" }
             }
         }
     }
