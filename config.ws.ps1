@@ -241,7 +241,6 @@ if ($initial -or $laptop -or $desktop -or $lcds) {
             Write-Host "You must select either Yes (Y) or No (N)." 
         }
     } while (-not ($Softwares -eq $true -or $Softwares -eq $false -or $lcds -eq $true -or $chodae -eq $true))
-
     if ($lcds) { $softwares = $true }
     if ($chodae) { $softwares = $true }
 

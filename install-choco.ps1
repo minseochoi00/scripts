@@ -3,8 +3,8 @@ if ((Get-Command -Name choco -ErrorAction Ignore) -and ($current_chocoVersion = 
 
     Write-Host ""
 
-    Write-Host "Checking for Chocolatey Update"
-    Start-Process -FilePath PowerShell -ArgumentList 'choco upgrade chocolatey -y' -Verb RunAs
+    Write-Host "Chocolatey is already installed. Checking for Update..."
+    Start-Process -FilePath choco -ArgumentList 'upgrade chocolatey -y' -Verb RunAs
     powershell choco feature enable -n allowGlobalConfirmation
     Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
     refreshenv

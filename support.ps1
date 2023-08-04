@@ -8,20 +8,16 @@ $RAM = [math]::Round((Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhys
 $drives = Get-CimInstance -ClassName Win32_LogicalDisk | Select-Object DeviceID, VolumeName, FreeSpace
 $SerialNumber = (Get-WmiObject -Class Win32_BIOS).SerialNumber
 $Domain = (Get-CimInstance -ClassName Win32_ComputerSystem).Domain
-$clean = Clear-Host
 
 
 $driveInfo = @()
 foreach ($drive in $drives) {
     $freeSpaceGB = [math]::Round($drive.FreeSpace / 1GB, 2)
-    if ($drive.VolumeName) {
-        $driveInfo += "$($drive.DeviceID) $($drive.VolumeName) Free Space: $($freeSpaceGB) GB`n"
-    } else {
-        $driveInfo += "$($drive.DeviceID) Free Space: $($freeSpaceGB) GB`n"
-    }
+    if ($drive.VolumeName) { $driveInfo += "$($drive.DeviceID) $($drive.VolumeName) Free Space: $($freeSpaceGB) GB`n"} 
+    else { $driveInfo += "$($drive.DeviceID) Free Space: $($freeSpaceGB) GB`n" }
 }
-if ($null -eq $Domain) { $Error_Domain = $true }
 
+if ($null -eq $Domain) { $Error_Domain = $true }
 
 # Get all graphics devices on the system
 $graphics_devices = Get-CimInstance -Class Win32_VideoController
@@ -52,5 +48,4 @@ if ($graphics_devices) {
 } else {
     Write-Output "No graphics devices found."
 }
-pause
 return
