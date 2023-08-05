@@ -1,5 +1,5 @@
 # env
-Write-Host "Version: Aug.2023 Version 2"
+Write-Host "Version: Aug.2023 Version 3"
 Write-Host "Setting up the required variables..."
 
 # Choco
@@ -13,7 +13,7 @@ Write-Host "Setting up the required variables..."
     $computerName = $env:COMPUTERNAME                                                 # Retreieving Current Computer's Name
     $userName = $env:USERNAME                                                         # Retreieving Current User's Name
     $processor = Get-WmiObject Win32_Processor | Select-Object -ExpandProperty Name   # Retreieving Processor's Information
-    $M = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer               # Retreieving Computer's Manufacturer
+    $manufacturer = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
 
 # Custom Tweaks
     # NTP-Server Tweaks
@@ -76,8 +76,8 @@ Write-Host "Setting up the required variables..."
     )
 
 # Software Installation List
-    $amd_chipset = "amd-ryzen-chipset"
-    $intel_chipset = "intel-chipset-device-software"    
+    $amd_chipset = "amd-ryzen-chipset"                  # AMD Ryzen Chipset
+    $intel_chipset = "intel-chipset-device-software"    # Intel Chipset
 
     $csoftwares = @(
         "googlechrome",                             # Google Chrome
@@ -285,7 +285,7 @@ if ($processor -like '*Intel*') {
         } 
     }
 
-    if ($M -like '*Dell*') {
+    if ($manufacturer -like '*Dell*') {
         foreach ($dell_software in $dell_softwares) {
             if (choco list | Select-String $dell_software) {
                 Write-Host "$dell_software is already installed." 
