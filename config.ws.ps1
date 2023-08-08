@@ -264,7 +264,7 @@ if ($Softwares) {
                 Write-Host -NoNewline "Installing ($amd)"
                 Start-Process -FilePath choco -ArgumentList "install $amd --limitoutput --no-progress" -Verb RunAs
                     Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                        if (choco list | Select-String $amd) { Write-Host " Installed" } else { Write-Host " Failed" }
+                        if (choco list | Select-String $amd) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
             }
         }
     }
@@ -278,7 +278,7 @@ if ($Softwares) {
                 Write-Host -NoNewline "Installing ($intel)"
                 Start-Process -FilePath choco -ArgumentList "install $intel --limitoutput --no-progress" -Verb RunAs
                     Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                        if (choco list | Select-String $intel) { Write-Host " Installed" } else { Write-Host " Failed" }
+                        if (choco list | Select-String $intel) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
             }
         }
     }
@@ -291,7 +291,7 @@ if ($Softwares) {
             Write-Host -NoNewline "Installing ($csoftware)"
             Start-Process -FilePath choco -ArgumentList "install $csoftware --limitoutput --no-progress" -Verb RunAs
                 Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                if (choco list | Select-String $csoftware) { Write-Host " Installed" } else { Write-Host " Failed" }
+                if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
         } 
     }
 
@@ -303,7 +303,7 @@ if ($Softwares) {
                 Write-Host -NoNewline "Installing $dell_software"
                 Start-Process -FilePath choco -ArgumentList "install $dell_software --limitoutput --no-progress" -Verb RunAs
                 Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                if (choco list | Select-String $dell_software) { Write-Host " Installed" } else { Write-Host " Failed" }
+                if (choco list | Select-String $dell_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
             }
         }
     }
@@ -316,7 +316,7 @@ if ($Softwares) {
                 Write-Host -NoNewline "Installing $lcds_software"
                 Start-Process -FilePath choco -ArgumentList "install $lcds_software --limitoutput --no-progress" -Verb RunAs
                 Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                if (choco list | Select-String $lcds_software) { Write-Host " Installed" } else { Write-Host " Failed" }
+                if (choco list | Select-String $lcds_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
             }
         }
     }
@@ -329,7 +329,7 @@ if ($Softwares) {
                 Write-Host -NoNewline "Installing $chodae_software"
                 Start-Process -FilePath choco -ArgumentList "install $chodae_software --limitoutput --no-progress" -Verb RunAs
                     Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                    if (choco list | Select-String $chodae_software) { Write-Host " Installed" } else { Write-Host " Failed" }
+                    if (choco list | Select-String $chodae_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
             }
         }
     }
