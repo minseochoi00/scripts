@@ -1,5 +1,5 @@
 # env
-Write-Host "Version: Aug.2023 Version 5"
+Write-Host "Version: Aug.2023 Version 6"
 Write-Host "Setting up the required variables..."
 
 # Choco
@@ -123,14 +123,15 @@ do {
     elseif ($wsChoice -eq "DESKTOP" -or $wsChoice -eq "D") { $desktop = $true } 
     elseif ($wsChoice -eq "I" -or $wsChoice -eq "i") { $initial = $true }
     elseif ($wsChoice -eq "S" -or $wsChoice -eq "s") { $skip = $true }
+    elseif ($wsChoice -eq "all" -or $wsChoice -eq "ALL") { $all = $true }
     else { Write-Host "You must select either Laptop (L), Desktop (D), or Server (S)." }
     } 
-    while (-not ($laptop -eq $true -or $desktop -eq $true -or $initial -eq $true -or $skip -eq $true -or $lcds -eq $true))
+    while (-not ($laptop -eq $true -or $desktop -eq $true -or $initial -eq $true -or $skip -eq $true -or $all -eq $true))
 
 Clear-Host
 Write-Host ""   
 
-if ($initial -or $laptop -or $desktop -or $lcds) {
+if ($initial -or $laptop -or $desktop -or $all) {
     # Windows Service Tweaks
         foreach ($service in $services) {
             Write-Host "Tweaking Services.. ($service)"
@@ -233,6 +234,8 @@ if ($desktop) {
 }
 
 # Ask client for Software installation on workstation
+
+if ($all) { $softwares = $true }
 do {
     Write-Host ""
     $swChoice = Read-Host -Prompt "Will $computerName / $userName require a General Application 'Auto-Install'?: "
@@ -245,7 +248,6 @@ do {
         Write-Host "You must select either Yes (Y) or No (N)." 
     }
 } while (-not ($Softwares -eq $true -or $Softwares -eq $false -or $lcds -eq $true -or $chodae -eq $true))
-
 if ($lcds -or $chodae) { $softwares = $true }
 
 # Software Installation
