@@ -1,5 +1,5 @@
 # env
-Write-Host "Version: Aug.2023 Version 6"
+Write-Host "Version: Aug.2023 Version 7"
 Write-Host "Setting up the required variables..."
 
 # Choco
@@ -77,8 +77,8 @@ Write-Host "Setting up the required variables..."
 
 # Software Installation List
     $intels = @(
-        "intel-chipset-device-software"            # Intel Chipset
-        #"intel-dsa"                                 # Intel Driver & Support Assistant
+        "intel-chipset-device-software",           # Intel Chipset
+        "intel-dsa"                                # Intel Driver & Support Assistant
     )
     $amds = @(
         "amd-ryzen-chipset"                         # AMD Ryzen Chipset
@@ -119,19 +119,20 @@ Clear-Host
 do {
     $wsChoice = Read-Host -Prompt "Is $computerName / $userName a LAPTOP(L), DESKTOP (D)?: "
     
-    if ($wsChoice -eq "LAPTOP" -or $wsChoice -eq "L") { $laptop = $true } 
-    elseif ($wsChoice -eq "DESKTOP" -or $wsChoice -eq "D") { $desktop = $true } 
-    elseif ($wsChoice -eq "I" -or $wsChoice -eq "i") { $initial = $true }
-    elseif ($wsChoice -eq "S" -or $wsChoice -eq "s") { $skip = $true }
+    if ($wsChoice -eq "l" -or $wsChoice -eq "L") { $laptop = $true } 
+    elseif ($wsChoice -eq "d" -or $wsChoice -eq "D") { $desktop = $true } 
+    elseif ($wsChoice -eq "d" -or $wsChoice -eq "I") { $initial = $true }
+    elseif ($wsChoice -eq "s" -or $wsChoice -eq "S") { $skip = $true }
     elseif ($wsChoice -eq "all" -or $wsChoice -eq "ALL") { $all = $true }
+    elseif ($wsChoice -eq "lcds" -or  $wsChoice -eq "LCDS") { $lcds = $true }
     else { Write-Host "You must select either Laptop (L), Desktop (D), or Server (S)." }
     } 
-    while (-not ($laptop -eq $true -or $desktop -eq $true -or $initial -eq $true -or $skip -eq $true -or $all -eq $true))
+    while (-not ($laptop -eq $true -or $desktop -eq $true -or $initial -eq $true -or $skip -eq $true -or $all -eq $true -or $lcds -eq $true))
 
 Clear-Host
 Write-Host ""   
 
-if ($initial -or $laptop -or $desktop -or $all) {
+if ($initial -or $laptop -or $desktop -or $all -or $lcds) {
     # Windows Service Tweaks
         foreach ($service in $services) {
             Write-Host "Tweaking Services.. ($service)"
@@ -163,29 +164,29 @@ Write-Host ""
     }
 
 Write-Host ""
+if ($lcds) {
+    # Windows Default Administrator Account Tweak
+        # Activating Local Administrator Account    
+        Write-Host "Activating Local Administrator Account..."
+        if ((net user Administrator | Select-String -Pattern "Account active               No")) {
+        net user Administrator /active:yes
+        $AdminActive = $true
+        }
+        if ($AdminActive) { Write-Host "Local Administrator Account is NOW active" } else { Write-Host "Local Administrator Account is ALREADY active" }
 
-# Windows Default Administrator Account Tweak
-    # Activating Local Administrator Account    
-    Write-Host "Activating Local Administrator Account..."
-    if ((net user Administrator | Select-String -Pattern "Account active               No")) {
-    net user Administrator /active:yes
-    $AdminActive = $true
+    # Set Local Administrator Account Password
+    Write-Host "Local Administrator Account's Password is Changing to its default value"
+    if ($Empty_password -eq $password) { Write-Host "Password has not been set." }
+    else { 
+        if ($isAdmin) {
+            $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
+            $user.SetPassword($password)
+            $user.SetInfo()
+            $AdminPW = $true
+        } else { Write-Host "This $userName does not have previlage." }
     }
-    if ($AdminActive) { Write-Host "Local Administrator Account is NOW active" } else { Write-Host "Local Administrator Account is ALREADY active" }
-
-# Set Local Administrator Account Password
-Write-Host "Local Administrator Account's Password is Changing to its default value"
-if ($Empty_password -eq $password) { Write-Host "Password has not been set." }
-else { 
-    if ($isAdmin) {
-        $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
-        $user.SetPassword($password)
-        $user.SetInfo()
-        $AdminPW = $true
-    } else { Write-Host "This $userName does not have previlage." }
+    if ($AdminPW) { Write-Host "Local Administrator Account's Password has been changed to its default value " } else { Write-Host "Password Value has not been set. Local Administrator Account's Password has not been changed." }
 }
-if ($AdminPW) { Write-Host "Local Administrator Account's Password has been changed to its default value " } else { Write-Host "Password Value has not been set. Local Administrator Account's Password has not been changed." }
-
 Write-Host ""
 }
 
@@ -236,19 +237,21 @@ if ($desktop) {
 # Ask client for Software installation on workstation
 
 if ($all) { $softwares = $true }
+if ($lcds) { $softwares = $true, $lcds = $true
+} else {
 do {
     Write-Host ""
     $swChoice = Read-Host -Prompt "Will $computerName / $userName require a General Application 'Auto-Install'?: "
     
     if ($swChoice -eq "YES" -or $swChoice -eq "Y") { $Softwares = $true } 
     elseif ($swChoice -eq "NO" -or $swChoice -eq "N") { $Softwares = $false } 
-    elseif ($swChoice -eq "lcds" -or $swChoice -eq "LCDS") { $lcds = $true }
     elseif ($swChoice -eq "chodae" -or $swChoice -eq "CHODAE") { $chodae = $true }
     else { 
         Write-Host "You must select either Yes (Y) or No (N)." 
     }
 } while (-not ($Softwares -eq $true -or $Softwares -eq $false -or $lcds -eq $true -or $chodae -eq $true))
-if ($lcds -or $chodae) { $softwares = $true }
+}
+if ($lcds -or $chodae -eq $true) { $softwares = $true }
 
 # Software Installation
 if ($Softwares) {
@@ -278,7 +281,7 @@ if ($Softwares) {
                 Write-Host "$intel is already installed." 
             } else {
                 Write-Host -NoNewline "Installing ($intel)"
-                Start-Process -FilePath choco -ArgumentList "install $intel --limitoutput --no-progress" -Verb RunAs
+                Start-Process -FilePath choco -ArgumentList "install $intel --limitoutput --no-progress --ignore-checksums" -Verb RunAs
                     Wait-Process -Name Choco -ErrorAction SilentlyContinue
                         if (choco list | Select-String $intel) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
             }
@@ -336,6 +339,14 @@ if ($Softwares) {
         }
     }
 }
+
+if ($lcds) {
+    Write-Host -NoNewLine "Adding Workstation:$computerName into LCDS domain"
+        Add-Computer -DomainName "lcds.internal" -Credential (Get-Credential)
+        Write-Host " (Finished)"
+}
 return
 
+Write-Host "Finished"
+Write-Host "--------------------------------------------------------------------------------------------------------"
 # End
