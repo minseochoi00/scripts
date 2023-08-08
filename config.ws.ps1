@@ -77,8 +77,8 @@ Write-Host "Setting up the required variables..."
 
 # Software Installation List
     $intels = @(
-        "intel-chipset-device-software",            # Intel Chipset
-        "intel-dsa"                                 # Intel Driver & Support Assistant
+        "intel-chipset-device-software"            # Intel Chipset
+        #"intel-dsa"                                 # Intel Driver & Support Assistant
     )
     $amds = @(
         "amd-ryzen-chipset"                         # AMD Ryzen Chipset
@@ -253,6 +253,7 @@ if ($Softwares) {
 
 # General Softwares
     Write-Host "Installing Softwares using Installation Methods of Chocolatey"
+    Write-Host "-----------------------------------------------------------------------------------------"
 
 # AMD
     if ($processor -like '*AMD*') {
@@ -287,7 +288,7 @@ if ($Softwares) {
         if (choco list | Select-String $csoftware) {
             Write-Host "$csoftware is already installed." 
         } else {
-            Write-Host -NoNewline "Installing ($csoftware).."
+            Write-Host -NoNewline "Installing ($csoftware)"
             Start-Process -FilePath choco -ArgumentList "install $csoftware --limitoutput --no-progress" -Verb RunAs
                 Wait-Process -Name Choco -ErrorAction SilentlyContinue
                 if (choco list | Select-String $csoftware) { Write-Host " Installed" } else { Write-Host " Failed" }
@@ -299,7 +300,7 @@ if ($Softwares) {
             if (choco list | Select-String $dell_software) {
                 Write-Host "$dell_software is already installed." 
             } else {
-                Write-Host "Installing $dell_software"
+                Write-Host -NoNewline "Installing $dell_software"
                 Start-Process -FilePath choco -ArgumentList "install $dell_software --limitoutput --no-progress" -Verb RunAs
                 Wait-Process -Name Choco -ErrorAction SilentlyContinue
                 if (choco list | Select-String $dell_software) { Write-Host " Installed" } else { Write-Host " Failed" }
@@ -312,7 +313,7 @@ if ($Softwares) {
             if (choco list | Select-String $lcds_software){
                 Write-Host "$lcds_software is already installed."
             } else {
-                Write-Host "Installing $lcds_software"
+                Write-Host -NoNewline "Installing $lcds_software"
                 Start-Process -FilePath choco -ArgumentList "install $lcds_software --limitoutput --no-progress" -Verb RunAs
                 Wait-Process -Name Choco -ErrorAction SilentlyContinue
                 if (choco list | Select-String $lcds_software) { Write-Host " Installed" } else { Write-Host " Failed" }
@@ -325,7 +326,7 @@ if ($Softwares) {
             if (choco list | Select-String $chodae_software){
                 Write-Host "$chodae_software is already installed."
             } else {
-                Write-Host "Installing $chodae_software"
+                Write-Host -NoNewline "Installing $chodae_software"
                 Start-Process -FilePath choco -ArgumentList "install $chodae_software --limitoutput --no-progress" -Verb RunAs
                     Wait-Process -Name Choco -ErrorAction SilentlyContinue
                     if (choco list | Select-String $chodae_software) { Write-Host " Installed" } else { Write-Host " Failed" }
