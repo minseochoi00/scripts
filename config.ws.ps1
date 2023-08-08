@@ -255,32 +255,32 @@ if ($Softwares) {
     Write-Host "Installing Softwares using Installation Methods of Chocolatey"
 
 # AMD
-if ($processor -like '*AMD*') {
-    foreach ($amd in $amds) {
-        if (choco list | Select-String $amd) {
-            Write-Host "$amd is already installed."
-        } else {
-            Write-Host -NoNewline "Installing ($amd)"
-            Start-Process -FilePath choco -ArgumentList "install $amd --limitoutput --no-progress" -Verb RunAs
-                Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                    if (choco list | Select-String $amd) { Write-Host " Installed" } else { Write-Host " Failed" }
+    if ($processor -like '*AMD*') {
+        foreach ($amd in $amds) {
+            if (choco list | Select-String $amd) {
+                Write-Host "$amd is already installed."
+            } else {
+                Write-Host -NoNewline "Installing ($amd)"
+                Start-Process -FilePath choco -ArgumentList "install $amd --limitoutput --no-progress" -Verb RunAs
+                    Wait-Process -Name Choco -ErrorAction SilentlyContinue
+                        if (choco list | Select-String $amd) { Write-Host " Installed" } else { Write-Host " Failed" }
+            }
         }
     }
-}
 
 # Intel
-if ($processor -like '*Intel*') {
-    foreach (intel in $intels) {
-        if (choco list | Select-String $intel) {
-            Write-Host "$intel is already installed." 
-        } else {
-            Write-Host -NoNewline "Installing ($intel)"
-            Start-Process -FilePath choco -ArgumentList "install $intel --limitoutput --no-progress" -Verb RunAs
-                Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                    if (choco list | Select-String $intel) { Write-Host " Installed" } else { Write-Host " Failed" }
+    if ($processor -like '*Intel*') {
+        foreach ($intel in $intels) {
+            if (choco list | Select-String $intel) {
+                Write-Host "$intel is already installed." 
+            } else {
+                Write-Host -NoNewline "Installing ($intel)"
+                Start-Process -FilePath choco -ArgumentList "install $intel --limitoutput --no-progress" -Verb RunAs
+                    Wait-Process -Name Choco -ErrorAction SilentlyContinue
+                        if (choco list | Select-String $intel) { Write-Host " Installed" } else { Write-Host " Failed" }
+            }
         }
     }
-}
 
 # Installing software from the list from above
     foreach ($csoftware in $csoftwares) {
