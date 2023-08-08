@@ -76,8 +76,13 @@ Write-Host "Setting up the required variables..."
     )
 
 # Software Installation List
-    $amd_chipset = "amd-ryzen-chipset"                  # AMD Ryzen Chipset
-    $intel_chipset = "intel-chipset-device-software"    # Intel Chipset
+    $intels = @(
+        "intel-chipset-device-software",            # Intel Chipset
+        "intel-dsa"                                 # Intel Driver & Support Assistant
+    )
+    $amds = @(
+        "amd-ryzen-chipset"                         # AMD Ryzen Chipset
+    )
 
     $csoftwares = @(
         "googlechrome",                             # Google Chrome
@@ -249,29 +254,33 @@ if ($Softwares) {
 # General Softwares
     Write-Host "Installing Softwares using Installation Methods of Chocolatey"
 
-# AMD Chipset
+# AMD
 if ($processor -like '*AMD*') {
-    if (choco list | Select-String $amd_chipset) {
-        Write-Host "AMD Chipset is already installed."
-    } else {
-        Write-Host -NoNewline "Installing AMD's Latest Chipset Driver.."
-        Start-Process -FilePath choco -ArgumentList "install $amd_chipset --limitoutput --no-progress" -Verb RunAs
-            Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                if (choco list | Select-String $amd_chipset) { Write-Host " Installed" } else { Write-Host " Failed" }
+    foreach ($amd in $amds) {
+        if (choco list | Select-String $amd) {
+            Write-Host "$amd is already installed."
+        } else {
+            Write-Host -NoNewline "Installing ($amd)"
+            Start-Process -FilePath choco -ArgumentList "install $amd --limitoutput --no-progress" -Verb RunAs
+                Wait-Process -Name Choco -ErrorAction SilentlyContinue
+                    if (choco list | Select-String $amd) { Write-Host " Installed" } else { Write-Host " Failed" }
         }
     }
+}
 
-# Intel Chipset
+# Intel
 if ($processor -like '*Intel*') {
-    if (choco list | Select-String $intel_chipset) {
-        Write-Host "Intel Chipset is already installed." 
-    } else {
-        Write-Host -NoNewline "Installing Intel's Latest Chipset Driver.."
-        Start-Process -FilePath choco -ArgumentList "install $intel_chipset --limitoutput --no-progress" -Verb RunAs
-            Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                if (choco list | Select-String $intel_chipset) { Write-Host " Installed" } else { Write-Host " Failed" }
+    foreach (intel in $intels) {
+        if (choco list | Select-String $intel) {
+            Write-Host "$intel is already installed." 
+        } else {
+            Write-Host -NoNewline "Installing ($intel)"
+            Start-Process -FilePath choco -ArgumentList "install $intel --limitoutput --no-progress" -Verb RunAs
+                Wait-Process -Name Choco -ErrorAction SilentlyContinue
+                    if (choco list | Select-String $intel) { Write-Host " Installed" } else { Write-Host " Failed" }
         }
     }
+}
 
 # Installing software from the list from above
     foreach ($csoftware in $csoftwares) {
