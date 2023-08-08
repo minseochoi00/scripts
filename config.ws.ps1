@@ -1,5 +1,5 @@
 # env
-Write-Host "Version: Aug.2023 Version 4"
+Write-Host "Version: Aug.2023 Version 5"
 Write-Host "Setting up the required variables..."
 
 # Choco
