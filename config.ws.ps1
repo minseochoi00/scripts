@@ -155,8 +155,6 @@ Write-Host -NoNewLine "Fixing Workstation's NTP Server"
         Write-Host " (Done)"
     }
 
-Write-Host ""
-
     # Windows Classic Right-Click Tweak for Windows 11
         Write-Host -NoNewLine "Enabling Windows 10 Right-Click Style in Windows 11"
     if ((Get-CimInstance -ClassName Win32_OperatingSystem).Version -notmatch "^10") {
@@ -177,7 +175,7 @@ if ($lcds) {
         net user Administrator /active:yes
         $AdminActive = $true
         }
-        if ($AdminActive) { Write-Host " (Active)" }
+        if ($AdminActive) { Write-Host " (Active)" } else { Write-Host " (Already Active)"}
 
     # Set Local Administrator Account Password
     Write-Host -NoNewLine "Resetting Local Administrator Password to Generic Password"
@@ -192,7 +190,6 @@ if ($lcds) {
     }
     if ($AdminPW) { Write-Host " (Done)"}
 }
-Write-Host ""
 }
 
 # Laptop
