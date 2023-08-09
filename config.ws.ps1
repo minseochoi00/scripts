@@ -53,11 +53,15 @@ Write-Host "Setting up the required variables..."
         $BP = "Bypass"
             # Set Execution Policy
                 if (-not ($GEP -eq $BP)) { Set-ExecutionPolicy $BP -Force }
+    
     # Workstation Choice Reset
         $laptop = $false
         $desktop = $false
         $initial = $false
         $lcds = $false
+    
+    # Domain
+        $domainName = lcds.internal    
 
 # Windows Service List
     $services = @(
@@ -328,17 +332,25 @@ if ($Softwares) {
 }
 # End of Software Installation
 
-# LCDS Domain Auto-Join
 if ($lcds) {
+    # LCDS Domain Auto-Join
     Write-Host ""
-    Write-Host "Checking if $computerName is already connected to LCDS domain"
+    Write-Host -NoNewLine "Checking if $computerName is connected to $domainName"
     if (-not($Domain -eq 'lcds.internal')) {
-        Write-Host -NoNewLine "Adding Workstation:$computerName into LCDS domain"
-            Add-Computer -DomainName "lcds.internal" -Credential (Get-Credential)
-            Write-Host " (Finished)"
+        Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
+            Start-Process -FilePath powershell -ArgumentList 'Add-Computer -DomainName "$domainName" -Credential (Get-Credential)' -WindowStyle Hidden
+                if (-not($Domain -eq 'lcds.internal')) {
+                    Write-Host " (Failed: Unable to join to domain)"
+                }
+            Write-Host " (Connected)"
     } else {
-        Write-Host "$computerName is already connected to $Domain"
+        Write-Host " (Already Connected)"
     }
+
+    # Local Software install
+    start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\setup.exe" -ArgumentList "/configure \\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\config.xml"
+    Wait-Process -Name Setup
+    Start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe"
 }
 return
 
