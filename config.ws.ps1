@@ -29,7 +29,8 @@ $debug = $true
         $LpowerPlanGUID = "381b4222-f694-41f0-9685-ff5bb260df2e"
 
     # NVIDIA High Definition Audio
-        if (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio") {
+    $NVIDIA = Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue
+        if ($NVIDIA) {
             $VaudioDeviceID = $true
             $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId 
         }
@@ -63,7 +64,7 @@ $debug = $true
         $lcds = $false
     
     # Domain
-        $domainName = lcds.internal    
+        $domainName = "lcds.internal"   
 
 # Windows Service List
     $services = @(
@@ -348,7 +349,7 @@ if ($lcds) {
         
         if (-not($Domain -eq 'lcds.internal')) {
             Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
-                Start-Process -FilePath powershell -ArgumentList 'Add-Computer -DomainName "$domainName" -Credential (Get-Credential)' -WindowStyle Hidden -Wait
+                Start-Process -FilePath powershell -ArgumentList 'Add-Computer -DomainName $domainName -Credential (Get-Credential)' -WindowStyle Hidden -Wait
                     if (-not($Domain -eq 'lcds.internal')) {
                         Write-Host " (Failed: Unable to join to domain)"
                     }
@@ -369,7 +370,7 @@ if ($lcds) {
             if (choco list -i | select-string 'Microsoft Office Professional Plus 2019') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
 
         Write-Host -NoNewline "Installing VIRASEC TeamViewer"
-        Start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe"
+        Start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe" -Wait
             if (choco list -i | select-string 'TeamViewer Host') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
 }
 return
