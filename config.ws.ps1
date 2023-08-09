@@ -2,6 +2,8 @@
 Write-Host "Version: Aug.2023 Version 8"
 Write-Host "Setting up the required variables..."
 
+$debug = $true
+
 # Choco
     # Checking if Chocolatey is installed.
         $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
@@ -116,7 +118,7 @@ Write-Host "Setting up the required variables..."
 
 # ----------------------------------------------------------------------------------------------------------------------------------------
 
-Clear-Host
+if (-not($debug)) {Clear-Host}
 
 # Choose Options
 while (-not $selectedOption) {
@@ -134,8 +136,11 @@ while (-not $selectedOption) {
 }
 # Set the selected option variable to $true
     Set-Variable -Name $selectedOption.Variable -Value $true
+    if ($skip) {
+        $laptop = $false
+        $desktop = $false
+    }
 
-Clear-Host
 Write-Host ""   
 
 if ($initial -or $lcds) {
@@ -244,6 +249,7 @@ if ($desktop) {
 
 # Ask client for Software installation on workstation
 if ($lcds) { $softwares = $true }
+if ($skip) {return}
 if (-not($softwares)){
 do {
     Write-Host "--------------------------------------------------------------------------------------------------------"
