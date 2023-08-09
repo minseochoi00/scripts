@@ -358,14 +358,19 @@ if ($lcds) {
         }
 
     # Local Software install
+        Write-Host -NoNewline "Installing Local Software"
         $testPath = "\\lcds-22-fs1\Netapps\_Initial_Install"
         if (-not(Test-Path -Path $testPath)) {
             Write-Host " Failed: PATH NOT EXIST"
             return
-        } 
-        start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\setup.exe" -ArgumentList "/configure \\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\config.xml"
-        Wait-Process -Name Setup
+        }
+        Write-Host -NoNewline "Installing Microsoft Office 2019"
+        start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\setup.exe" -ArgumentList "/configure \\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\config.xml" -Wait
+            if (choco list -i | select-string 'Microsoft Office Professional Plus 2019') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
+
+        Write-Host -NoNewline "Installing VIRASEC TeamViewer"
         Start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe"
+            if (choco list -i | select-string 'TeamViewer Host') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
 }
 return
 
