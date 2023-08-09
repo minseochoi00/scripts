@@ -1,5 +1,5 @@
 # env
-Write-Host "Version: Aug.2023 Version 8"
+Write-Host "Version: Aug.2023 Version 10"
 Write-Host "Setting up the required variables..."
 
 $debug = $true
