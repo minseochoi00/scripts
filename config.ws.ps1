@@ -10,10 +10,12 @@ Write-Host "Setting up the required variables..."
         if (-not ($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
 
 # Retreieve
-    $computerName = $env:COMPUTERNAME                                                 # Retreieving Current Computer's Name
-    $userName = $env:USERNAME                                                         # Retreieving Current User's Name
-    $processor = Get-WmiObject Win32_Processor | Select-Object -ExpandProperty Name   # Retreieving Processor's Information
-    $manufacturer = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
+    $computerName = $env:COMPUTERNAME                                                   # Retreieving Current Computer's Name
+    $userName = $env:USERNAME                                                           # Retreieving Current User's Name
+    $processor = Get-WmiObject Win32_Processor | Select-Object -ExpandProperty Name     # Retreieving Processor's Information
+    $manufacturer = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer      # Retreieving Manufacturer
+    $Domain = (Get-CimInstance -ClassName Win32_ComputerSystem).Domain                  # Retreieving Domain
+    $battery = (Get-WmiObject Win32_Battery).Description                                # Retreiving Battery Information
 
 # Custom Tweaks
     # NTP-Server Tweaks
@@ -41,10 +43,10 @@ Write-Host "Setting up the required variables..."
 
 # Default Variable
     # Software installation
-        $Softwares = $false            # Auto Installation of Default Softwares.
+        $Softwares = $false             # Auto Installation of Default Softwares.
 
     # NVIDIA High Definition Audio
-        $VaudioDeviceID = $false
+        $VaudioDeviceID = $false        # Check for NVIDIA High Definition Audio is installed
 
     # ExecutionPolicy
         $GEP = Get-ExecutionPolicy
@@ -55,9 +57,7 @@ Write-Host "Setting up the required variables..."
         $laptop = $false
         $desktop = $false
         $initial = $false
-        $skip = $false
         $lcds = $false
-        $chodae = $false
 
 # Windows Service List
     $services = @(
@@ -74,6 +74,15 @@ Write-Host "Setting up the required variables..."
         "XboxNetApiSvc",         # Xbox Live Networking Service
         "ndu"                    # Windows Network Data Usage Monitor
     )
+# Questions @ Start
+    # Auto Checking if Workstation is Desktop or Laptop
+        if ($battery -eq 'Internal Battery') {$laptop = $true} else {$desktop = $true}
+    $options = @(
+        [PSCustomObject]@{ Key = 'I'; Description = 'Initial'; Variable = 'initial' }
+        [PSCustomObject]@{ Key = 'SK'; Description = 'Skip'; Variable = 'skip' }
+        [PSCustomObject]@{ Key = 'LCDS'; Description = 'LCDS'; Variable = 'lcds' }
+    )
+    $selectedOption = $null
 
 # Software Installation List
     $intels = @(
@@ -101,38 +110,31 @@ Write-Host "Setting up the required variables..."
         "adobereader"                               # Adobe Reader DC
     )
 
-    $chodae_softwares = @(
-        "obs-studio --version 29.1.3",              # OBS Version of 29.1.3
-        "obs-ndi",                                  # OBS NDI Integration
-        #"streamdeck",                               # Stream-Deck
-        "cloudstation",                             # Synology Cloud Station
-        "slack"                                     # Slack
-        #"x32-edit"                                  # X32-Edit
-        #"zoom"                                      # Zoom
-    )
-
 # ----------------------------------------------------------------------------------------------------------------------------------------
 
 Clear-Host
 
-# Prompt for User either Desktop or Laptop
-do {
-    $wsChoice = Read-Host -Prompt "Is $computerName / $userName a LAPTOP(L), DESKTOP (D)?: "
+# Choose Options
+while (-not $selectedOption) {
+    Write-Host "Select One of the Options:"
+        $options | ForEach-Object { Write-Host "$($_.Key) - $($_.Description)" }
+
+        $wsChoice = Read-Host -Prompt "Enter the option key: "
+        $selectedOption = $options | Where-Object { $_.Key -eq $wsChoice }
     
-    if ($wsChoice -eq "l" -or $wsChoice -eq "L") { $laptop = $true } 
-    elseif ($wsChoice -eq "d" -or $wsChoice -eq "D") { $desktop = $true } 
-    elseif ($wsChoice -eq "d" -or $wsChoice -eq "I") { $initial = $true }
-    elseif ($wsChoice -eq "s" -or $wsChoice -eq "S") { $skip = $true }
-    elseif ($wsChoice -eq "all" -or $wsChoice -eq "ALL") { $all = $true }
-    elseif ($wsChoice -eq "lcds" -or  $wsChoice -eq "LCDS") { $lcds = $true }
-    else { Write-Host "You must select either Laptop (L), Desktop (D), or Server (S)." }
-    } 
-    while (-not ($laptop -eq $true -or $desktop -eq $true -or $initial -eq $true -or $skip -eq $true -or $all -eq $true -or $lcds -eq $true))
+    if (-not $selectedOption) {
+        Write-Host ""
+        Write-Host "Invalid choice. Please select a valid option."
+        Write-Host ""
+    }
+}
+# Set the selected option variable to $true
+    Set-Variable -Name $selectedOption.Variable -Value $true
 
 Clear-Host
 Write-Host ""   
 
-if ($initial -or $laptop -or $desktop -or $all -or $lcds) {
+if ($initial -or $lcds) {
     # Windows Service Tweaks
         foreach ($service in $services) {
             Write-Host "Tweaking Services.. ($service)"
@@ -142,56 +144,60 @@ if ($initial -or $laptop -or $desktop -or $all -or $lcds) {
 Write-Host ""
 
 # Windows NTP Server Tweaks
-    Write-Host "Fixing Workstation's NTP Server"
-    if ($null -eq $NTPservice) { Start-Service -Name $NTPserviceName }
-    Start-Process -FilePath w32tm -ArgumentList "/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update" -WindowStyle Hidden
-    if ($isAdmin) { Restart-Service -Name $NTPserviceName } else { Write-Host "Administrative Previlage require to restart $NTPserviceName." }
-    Start-Process -FilePath w32tm -ArgumentList "/config /update" -WindowStyle Hidden
-    Start-Process -FilePath w32tm -ArgumentList "/resync /nowait /rediscover" -WindowStyle Hidden
+Write-Host -NoNewLine "Fixing Workstation's NTP Server"
+    if (-not($isAdmin)) {Write-Host " (Failed: Permission)"}
+    else {
+        if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name $NTPserviceName }
+        Start-Process -FilePath w32tm -ArgumentList "/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update" -WindowStyle Hidden
+        Restart-Service -Name $NTPserviceName
+        Start-Process -FilePath w32tm -ArgumentList "/config /update" -WindowStyle Hidden
+        Start-Process -FilePath w32tm -ArgumentList "/resync /nowait /rediscover" -WindowStyle Hidden
+        Write-Host " (Done)"
+    }
 
 Write-Host ""
 
     # Windows Classic Right-Click Tweak for Windows 11
-    Write-Host "Enabling Windows 10 Right-Click Style in Windows 11"
+        Write-Host -NoNewLine "Enabling Windows 10 Right-Click Style in Windows 11"
     if ((Get-CimInstance -ClassName Win32_OperatingSystem).Version -notmatch "^10") {
-        Write-Host "Right-Click tweak is 'ONLY' intended for Windows 11"
+        Write-Host " (Failed: Version mismatch)"
     } else {
         # Adding Registry to Workstation for Classic Right Click
-        Write-Host "Tweaking 'Classic Right-Click' for Windows 11"
-        reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
-        # Restarting Windows Explorer
-        if (Get-Process explorer) { Stop-Process -name explorer -force }
+            Start-Process -FilePath reg -ArgumentList 'add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve'
+                # Restarting Windows Explorer
+                    if (Get-Process explorer) { Stop-Process -name explorer -force }
+        Write-Host " (Done)"
     }
 
-Write-Host ""
 if ($lcds) {
     # Windows Default Administrator Account Tweak
         # Activating Local Administrator Account    
-        Write-Host "Activating Local Administrator Account..."
+        Write-Host -NoNewLine "Checking if Local Administrator Account is Active..."
         if ((net user Administrator | Select-String -Pattern "Account active               No")) {
         net user Administrator /active:yes
         $AdminActive = $true
         }
-        if ($AdminActive) { Write-Host "Local Administrator Account is NOW active" } else { Write-Host "Local Administrator Account is ALREADY active" }
+        if ($AdminActive) { Write-Host " (Active)" }
 
     # Set Local Administrator Account Password
-    Write-Host "Local Administrator Account's Password is Changing to its default value"
-    if ($Empty_password -eq $password) { Write-Host "Password has not been set." }
+    Write-Host -NoNewLine "Resetting Local Administrator Password to Generic Password"
+    if ($Empty_password -eq $password) { Write-Host " (Failed: Value)" }
     else { 
         if ($isAdmin) {
             $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
             $user.SetPassword($password)
             $user.SetInfo()
             $AdminPW = $true
-        } else { Write-Host "This $userName does not have previlage." }
+        } else { Write-Host " (Failed : Permission)" }
     }
-    if ($AdminPW) { Write-Host "Local Administrator Account's Password has been changed to its default value " } else { Write-Host "Password Value has not been set. Local Administrator Account's Password has not been changed." }
+    if ($AdminPW) { Write-Host " (Done)"}
 }
 Write-Host ""
 }
 
 # Laptop
 if ($laptop) {
+    Write-Host "--------------------------------------------------------------------------------------------------------"
     Write-Host "Starting a Laptop Configuration.."
 
     # Power Plan Tweaks
@@ -215,6 +221,7 @@ if ($laptop) {
 
 # Desktop
 if ($desktop) {
+    Write-Host "--------------------------------------------------------------------------------------------------------"
     Write-Host "Starting a Desktop Configuration.."
 
     # Change Power Plan to High Performance
@@ -235,30 +242,26 @@ if ($desktop) {
 }
 
 # Ask client for Software installation on workstation
-
-if ($all) { $softwares = $true }
-if ($lcds) { $softwares = $true, $lcds = $true
-} else {
+if ($lcds) { $softwares = $true }
+if (-not($softwares)){
 do {
-    Write-Host ""
+    Write-Host "--------------------------------------------------------------------------------------------------------"
     $swChoice = Read-Host -Prompt "Will $computerName / $userName require a General Application 'Auto-Install'?: "
-    
-    if ($swChoice -eq "YES" -or $swChoice -eq "Y") { $Softwares = $true } 
-    elseif ($swChoice -eq "NO" -or $swChoice -eq "N") { $Softwares = $false } 
-    elseif ($swChoice -eq "chodae" -or $swChoice -eq "CHODAE") { $chodae = $true }
+    if ($swChoice.ToUpper() -eq "YES" -or $swChoice.ToUpper() -eq "Y") { $Softwares = $true } 
+    elseif ($swChoice.ToUpper() -eq "NO" -or $swChoice.ToUpper() -eq "N") { $Softwares = $false }
     else { 
         Write-Host "You must select either Yes (Y) or No (N)." 
     }
-} while (-not ($Softwares -eq $true -or $Softwares -eq $false -or $lcds -eq $true -or $chodae -eq $true))
+} while (-not ($Softwares -eq $true -or $Softwares -eq $false))
 }
-if ($lcds -or $chodae -eq $true) { $softwares = $true }
+
 
 # Software Installation
 if ($Softwares) {
 
 # General Softwares
     Write-Host "Installing Softwares using Installation Methods of Chocolatey"
-    Write-Host "-----------------------------------------------------------------------------------------"
+    Write-Host "--------------------------------------------------------------------------------------------------------"
 
 # AMD
     if ($processor -like '*AMD*') {
@@ -325,25 +328,20 @@ if ($Softwares) {
             }
         }
     }
-
-    if ($chodae) {
-        foreach ($chodae_software in $chodae_softwares) {
-            if (choco list | Select-String $chodae_software){
-                Write-Host "$chodae_software is already installed."
-            } else {
-                Write-Host -NoNewline "Installing $chodae_software"
-                Start-Process -FilePath choco -ArgumentList "install $chodae_software --limitoutput --no-progress" -Verb RunAs
-                    Wait-Process -Name Choco -ErrorAction SilentlyContinue
-                    if (choco list | Select-String $chodae_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
-            }
-        }
-    }
 }
+# End of Software Installation
 
+# LCDS Domain Auto-Join
 if ($lcds) {
-    Write-Host -NoNewLine "Adding Workstation:$computerName into LCDS domain"
-        Add-Computer -DomainName "lcds.internal" -Credential (Get-Credential)
-        Write-Host " (Finished)"
+    Write-Host ""
+    Write-Host "Checking if $computerName is already connected to LCDS domain"
+    if (-not($Domain -eq 'lcds.internal')) {
+        Write-Host -NoNewLine "Adding Workstation:$computerName into LCDS domain"
+            Add-Computer -DomainName "lcds.internal" -Credential (Get-Credential)
+            Write-Host " (Finished)"
+    } else {
+        Write-Host "$computerName is already connected to $Domain"
+    }
 }
 return
 
