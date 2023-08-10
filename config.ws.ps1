@@ -24,6 +24,8 @@ $debug = $false
     # NTP-Server Tweaks
         $NTPserviceName = "W32Time"
         $NTPservice = Get-Service -Name $NTPserviceName -ErrorAction SilentlyContinue
+    # One-Drive Tweak
+        $Process_oneDrive = Get-Process -Name OneDrive -ErrorAction SilentlyContinue
 
     # Power-Plan Tweaks
         $HpowerPlanGUID = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
@@ -242,6 +244,16 @@ if ($initial -or $lcds) {
                         } else { Write-Host " (Failed : Permission)" }
                     }
                 if ($AdminPW) { Write-Host " (Done)"}
+    }
+
+    # Check for One-Drive Installation
+    Write-Host -NoNewline "Checking for OneDrive Process"
+    if ($Process_oneDrive) {
+        Write-Host -NoNewline " (Currently Running | Starting Auto-Removal)"
+        Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/remove-onedrive | iex" -Verb RunAs -Wait
+        Write-Host " (Finished)"
+    } else {
+        Write-Host " (Currently NOT Running)"
     }
 }
 
