@@ -1,5 +1,5 @@
 # env
-Write-Host "Version: Aug.2023 Version 10"
+Write-Host "Version: Aug.2023 Version 11"
 Write-Host "Setting up the required variables..."
 
 $debug = $false
@@ -7,8 +7,9 @@ $debug = $false
 # Choco
     # Checking if Chocolatey is installed.
         $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
-        # if Chocolatey is not installed, installed them.
-            if (-not ($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
+    
+    # if Chocolatey is not installed, installed them.
+        if (-not ($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
 
 # Retreieve
     $computerName = $env:COMPUTERNAME                                                   # Retreieving Current Computer's Name
@@ -17,6 +18,7 @@ $debug = $false
     $manufacturer = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer      # Retreieving Manufacturer
     $Domain = (Get-CimInstance -ClassName Win32_ComputerSystem).Domain                  # Retreieving Domain
     $battery = (Get-WmiObject Win32_Battery).Description                                # Retreiving Battery Information
+    $OSName = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
 
 # Custom Tweaks
     # NTP-Server Tweaks
@@ -28,18 +30,18 @@ $debug = $false
         $LpowerPlanGUID = "381b4222-f694-41f0-9685-ff5bb260df2e"
 
     # NVIDIA High Definition Audio
-        $NVIDIA = Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue
-            if ($NVIDIA) {
-                $VaudioDeviceID = $true
-                $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId 
-            }
+    $NVIDIA = Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue
+        if ($NVIDIA) {
+            $VaudioDeviceID = $true
+            $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId 
+        }
 
     # Check if the current user has administrative privileges
         $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     
     # Administrator Account Tweak
         $password = "l0c@l@dm1n"    # Generic Password that it will be reset to.
-        $Empty_password = ""        # Default Variable = Checking if the $password is empty
+        $Empty_password = ""        # Default Vargiable = Checking if the $password is empty
         $AdminActive = $false       # Default Variable = Checking if Local Administrator account is in 'active' status.
         $AdminPW = $false           # Default Variable = Checking if Local Administrator's Password has been 'changed'.
 
@@ -248,7 +250,7 @@ if ($desktop) {
 }
 
 # Ask client for Software installation on workstation
-if ($lcds) {$softwares = $true}
+if ($lcds) { $softwares = $true }
 if ($skip) {return}
 if (-not($softwares)){
     do {
@@ -256,7 +258,9 @@ if (-not($softwares)){
         $swChoice = Read-Host -Prompt "Will $computerName / $userName require a General Application 'Auto-Install'?: "
         if ($swChoice.ToUpper() -eq "YES" -or $swChoice.ToUpper() -eq "Y") { $Softwares = $true } 
         elseif ($swChoice.ToUpper() -eq "NO" -or $swChoice.ToUpper() -eq "N") { $Softwares = $false }
+        
         else { Write-Host "You must select either Yes (Y) or No (N)." }
+
     } while (-not ($Softwares -eq $true -or $Softwares -eq $false))
 }
 
@@ -275,8 +279,7 @@ if (-not($softwares)){
                         Write-Host "$amd is already installed."
                     } else {
                         Write-Host -NoNewline "Installing ($amd)"
-                        Start-Process -FilePath choco -ArgumentList "install $amd --limitoutput --no-progress" -Verb RunAs
-                            Wait-Process -Name Choco -ErrorAction SilentlyContinue
+                        Start-Process -FilePath choco -ArgumentList "install $amd --limitoutput --no-progress" -Verb RunAs -Wait
                                 if (choco list | Select-String $amd) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -289,8 +292,7 @@ if (-not($softwares)){
                         Write-Host "$intel is already installed." 
                     } else {
                         Write-Host -NoNewline "Installing ($intel)"
-                        Start-Process -FilePath choco -ArgumentList "install $intel --limitoutput --no-progress --ignore-checksums" -Verb RunAs
-                            Wait-Process -Name Choco -ErrorAction SilentlyContinue
+                        Start-Process -FilePath choco -ArgumentList "install $intel --limitoutput --no-progress --ignore-checksums" -Verb RunAs -Wait
                                 if (choco list | Select-String $intel) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -302,8 +304,7 @@ if (-not($softwares)){
                     Write-Host "$csoftware is already installed." 
                 } else {
                     Write-Host -NoNewline "Installing ($csoftware)"
-                    Start-Process -FilePath choco -ArgumentList "install $csoftware --limitoutput --no-progress" -Verb RunAs
-                        Wait-Process -Name Choco -ErrorAction SilentlyContinue
+                    Start-Process -FilePath choco -ArgumentList "install $csoftware --limitoutput --no-progress" -Verb RunAs -Wait
                     if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                 } 
             }
@@ -315,8 +316,7 @@ if (-not($softwares)){
                         Write-Host "$dell_software is already installed." 
                     } else {
                         Write-Host -NoNewline "Installing $dell_software"
-                        Start-Process -FilePath choco -ArgumentList "install $dell_software --limitoutput --no-progress" -Verb RunAs
-                            Wait-Process -Name Choco -ErrorAction SilentlyContinue
+                        Start-Process -FilePath choco -ArgumentList "install $dell_software --limitoutput --no-progress" -Verb RunAs -Wait
                         if (choco list | Select-String $dell_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -329,8 +329,7 @@ if (-not($softwares)){
                     Write-Host "$lcds_software is already installed."
                     } else {
                         Write-Host -NoNewline "Installing $lcds_software"
-                        Start-Process -FilePath choco -ArgumentList "install $lcds_software --limitoutput --no-progress" -Verb RunAs
-                            Wait-Process -Name Choco -ErrorAction SilentlyContinue
+                        Start-Process -FilePath choco -ArgumentList "install $lcds_software --limitoutput --no-progress" -Verb RunAs -Wait
                     if (choco list | Select-String $lcds_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -340,13 +339,18 @@ if (-not($softwares)){
 
 # Additional for LCDS
 if ($lcds) {
+    if ($OSName -match "Home" -and $OSName -notmatch "Pro") { 
+        Write-Host "$computerName is currently running '$OSName'"
+        return 
+    }
     # LCDS Domain Auto-Join
         Write-Host ""
         Write-Host -NoNewLine "Checking if $computerName is connected to $domainName"
-        if (-not($Domain -eq 'lcds.internal')) {
+        
+        if (-not($Domain -eq $domainName)) {
             Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
                 Start-Process -FilePath powershell -ArgumentList 'Add-Computer -DomainName $domainName -Credential (Get-Credential)' -WindowStyle Hidden -Wait
-                    if (-not($Domain -eq 'lcds.internal')) {
+                    if (-not($Domain -eq $domainName)) {
                         Write-Host " (Failed: Unable to join to domain)"
                     }
                 Write-Host " (Connected)"
@@ -355,6 +359,7 @@ if ($lcds) {
         }
 
     # Local Software install
+    if ($Domain -eq $domainName) {
         Write-Host -NoNewline "Installing Local Software"
         $testPath = "\\lcds-22-fs1\Netapps\_Initial_Install"
         if (-not(Test-Path -Path $testPath)) {
@@ -362,12 +367,13 @@ if ($lcds) {
             return
         }
         Write-Host -NoNewline "Installing Microsoft Office 2019"
-        start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\setup.exe" -ArgumentList "/configure \\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\config.xml" -Wait
+        start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\setup.exe" -ArgumentList "/configure \\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\config.xml" -Verb RunAs -Wait
             if (choco list -i | select-string 'Microsoft Office Professional Plus 2019') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
 
         Write-Host -NoNewline "Installing VIRASEC TeamViewer"
-        Start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe" -Wait
+        Start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe" -Verb RunAs -Wait
             if (choco list -i | select-string 'TeamViewer Host') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
+    }
 }
 return
 
