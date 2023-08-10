@@ -424,15 +424,22 @@ if ($lcds) {
             return
         }
         
-        # Microsoft Office 2019 Installation 
-        Write-Host -NoNewline "Installing Microsoft Office 2019"
-        start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\setup.exe" -ArgumentList "/configure \\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\config.xml" -Verb RunAs -Wait
-            if (choco list -i | select-string 'Microsoft Office Professional Plus 2019') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
+        # Microsoft Office Professional Plus 2019 Installation 
+        if (choco list -i | Select-String 'Microsoft Office Professional Plus 2019'){
+            Write-Host " Write-Host "Microsoft Office Professional Plus 2019 is already installed.""
+            } else {
+                Write-Host -NoNewline "Installing Microsoft Office Professional Plus 2019"
+                start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\setup.exe" -ArgumentList "/configure \\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\config.xml" -Verb RunAs -Wait
+                    if (choco list -i | Select-String 'Microsoft Office Professional Plus 2019') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
         
         # VIRASEC TeamViewer Installation
-        Write-Host -NoNewline "Installing VIRASEC TeamViewer"
-        Start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe" -Verb RunAs -Wait
-            if (choco list -i | select-string 'TeamViewer Host') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
+        if (choco list -i | Select-String 'TeamViewer Host'){
+            Write-Host "VIRASEC TeamViewer Host is already installed."
+            } else {
+                Write-Host -NoNewline "Installing VIRASEC TeamViewer Host"
+                Start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe" -Verb RunAs -Wait
+                    if (choco list -i | select-string 'TeamViewer Host') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
+            }
         
         # Microsoft Office 2019 Auto-Shortcut
             Write-Host "--------------------------------------------------------------------------------------------------------"
