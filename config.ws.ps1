@@ -417,10 +417,10 @@ if ($lcds) {
     # Local Software install
     if ($Domain -eq $domainName) {
         Write-Host "--------------------------------------------------------------------------------------------------------"
-        Write-Host -NoNewline "Installing Local Software"
+        Write-Host "Installing Local Software"
         $testPath = "\\lcds-22-fs1\Netapps\_Initial_Install"
         if (-not(Test-Path -Path $testPath)) {
-            Write-Host " Failed: PATH NOT EXIST"
+            Write-Host "Failed: PATH NOT EXIST"
             return
         }
         
