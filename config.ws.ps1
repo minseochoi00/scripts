@@ -251,18 +251,19 @@ if ($desktop) {
 
 # Ask client for Software installation on workstation
 if ($lcds) { $softwares = $true }
-if ($skip) {return}
 if (-not($softwares)){
     do {
         Write-Host "--------------------------------------------------------------------------------------------------------"
         $swChoice = Read-Host -Prompt "Will $computerName / $userName require a General Application 'Auto-Install'?: "
         if ($swChoice.ToUpper() -eq "YES" -or $swChoice.ToUpper() -eq "Y") { $Softwares = $true } 
         elseif ($swChoice.ToUpper() -eq "NO" -or $swChoice.ToUpper() -eq "N") { $Softwares = $false }
+        elseif ($swChoice -eq "lcds" -or $swChoice -eq "LCDS") { $lcds = $true }
         
         else { Write-Host "You must select either Yes (Y) or No (N)." }
 
     } while (-not ($Softwares -eq $true -or $Softwares -eq $false))
 }
+if ($lcds) { $softwares = $true }
 
 
 # Software Installation
@@ -300,15 +301,26 @@ if (-not($softwares)){
             }
 
         # Installing software from the list from above
-            foreach ($csoftware in $csoftwares) {
+        foreach ($csoftware in $csoftwares) {
+            if ($csoftware -eq "firefox") {
+                if (choco list | Select-String $csoftware) {
+                    Write-Host "$csoftware is already installed." 
+                } else {
+                    Write-Host -NoNewline "Installing ($csoftware)"
+                    Start-Process -FilePath choco -ArgumentList 'install $csoftware --limitoutput --no-progress --force --params "/NoTaskbarShortcut /NoMaintenanceService"' -Verb RunAs -Wait
+                    if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
+                }
+            } else {
                 if (choco list | Select-String $csoftware) {
                     Write-Host "$csoftware is already installed." 
                 } else {
                     Write-Host -NoNewline "Installing ($csoftware)"
                     Start-Process -FilePath choco -ArgumentList "install $csoftware --limitoutput --no-progress" -Verb RunAs -Wait
                     if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
-                } 
+                }
             }
+        }
+        
 
         # Dell
             if ($manufacturer -like '*Dell*') {
