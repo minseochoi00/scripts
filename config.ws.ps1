@@ -92,6 +92,48 @@ $debug = $false
     )
     $selectedOption = $null
 
+# LCDS Microsoft Office Install Function
+    $userName_PATH = "C:\Users\$userName\Desktop"
+        $PPT_USER_PATH = "C:\Users\$userName\Desktop\PowerPoint.lnk"
+        $WORD_USER_PATH = "C:\Users\$userName\Desktop\Word.lnk"
+        $EXCEL_USER_PATH = "C:\Users\$userName\Desktop\Excel.lnk"
+
+    $User2_PATH = "\\lcds-22-fs1\userdata$\faculty\$userName"
+        $PPT_USER2_PATH = "\\lcds-22-fs1\userdata$\faculty\$userName\PowerPoint.lnk"
+        $WORD_USER2_PATH = "\\lcds-22-fs1\userdata$\faculty\$userName\Word.lnk"
+        $EXCEL_USER2_PATH = "\\lcds-22-fs1\userdata$\faculty\$userName\Excel.lnk"
+
+    $Check_OFFICE_PATH = "C:\Program Files\Microsoft Office\root\Office16"
+        $PPT_PATH = "C:\Program Files\Microsoft Office\root\Office16\POWERPNT.exe"
+        $WORD_PATH = "C:\Program Files\Microsoft Office\root\Office16\WINWORD.exe"
+        $EXCEL_PATH = "C:\Program Files\Microsoft Office\root\Office16\EXCEL.exe"
+
+    function CreateShortcut {
+        param (
+            [string]$TargetFile,
+            [string]$ShortcutFile
+        )
+        try {
+            $WScriptShell = New-Object -ComObject WScript.Shell
+            $Shortcut = $WScriptShell.CreateShortcut($ShortcutFile)
+            $Shortcut.TargetPath = $TargetFile
+            $Shortcut.Save()
+        } catch {
+            Write-Host "Error creating shortcut: $_"
+        }
+    }
+    # Local User Path Shortcut Functions
+        $Applications1 = @(
+            @{ Name = "PowerPoint"; TargetPath = $PPT_PATH; ShortcutFile = $PPT_USER_PATH}
+            @{ Name = "Word"; TargetPath = $WORD_PATH; ShortcutFile = $WORD_USER_PATH },
+            @{ Name = "Excel"; TargetPath = $EXCEL_PATH; ShortcutFile = $EXCEL_USER_PATH }
+        )
+        $Applications2 = @(
+            @{ Name = "PowerPoint"; TargetPath = $PPT_PATH; ShortcutFile = $PPT_USER2_PATH}
+            @{ Name = "Word"; TargetPath = $WORD_PATH; ShortcutFile = $WORD_USER2_PATH },
+            @{ Name = "Excel"; TargetPath = $EXCEL_PATH; ShortcutFile = $EXCEL_USER2_PATH }
+        )
+
 # Software Installation List
     $intels = @(
         "intel-chipset-device-software",           # Intel Chipset
@@ -383,13 +425,49 @@ if ($lcds) {
             Write-Host " Failed: PATH NOT EXIST"
             return
         }
+        
+        # Microsoft Office 2019 Installation 
         Write-Host -NoNewline "Installing Microsoft Office 2019"
         start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\setup.exe" -ArgumentList "/configure \\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\config.xml" -Verb RunAs -Wait
             if (choco list -i | select-string 'Microsoft Office Professional Plus 2019') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
-
+        
+        # VIRASEC TeamViewer Installation
         Write-Host -NoNewline "Installing VIRASEC TeamViewer"
         Start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe" -Verb RunAs -Wait
             if (choco list -i | select-string 'TeamViewer Host') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
+        
+        # Microsoft Office 2019 Auto-Shortcut
+            Write-Host "--------------------------------------------------------------------------------------------------------"
+            Write-Host -NoNewLine "Looking for Microsoft Office 2019 Directory"
+                if (Test-Path $Check_OFFICE_PATH) { 
+                    Write-Host " (Found.)" 
+                } else { 
+                    Write-Host " (Failed: Directory can't be found.)"
+                    pause
+                    return
+                }
+            Write-Host "--------------------------------------------------------------------------------------------------------"
+            Write-Host -NoNewline "Looking for UserData"
+                if (Test-Path $User_PATH) {
+                    Write-Host " (Found Local-Drive Directory)"
+                        foreach ($app1 in $Applications1) {
+                            Write-Host -NoNewline "Creating $($app1.Name) shortcut..."
+                            CreateShortcut -TargetFile $app1.TargetPath -ShortcutFile $app1.ShortcutFile
+                            Write-Host " (Created)"
+                        }
+                } elseif (Test-Path $User2_PATH) {
+                    Write-Host " (Found Network-Drive Directory)"
+                        foreach ($Applications2 in $Applications2) {
+                            Write-Host -NoNewline "Creating $($app2.Name) shortcut..."
+                            CreateShortcut -TargetFile $app2.TargetPath -ShortcutFile $app2.ShortcutFile
+                            Write-Host " (Created)"
+                        }
+                } else {
+                    Write-Host " (Failed: Can't find nor detect any UserData)"
+                    pause
+                    return
+                }
+            
     }
 }
 Write-Host "--------------------------------------------------------------------------------------------------------"
