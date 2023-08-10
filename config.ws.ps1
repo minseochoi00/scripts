@@ -93,7 +93,7 @@ $debug = $false
     $selectedOption = $null
 
 # LCDS Microsoft Office Install Function
-    $userName_PATH = "C:\Users\$userName\Desktop"
+    $User_PATH = "C:\Users\$userName\Desktop"
         $PPT_USER_PATH = "C:\Users\$userName\Desktop\PowerPoint.lnk"
         $WORD_USER_PATH = "C:\Users\$userName\Desktop\Word.lnk"
         $EXCEL_USER_PATH = "C:\Users\$userName\Desktop\Excel.lnk"
