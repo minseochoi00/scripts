@@ -269,6 +269,7 @@ if (-not($softwares)){
     if ($Softwares) {
 
         # General Softwares
+            Write-Host "--------------------------------------------------------------------------------------------------------"
             Write-Host "Installing Softwares using Installation Methods of Chocolatey"
             Write-Host "--------------------------------------------------------------------------------------------------------"
 
@@ -340,11 +341,14 @@ if (-not($softwares)){
 # Additional for LCDS
 if ($lcds) {
     if ($OSName -match "Home" -and $OSName -notmatch "Pro") { 
+        Write-Host "--------------------------------------------------------------------------------------------------------"
         Write-Host "$computerName is currently running '$OSName'"
+        pause
+        Write-Host "--------------------------------------------------------------------------------------------------------"
         return 
     }
     # LCDS Domain Auto-Join
-        Write-Host ""
+    Write-Host "--------------------------------------------------------------------------------------------------------"
         Write-Host -NoNewLine "Checking if $computerName is connected to $domainName"
         
         if (-not($Domain -eq $domainName)) {
@@ -360,6 +364,7 @@ if ($lcds) {
 
     # Local Software install
     if ($Domain -eq $domainName) {
+        Write-Host "--------------------------------------------------------------------------------------------------------"
         Write-Host -NoNewline "Installing Local Software"
         $testPath = "\\lcds-22-fs1\Netapps\_Initial_Install"
         if (-not(Test-Path -Path $testPath)) {
@@ -375,8 +380,8 @@ if ($lcds) {
             if (choco list -i | select-string 'TeamViewer Host') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
     }
 }
-return
-
+Write-Host "--------------------------------------------------------------------------------------------------------"
 Write-Host "Finished"
 Write-Host "--------------------------------------------------------------------------------------------------------"
+return
 # End
