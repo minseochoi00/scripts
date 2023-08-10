@@ -443,6 +443,7 @@ if ($lcds) {
                 Write-Host -NoNewline "Installing Microsoft Office Professional Plus 2019"
                 start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\setup.exe" -ArgumentList "/configure \\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\config.xml" -Verb RunAs -Wait
                     if (choco list -i | Select-String 'Microsoft Office Professional Plus 2019') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
+            }
         
         # VIRASEC TeamViewer Installation
         if (choco list -i | Select-String 'TeamViewer Host'){
