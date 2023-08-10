@@ -403,15 +403,13 @@ if ($lcds) {
     }
     # LCDS Domain Auto-Join
     Write-Host "--------------------------------------------------------------------------------------------------------"
-        Write-Host -NoNewLine "Checking if $computerName is connected to $domainName"
-        
+        Write-Host "Checking if $computerName is connected to $domainName"
         if (-not($Domain -eq $domainName)) {
             Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
                 Start-Process -FilePath powershell -ArgumentList 'Add-Computer -DomainName $domainName -Credential (Get-Credential)' -WindowStyle Hidden -Wait
                     if (-not($Domain -eq $domainName)) {
                         Write-Host " (Failed: Unable to join to domain)"
-                    }
-                Write-Host " (Connected)"
+                    } else { Write-Host " (Connected)" }
         } else {
             Write-Host " (Already Connected)"
         }
