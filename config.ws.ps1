@@ -2,14 +2,13 @@
 Write-Host "Version: Aug.2023 Version 10"
 Write-Host "Setting up the required variables..."
 
-$debug = $true
+$debug = $false
 
 # Choco
     # Checking if Chocolatey is installed.
         $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
-    
-    # if Chocolatey is not installed, installed them.
-        if (-not ($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
+        # if Chocolatey is not installed, installed them.
+            if (-not ($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
 
 # Retreieve
     $computerName = $env:COMPUTERNAME                                                   # Retreieving Current Computer's Name
@@ -29,11 +28,11 @@ $debug = $true
         $LpowerPlanGUID = "381b4222-f694-41f0-9685-ff5bb260df2e"
 
     # NVIDIA High Definition Audio
-    $NVIDIA = Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue
-        if ($NVIDIA) {
-            $VaudioDeviceID = $true
-            $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId 
-        }
+        $NVIDIA = Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue
+            if ($NVIDIA) {
+                $VaudioDeviceID = $true
+                $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId 
+            }
 
     # Check if the current user has administrative privileges
         $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -249,7 +248,7 @@ if ($desktop) {
 }
 
 # Ask client for Software installation on workstation
-if ($lcds) { $softwares = $true }
+if ($lcds) {$softwares = $true}
 if ($skip) {return}
 if (-not($softwares)){
     do {
@@ -257,9 +256,7 @@ if (-not($softwares)){
         $swChoice = Read-Host -Prompt "Will $computerName / $userName require a General Application 'Auto-Install'?: "
         if ($swChoice.ToUpper() -eq "YES" -or $swChoice.ToUpper() -eq "Y") { $Softwares = $true } 
         elseif ($swChoice.ToUpper() -eq "NO" -or $swChoice.ToUpper() -eq "N") { $Softwares = $false }
-        
         else { Write-Host "You must select either Yes (Y) or No (N)." }
-
     } while (-not ($Softwares -eq $true -or $Softwares -eq $false))
 }
 
@@ -346,7 +343,6 @@ if ($lcds) {
     # LCDS Domain Auto-Join
         Write-Host ""
         Write-Host -NoNewLine "Checking if $computerName is connected to $domainName"
-        
         if (-not($Domain -eq 'lcds.internal')) {
             Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
                 Start-Process -FilePath powershell -ArgumentList 'Add-Computer -DomainName $domainName -Credential (Get-Credential)' -WindowStyle Hidden -Wait
