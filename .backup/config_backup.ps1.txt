@@ -1,5 +1,5 @@
 # env
-Write-Host "Version: Aug.2023 Version 12"
+Write-Host "Version: Aug.2023 Version 11"
 Write-Host "Setting up the required variables..."
 
 $debug = $false
@@ -24,8 +24,6 @@ $debug = $false
     # NTP-Server Tweaks
         $NTPserviceName = "W32Time"
         $NTPservice = Get-Service -Name $NTPserviceName -ErrorAction SilentlyContinue
-    # One-Drive Tweak
-        $Process_oneDrive = Get-Process -Name OneDrive -ErrorAction SilentlyContinue
 
     # Power-Plan Tweaks
         $HpowerPlanGUID = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
@@ -93,48 +91,6 @@ $debug = $false
         [PSCustomObject]@{ Key = 'LCDS'; Description = 'LCDS'; Variable = 'lcds' }
     )
     $selectedOption = $null
-
-# LCDS Microsoft Office Install Function
-    $User_PATH = "C:\Users\$userName\Desktop"
-        $PPT_USER_PATH = "C:\Users\$userName\Desktop\PowerPoint.lnk"
-        $WORD_USER_PATH = "C:\Users\$userName\Desktop\Word.lnk"
-        $EXCEL_USER_PATH = "C:\Users\$userName\Desktop\Excel.lnk"
-
-    $User2_PATH = "\\lcds-22-fs1\userdata$\faculty\$userName"
-        $PPT_USER2_PATH = "\\lcds-22-fs1\userdata$\faculty\$userName\PowerPoint.lnk"
-        $WORD_USER2_PATH = "\\lcds-22-fs1\userdata$\faculty\$userName\Word.lnk"
-        $EXCEL_USER2_PATH = "\\lcds-22-fs1\userdata$\faculty\$userName\Excel.lnk"
-
-    $Check_OFFICE_PATH = "C:\Program Files\Microsoft Office\root\Office16"
-        $PPT_PATH = "C:\Program Files\Microsoft Office\root\Office16\POWERPNT.exe"
-        $WORD_PATH = "C:\Program Files\Microsoft Office\root\Office16\WINWORD.exe"
-        $EXCEL_PATH = "C:\Program Files\Microsoft Office\root\Office16\EXCEL.exe"
-
-    function CreateShortcut {
-        param (
-            [string]$TargetFile,
-            [string]$ShortcutFile
-        )
-        try {
-            $WScriptShell = New-Object -ComObject WScript.Shell
-            $Shortcut = $WScriptShell.CreateShortcut($ShortcutFile)
-            $Shortcut.TargetPath = $TargetFile
-            $Shortcut.Save()
-        } catch {
-            Write-Host "Error creating shortcut: $_"
-        }
-    }
-    # Local User Path Shortcut Functions
-        $Applications1 = @(
-            @{ Name = "PowerPoint"; TargetPath = $PPT_PATH; ShortcutFile = $PPT_USER_PATH}
-            @{ Name = "Word"; TargetPath = $WORD_PATH; ShortcutFile = $WORD_USER_PATH },
-            @{ Name = "Excel"; TargetPath = $EXCEL_PATH; ShortcutFile = $EXCEL_USER_PATH }
-        )
-        $Applications2 = @(
-            @{ Name = "PowerPoint"; TargetPath = $PPT_PATH; ShortcutFile = $PPT_USER2_PATH}
-            @{ Name = "Word"; TargetPath = $WORD_PATH; ShortcutFile = $WORD_USER2_PATH },
-            @{ Name = "Excel"; TargetPath = $EXCEL_PATH; ShortcutFile = $EXCEL_USER2_PATH }
-        )
 
 # Software Installation List
     $intels = @(
@@ -245,16 +201,6 @@ if ($initial -or $lcds) {
                     }
                 if ($AdminPW) { Write-Host " (Done)"}
     }
-
-    # Check for One-Drive Installation
-    Write-Host -NoNewline "Checking for OneDrive Process"
-    if ($Process_oneDrive) {
-        Write-Host -NoNewline " (Currently Running | Starting Auto-Removal)"
-        Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/remove-onedrive | iex" -Verb RunAs -Wait
-        Write-Host " (Finished)"
-    } else {
-        Write-Host " (Currently NOT Running)"
-    }
 }
 
 # Laptop
@@ -305,19 +251,18 @@ if ($desktop) {
 
 # Ask client for Software installation on workstation
 if ($lcds) { $softwares = $true }
+if ($skip) {return}
 if (-not($softwares)){
     do {
         Write-Host "--------------------------------------------------------------------------------------------------------"
         $swChoice = Read-Host -Prompt "Will $computerName / $userName require a General Application 'Auto-Install'?: "
         if ($swChoice.ToUpper() -eq "YES" -or $swChoice.ToUpper() -eq "Y") { $Softwares = $true } 
         elseif ($swChoice.ToUpper() -eq "NO" -or $swChoice.ToUpper() -eq "N") { $Softwares = $false }
-        elseif ($swChoice -eq "lcds" -or $swChoice -eq "LCDS") { $lcds = $true }
         
         else { Write-Host "You must select either Yes (Y) or No (N)." }
 
     } while (-not ($Softwares -eq $true -or $Softwares -eq $false))
 }
-if ($lcds) { $softwares = $true }
 
 
 # Software Installation
@@ -355,26 +300,20 @@ if ($lcds) { $softwares = $true }
             }
 
         # Installing software from the list from above
-        foreach ($csoftware in $csoftwares) {
-            if ($csoftware -eq "firefox") {
+            foreach ($csoftware in $csoftwares) {
                 if (choco list | Select-String $csoftware) {
                     Write-Host "$csoftware is already installed." 
                 } else {
-                    Write-Host -NoNewline "Installing ($csoftware)"
-                    Start-Process -FilePath choco -ArgumentList 'install $csoftware --limitoutput --no-progress --force --params "/NoTaskbarShortcut /NoMaintenanceService"' -Verb RunAs -Wait
-                    if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
-                }
-            } else {
-                if (choco list | Select-String $csoftware) {
-                    Write-Host "$csoftware is already installed." 
-                } else {
+                    if ($csoftware -eq "firefox") {
+                        Write-Host -NoNewline "Installing ($csoftware)"
+                        Start-Process -FilePath choco -ArgumentList 'install firefox --limitoutput --no-progress --force --params "/NoTaskbarShortcut /NoMaintenanceService"' -Verb RunAs -Wait
+                        if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
+                    }
                     Write-Host -NoNewline "Installing ($csoftware)"
                     Start-Process -FilePath choco -ArgumentList "install $csoftware --limitoutput --no-progress" -Verb RunAs -Wait
                     if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
-                }
+                } 
             }
-        }
-        
 
         # Dell
             if ($manufacturer -like '*Dell*') {
@@ -416,12 +355,14 @@ if ($lcds) {
     # LCDS Domain Auto-Join
     Write-Host "--------------------------------------------------------------------------------------------------------"
         Write-Host -NoNewLine "Checking if $computerName is connected to $domainName"
+        
         if (-not($Domain -eq $domainName)) {
             Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
                 Start-Process -FilePath powershell -ArgumentList 'Add-Computer -DomainName $domainName -Credential (Get-Credential)' -WindowStyle Hidden -Wait
                     if (-not($Domain -eq $domainName)) {
                         Write-Host " (Failed: Unable to join to domain)"
-                    } else { Write-Host " (Connected)" }
+                    }
+                Write-Host " (Connected)"
         } else {
             Write-Host " (Already Connected)"
         }
@@ -429,63 +370,19 @@ if ($lcds) {
     # Local Software install
     if ($Domain -eq $domainName) {
         Write-Host "--------------------------------------------------------------------------------------------------------"
-        Write-Host "Installing Local Software"
+        Write-Host -NoNewline "Installing Local Software"
         $testPath = "\\lcds-22-fs1\Netapps\_Initial_Install"
         if (-not(Test-Path -Path $testPath)) {
-            Write-Host "Failed: PATH NOT EXIST"
+            Write-Host " Failed: PATH NOT EXIST"
             return
         }
-        
-        # Microsoft Office Professional Plus 2019 Installation 
-        if (choco list -i | Select-String 'Microsoft Office Professional Plus 2019'){
-            Write-Host " Write-Host "Microsoft Office Professional Plus 2019 is already installed.""
-            } else {
-                Write-Host -NoNewline "Installing Microsoft Office Professional Plus 2019"
-                start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\setup.exe" -ArgumentList "/configure \\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\config.xml" -Verb RunAs -Wait
-                    if (choco list -i | Select-String 'Microsoft Office Professional Plus 2019') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
-            }
-        
-        # VIRASEC TeamViewer Installation
-        if (choco list -i | Select-String 'TeamViewer Host'){
-            Write-Host "VIRASEC TeamViewer Host is already installed."
-            } else {
-                Write-Host -NoNewline "Installing VIRASEC TeamViewer Host"
-                Start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe" -Verb RunAs -Wait
-                    if (choco list -i | select-string 'TeamViewer Host') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
-            }
-        
-        # Microsoft Office 2019 Auto-Shortcut
-            Write-Host "--------------------------------------------------------------------------------------------------------"
-            Write-Host -NoNewLine "Looking for Microsoft Office 2019 Directory"
-                if (Test-Path $Check_OFFICE_PATH) { 
-                    Write-Host " (Found.)" 
-                } else { 
-                    Write-Host " (Failed: Directory can't be found.)"
-                    pause
-                    return
-                }
-            Write-Host "--------------------------------------------------------------------------------------------------------"
-            Write-Host -NoNewline "Looking for UserData"
-                if (Test-Path $User_PATH) {
-                    Write-Host " (Found Local-Drive Directory)"
-                        foreach ($app1 in $Applications1) {
-                            Write-Host -NoNewline "Creating $($app1.Name) shortcut..."
-                            CreateShortcut -TargetFile $app1.TargetPath -ShortcutFile $app1.ShortcutFile
-                            Write-Host " (Created)"
-                        }
-                } elseif (Test-Path $User2_PATH) {
-                    Write-Host " (Found Network-Drive Directory)"
-                        foreach ($Applications2 in $Applications2) {
-                            Write-Host -NoNewline "Creating $($app2.Name) shortcut..."
-                            CreateShortcut -TargetFile $app2.TargetPath -ShortcutFile $app2.ShortcutFile
-                            Write-Host " (Created)"
-                        }
-                } else {
-                    Write-Host " (Failed: Can't find nor detect any UserData)"
-                    pause
-                    return
-                }
-            
+        Write-Host -NoNewline "Installing Microsoft Office 2019"
+        start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\setup.exe" -ArgumentList "/configure \\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\config.xml" -Verb RunAs -Wait
+            if (choco list -i | select-string 'Microsoft Office Professional Plus 2019') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
+
+        Write-Host -NoNewline "Installing VIRASEC TeamViewer"
+        Start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe" -Verb RunAs -Wait
+            if (choco list -i | select-string 'TeamViewer Host') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
     }
 }
 Write-Host "--------------------------------------------------------------------------------------------------------"
