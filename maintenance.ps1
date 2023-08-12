@@ -4,7 +4,7 @@
     # Choco
     $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
         # Check for Chocolatey Installation if can't be found install it.
-            if (-not($Test_Choco)) { irm minseochoi.tech/script/install-choco | iex }
+            if (-not($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
     # Print Spooler
         $PrintSpooler_PATH = "$env:SystemRoot\System32\spool\PRINTERS\*.*"
     # Windows Update
@@ -100,7 +100,7 @@
 
 # Delete Windows update files
     Write-Host "Deleting Windows update files..."
-    Remove-Item '$WindowsUpdateFolder\*' -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item "$WindowsUpdateFolder\*" -Recurse -Force -ErrorAction SilentlyContinue
 
 # Delete old Windows installation files
     Write-Host "Deleting old Windows installation files..."
