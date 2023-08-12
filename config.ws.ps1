@@ -1,16 +1,57 @@
+Clear-Host
 # env
-Write-Host "Version: Aug.2023 Version 12"
+Write-Host "Comment: Aug v2.0"
 Write-Host "Setting up the required variables..."
 
 $debug = $false
 
-# Choco
-    # Checking if Chocolatey is installed.
-        $Test_Choco = Get-Command -Name choco -ErrorAction Ignore
-    
-    # if Chocolatey is not installed, installed them.
-        if (-not ($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
+# Custom Functions
+    function CreateShortcut {
+        param (
+            [string]$TargetFile,
+            [string]$ShortcutFile
+        )
+        try {
+            $WScriptShell = New-Object -ComObject WScript.Shell
+            $Shortcut = $WScriptShell.CreateShortcut($ShortcutFile)
+            $Shortcut.TargetPath = $TargetFile
+            $Shortcut.Save()
+        } catch { Write-Host "Error creating shortcut: $_" }
+    }
 
+    function Install {
+        param (
+            [string]$Apps,
+            [string]$Arguments
+        )
+        try {
+            if ($null -ne $Arguments -and $Arguments -ne "") {
+                Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
+            } else {
+                Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
+            }
+        } catch {
+            Write-Host "Error Installing: $_"
+        }
+    }
+
+    function CustomTweakProcess {
+        param (
+            [string]$Apps,
+            [string]$Arguments
+        )
+        try {
+            if ($null -ne $Arguments -and $Arguments -ne "") {
+                Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
+            } else {
+                Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
+            }
+        } catch {
+            Write-Host "Error Installing: $_"
+        }
+    }
+
+    
 # Retreieve
     $computerName = $env:COMPUTERNAME                                                   # Retreieving Current Computer's Name
     $userName = $env:USERNAME                                                           # Retreieving Current User's Name
@@ -18,57 +59,81 @@ $debug = $false
     $manufacturer = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer      # Retreieving Manufacturer
     $Domain = (Get-CimInstance -ClassName Win32_ComputerSystem).Domain                  # Retreieving Domain
     $battery = (Get-WmiObject Win32_Battery).Description                                # Retreiving Battery Information
-    $OSName = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
-
+    $OS_Name = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption               # Retreiving Operating System's Name
+    $OS_Version = (Get-CimInstance -ClassName Win32_OperatingSystem).Version            # Retreiving Operating System's Version
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Custom Tweaks
-    # NTP-Server Tweaks
-        $NTPserviceName = "W32Time"
-        $NTPservice = Get-Service -Name $NTPserviceName -ErrorAction SilentlyContinue
-    # One-Drive Tweak
-        $Process_oneDrive = Get-Process -Name OneDrive -ErrorAction SilentlyContinue
-
     # Power-Plan Tweaks
         $HpowerPlanGUID = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
         $LpowerPlanGUID = "381b4222-f694-41f0-9685-ff5bb260df2e"
-
     # NVIDIA High Definition Audio
-    $NVIDIA = Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ErrorAction SilentlyContinue
-        if ($NVIDIA) {
-            $VaudioDeviceID = $true
-            $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId 
-        }
-
-    # Check if the current user has administrative privileges
+        $NVIDIA = Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ea SilentlyContinue
+            if ($NVIDIA) {
+                $VaudioDeviceID = $true
+                $audioDeviceId = (Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio").InstanceId 
+            }
+    # Permission Administrator Check
         $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    
     # Administrator Account Tweak
-        $password = "l0c@l@dm1n"    # Generic Password that it will be reset to.
-        $Empty_password = ""        # Default Vargiable = Checking if the $password is empty
-        $AdminActive = $false       # Default Variable = Checking if Local Administrator account is in 'active' status.
-        $AdminPW = $false           # Default Variable = Checking if Local Administrator's Password has been 'changed'.
-
+        $password = "l0c@l@dm1n"        # Generic Password that it will be reset to.
+    # Get-Process | Get-Service
+        # Explorer
+            $Explorer = Get-Process explorer -ea SilentlyContinue
+        # NTP-Server
+            $NTPservice = Get-Service -Name "W32Time" -ea SilentlyContinue
+        # One-Drive    
+            $Process_oneDrive = Get-Process -Name OneDrive -ea SilentlyContinue
+            
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Default Variable
     # Software installation
         $Softwares = $false             # Auto Installation of Default Softwares.
-
     # NVIDIA High Definition Audio
         $VaudioDeviceID = $false        # Check for NVIDIA High Definition Audio is installed
-
-    # ExecutionPolicy
-        $GEP = Get-ExecutionPolicy
-        $BP = "Bypass"
-            # Set Execution Policy
-                if (-not ($GEP -eq $BP)) { Set-ExecutionPolicy $BP -Force }
-    
-    # Workstation Choice Reset
+# Execution Policy
+    $GEP = Get-ExecutionPolicy
+    $BP = "Bypass"
+    # If the current Execution Policy is not already set to Bypass
+        if (-not ($GEP -eq $BP)) {
+        # Define the script block to change Execution Policy
+            $Code = { Set-ExecutionPolicy -ExecutionPolicy $using:BP -Force }
+        # Start a background job to change the Execution Policy
+            Start-Job -ScriptBlock $Code | Wait-Job | Remove-Job
+    }
+    # Choice Reset
         $laptop = $false
         $desktop = $false
         $initial = $false
         $lcds = $false
-    
+        $selectedOption = $null
+        $selectedOption2 = $null
     # Domain
-        $domainName = "lcds.internal"   
+        $domainName = "lcds.internal"
+    # Administrator Account Related Reset
+    $AdminActive = $false           # Default Variable = Checking if Local Administrator account is in 'active' status.
+    $AdminPW = $false               # Default Variable = Checking if Local Administrator's Password has been 'changed'.
+    # Choco
+        $Test_Choco = Get-Command -Name choco -ea Ignore        # Checking if Chocolatey is installed.
+    # Arguments
+        $OneDrive_Arg = "Invoke-RestMethod minseochoi.tech/script/remove-onedrive | Invoke-Expression"
+        $Chocolatey_Arg = "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression"
+        $amd_Arg = "install $amd --limitoutput --no-progress"
+        $intel_Arg = "install $intel --limitoutput --no-progress --ignore-checksums"
+        $firefox_Arg = 'install $csoftware --limitoutput --no-progress --force --params "/NoTaskbarShortcut /NoMaintenanceService"'
+        $csoftware_Arg = "install $csoftware --limitoutput --no-progress"
+        $dell_Arg = "install $dell_software --limitoutput --no-progress"
+        $lcds_Arg = "install $lcds_software --limitoutput --no-progress"
+        $W32TM_ManualPeerList_Arg = "/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update"
+        $W32TM_Update_Arg = "/config /update"
+        $W32TM_ReSync_Arg = "/resync /nowait /rediscover"
+        $Win10_Style_RightClick_Arg = 'add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve'
+        $BuiltIn_Administrator_Active_Check = 'net user Administrator | Select-String -Pattern "Account active               No"'
+        $Add_WS_TO_DOMAIN_Arg = "Add-Computer -DomainName $domainName -Credential (Get-Credential)"
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# if Chocolatey is not installed, installed them.
+    if (-not ($Test_Choco)) { $Chocolatey_Arg }
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Windows Service List
     $services = @(
         "DiagTrack",                # Connected User Experiences and Telemetry
@@ -86,44 +151,40 @@ $debug = $false
     )
 # Questions @ Start
     # Auto Checking if Workstation is Desktop or Laptop
-        if ($battery -eq 'Internal Battery') {$laptop = $true} else {$desktop = $true}
-    $options = @(
-        [PSCustomObject]@{ Key = 'I'; Description = 'Initial'; Variable = 'initial' }
-        [PSCustomObject]@{ Key = 'SK'; Description = 'Skip'; Variable = 'skip' }
-        [PSCustomObject]@{ Key = 'LCDS'; Description = 'LCDS'; Variable = 'lcds' }
-    )
-    $selectedOption = $null
-
+        if ($battery -eq 'Internal Battery') { $laptop = $true } else { $desktop = $true }
+    # Auto Provide Varibles to each keybinds
+        $options = @(
+            [PSCustomObject]@{ Key = 'I'; Description = 'Initial Tweaks'; Variable = 'initial' }
+            [PSCustomObject]@{ Key = 'SK'; Description = 'Skipping Tweaks'; Variable = 'skip' }
+            [PSCustomObject]@{ Key = 'LCDS'; Description = 'LCDS Tweaks'; Variable = 'lcds' }
+        )
+        $options2 = @(
+            [PSCustomObject]@{ Key = 'Yes' ; Description = 'General Installation Start'; Variable = 'softwares' }
+            [PSCustomObject]@{ Key = 'NO'; Description = 'No General Installation'; Variable = 'no_softwares' }
+            [PSCustomObject]@{ Key = 'LCDS'; Description = 'LCDS Tweaks & Installation'; Variable = 'lcds' }
+        )
+    
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # LCDS Microsoft Office Install Function
     $User_PATH = "C:\Users\$userName\Desktop"
-        $PPT_USER_PATH = "C:\Users\$userName\Desktop\PowerPoint.lnk"
-        $WORD_USER_PATH = "C:\Users\$userName\Desktop\Word.lnk"
-        $EXCEL_USER_PATH = "C:\Users\$userName\Desktop\Excel.lnk"
-
+        $PPT_USER_PATH = "$User_PATH\PowerPoint.lnk"
+        $WORD_USER_PATH = "$User_PATH\Word.lnk"
+        $EXCEL_USER_PATH = "$User_PATH\Excel.lnk"
     $User2_PATH = "\\lcds-22-fs1\userdata$\faculty\$userName"
-        $PPT_USER2_PATH = "\\lcds-22-fs1\userdata$\faculty\$userName\PowerPoint.lnk"
-        $WORD_USER2_PATH = "\\lcds-22-fs1\userdata$\faculty\$userName\Word.lnk"
-        $EXCEL_USER2_PATH = "\\lcds-22-fs1\userdata$\faculty\$userName\Excel.lnk"
-
+        $PPT_USER2_PATH = "$User2_PATH\PowerPoint.lnk"
+        $WORD_USER2_PATH = "$User2_PATH\Word.lnk"
+        $EXCEL_USER2_PATH = "$User2_PATH\Excel.lnk"
     $Check_OFFICE_PATH = "C:\Program Files\Microsoft Office\root\Office16"
-        $PPT_PATH = "C:\Program Files\Microsoft Office\root\Office16\POWERPNT.exe"
-        $WORD_PATH = "C:\Program Files\Microsoft Office\root\Office16\WINWORD.exe"
-        $EXCEL_PATH = "C:\Program Files\Microsoft Office\root\Office16\EXCEL.exe"
+        $PPT_PATH = "$Check_OFFICE_PATH\POWERPNT.exe"
+        $WORD_PATH = "$Check_OFFICE_PATH\WINWORD.exe"
+        $EXCEL_PATH = "$Check_OFFICE_PATH\EXCEL.exe"
+    $LCDS_Network_Application_PATH = "\\lcds-22-fs1\Netapps\_Initial_Install"
+    $2019_Office_Installation_PATH = "$LCDS_Network_Application_PATH\new_office_2019\setup.exe"
+        $Install_Arg = "/configure $LCDS_Network_Application_PATH\new_office_2019\config.xml"
+    $Office2019 = "Microsoft Office Professional Plus 2019"
+    $VIRASEC_TeamViewer = "VIRASEC TeamViewer Host"
+    $TeamViewer_Host = "TeamViewer Host"
 
-    function CreateShortcut {
-        param (
-            [string]$TargetFile,
-            [string]$ShortcutFile
-        )
-        try {
-            $WScriptShell = New-Object -ComObject WScript.Shell
-            $Shortcut = $WScriptShell.CreateShortcut($ShortcutFile)
-            $Shortcut.TargetPath = $TargetFile
-            $Shortcut.Save()
-        } catch {
-            Write-Host "Error creating shortcut: $_"
-        }
-    }
     # Local User Path Shortcut Functions
         $Applications1 = @(
             @{ Name = "PowerPoint"; TargetPath = $PPT_PATH; ShortcutFile = $PPT_USER_PATH}
@@ -135,7 +196,7 @@ $debug = $false
             @{ Name = "Word"; TargetPath = $WORD_PATH; ShortcutFile = $WORD_USER2_PATH },
             @{ Name = "Excel"; TargetPath = $EXCEL_PATH; ShortcutFile = $EXCEL_USER2_PATH }
         )
-
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Software Installation List
     $intels = @(
         "intel-chipset-device-software",           # Intel Chipset
@@ -162,99 +223,95 @@ $debug = $false
         "adobereader"                               # Adobe Reader DC
     )
 
-# ----------------------------------------------------------------------------------------------------------------------------------------
-
-if (-not($debug)) {Clear-Host}
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Start
+    if (-not($debug)) {Clear-Host}
 
 # Choose Options
-while (-not $selectedOption) {
-    Write-Host "Select One of the Options:"
-        $options | ForEach-Object { Write-Host "$($_.Key) - $($_.Description)" }
-
-        $wsChoice = Read-Host -Prompt "Enter the option key: "
-        $selectedOption = $options | Where-Object { $_.Key -eq $wsChoice }
-    
+    while (-not $selectedOption) {
+        Write-Host "Select One of the Options:"
+            $options | ForEach-Object { Write-Host "$($_.Key) - $($_.Description)" }
+            $wsChoice = Read-Host -Prompt "Enter the option key: "
+            $selectedOption = $options | Where-Object { $_.Key -eq $wsChoice } 
     if (-not $selectedOption) {
         Write-Host ""
         Write-Host "Invalid choice. Please select a valid option."
         Write-Host ""
     }
 }
+
 # Set the selected option variable to $true
     Set-Variable -Name $selectedOption.Variable -Value $true
-    if ($skip) {
-        $laptop = $false
-        $desktop = $false
-    }
+        if ($skip) { $laptop = $false; $desktop = $false }
+        if ($lcds) { $softwares = $true }
 
-Write-Host ""   
+Write-Host "--------------------------------------------------------------------------------------------------------"  
 
 if ($initial -or $lcds) {
     # Windows Service Tweaks
         foreach ($service in $services) {
             Write-Host "Tweaking Services.. ($service)"
-            Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled -ErrorAction SilentlyContinue
+            Get-Service -Name $service -ea SilentlyContinue | Set-Service -StartupType Disabled -ea SilentlyContinue
         }
-
     Write-Host "--------------------------------------------------------------------------------------------------------"
-
     # Windows NTP Server Tweaks
         Write-Host -NoNewLine "Fixing Workstation's NTP Server"
             if (-not($isAdmin)) {Write-Host " (Failed: Permission)"}
             else {
-                if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name $NTPserviceName }
-                Start-Process -FilePath w32tm -ArgumentList "/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update" -WindowStyle Hidden
-                Restart-Service -Name $NTPserviceName
-                Start-Process -FilePath w32tm -ArgumentList "/config /update" -WindowStyle Hidden
-                Start-Process -FilePath w32tm -ArgumentList "/resync /nowait /rediscover" -WindowStyle Hidden
-                Write-Host " (Done)"
-            }
+                try {
+                    if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
+                    CustomTweakProcess -Apps w32tm -Arguments $W32TM_ManualPeerList_Arg
+                    Restart-Service -Name "W32Time"
+                    CustomTweakProcess -Apps w32tm -Arguments $W32TM_Update_Arg
+                    CustomTweakProcess -Apps w32tm -Arguments $W32TM_ReSync_Arg
+                        # Output message that it has been finished
+                            Write-Host " (Finished)"
+                }
+                catch { Write-Host " (Failed)" }
+            }    
 
     # Windows Classic Right-Click Tweak for Windows 11
         Write-Host -NoNewLine "Enabling Windows 10 Right-Click Style in Windows 11"
-    if ((Get-CimInstance -ClassName Win32_OperatingSystem).Version -notmatch "^10") {
-        Write-Host " (Failed: Version mismatch)"
-    } else {
-        # Adding Registry to Workstation for Classic Right Click
-            Start-Process -FilePath reg -ArgumentList 'add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve'
+            if ($OS_Version -notmatch "^10") {
+                Write-Host " (Failed: Version mismatch)"
+            } else {
+                # Adding Registry to Workstation for Classic Right Click
+                    CustomTweakProcess -Apps reg -Arguments $Win10_Style_RightClick_Arg
+            }
                 # Restarting Windows Explorer
-                    if (Get-Process explorer) { Stop-Process -name explorer -force }
-        Write-Host " (Done)"
-    }
+                    if ($Explorer) { Stop-Process -Name explorer -Force ; Start-Sleep 10 }
 
     if ($lcds) {
         # Windows Default Administrator Account Tweak
             # Activating Local Administrator Account    
-            Write-Host -NoNewLine "Checking if Local Administrator Account is Active..."
-                if ((net user Administrator | Select-String -Pattern "Account active               No")) {
-                net user Administrator /active:yes
-                $AdminActive = $true
-                }
-            if ($AdminActive) { Write-Host " (Active)" } else { Write-Host " (Already Active)"}
+                Write-Host -NoNewLine "Checking if Local Administrator Account is Active..."
+                    if ($BuiltIn_Administrator_Active_Check) { net user Administrator /active:yes; $AdminActive = $true }
+                if ($AdminActive) { Write-Host " (Active)" } else { Write-Host " (Already Active)"}
 
             # Set Local Administrator Account Password
                 Write-Host -NoNewLine "Resetting Local Administrator Password to Generic Password"
-                    if ($Empty_password -eq $password) { Write-Host " (Failed: Value)" }
+                    if ($null -eq $password -and $password -ne "" ) { Write-Host " (Failed: Value)" }
                     else { 
                         if ($isAdmin) {
                         $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
                         $user.SetPassword($password)
                         $user.SetInfo()
                         $AdminPW = $true
-                        } else { Write-Host " (Failed : Permission)" }
+                        } 
+                        else { Write-Host " (Failed : Permission)" }
                     }
                 if ($AdminPW) { Write-Host " (Done)"}
     }
 
     # Check for One-Drive Installation
-    Write-Host -NoNewline "Checking for OneDrive Process"
-    if ($Process_oneDrive) {
-        Write-Host -NoNewline " (Currently Running | Starting Auto-Removal)"
-        Start-Process powershell.exe -ArgumentList "irm minseochoi.tech/script/remove-onedrive | iex" -Verb RunAs -Wait
-        Write-Host " (Finished)"
-    } else {
-        Write-Host " (Currently NOT Running)"
-    }
+        Write-Host -NoNewline "Checking for OneDrive Process"
+            if ($Process_oneDrive) {
+                Write-Host -NoNewline " (Currently Running | Starting Auto-Removal)"
+                CustomTweakProcess -Apps powershell -Arguments $OneDrive_Arg
+                Write-Host " (Finished)"
+            } else {
+                Write-Host " (Currently NOT Running)"
+            }
 }
 
 # Laptop
@@ -277,7 +334,7 @@ if ($laptop) {
     # Disabling NVIDIA High Definition Audio for Monitor
         if ($VaudioDeviceId) { 
             Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
-            Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue 
+            Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ea SilentlyContinue 
         }
 }
 
@@ -299,26 +356,29 @@ if ($desktop) {
     # Disabling NVIDIA High Definition Audio for Monitor
         if ($VaudioDeviceId) {
             Write-Host "Disabling NVIDIA High Definition Audio for Monitor"
-            Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ErrorAction SilentlyContinue
+            Disable-PnpDevice -InstanceId $audioDeviceId -Confirm:$false -ea SilentlyContinue
         }
 }
 
 # Ask client for Software installation on workstation
-if ($lcds) { $softwares = $true }
-if (-not($softwares)){
-    do {
-        Write-Host "--------------------------------------------------------------------------------------------------------"
-        $swChoice = Read-Host -Prompt "Will $computerName / $userName require a General Application 'Auto-Install'?: "
-        if ($swChoice.ToUpper() -eq "YES" -or $swChoice.ToUpper() -eq "Y") { $Softwares = $true } 
-        elseif ($swChoice.ToUpper() -eq "NO" -or $swChoice.ToUpper() -eq "N") { $Softwares = $false }
-        elseif ($swChoice -eq "lcds" -or $swChoice -eq "LCDS") { $lcds = $true }
-        
-        else { Write-Host "You must select either Yes (Y) or No (N)." }
-
-    } while (-not ($Softwares -eq $true -or $Softwares -eq $false))
+    if (-not($Softwares)){
+        while (-not $selectedOption2) {
+            Write-Host "--------------------------------------------------------------------------------------------------------"
+            Write-Host "Will $computerName / $userName require a General Application 'Auto-Install'?: "
+                $options2 | ForEach-Object { Write-Host "$($_.Key) - $($_.Description)" }
+                $wsChoice = Read-Host -Prompt "Enter the option key: "
+                $selectedOption2 = $options2 | Where-Object { $_.Key -eq $wsChoice } 
+        if (-not $selectedOption2) {
+            Write-Host "--------------------------------------------------------------------------------------------------------"
+            Write-Host "Invalid choice. Please select a valid option."
+        }
+    }
 }
-if ($lcds) { $softwares = $true }
 
+# Set the selected option variable to $true
+    Set-Variable -Name $selectedOption2.Variable -Value $true
+        if ($no_softwares) { $Softwares = $false }
+        if ($lcds) { $softwares = $true }
 
 # Software Installation
     if ($Softwares) {
@@ -335,7 +395,7 @@ if ($lcds) { $softwares = $true }
                         Write-Host "$amd is already installed."
                     } else {
                         Write-Host -NoNewline "Installing ($amd)"
-                        Start-Process -FilePath choco -ArgumentList "install $amd --limitoutput --no-progress" -Verb RunAs -Wait
+                        Install -Apps choco -Arguments $amd_Arg
                                 if (choco list | Select-String $amd) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -348,7 +408,7 @@ if ($lcds) { $softwares = $true }
                         Write-Host "$intel is already installed." 
                     } else {
                         Write-Host -NoNewline "Installing ($intel)"
-                        Start-Process -FilePath choco -ArgumentList "install $intel --limitoutput --no-progress --ignore-checksums" -Verb RunAs -Wait
+                        Install -Apps choco -Arguments $intel_Arg
                                 if (choco list | Select-String $intel) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -361,7 +421,7 @@ if ($lcds) { $softwares = $true }
                     Write-Host "$csoftware is already installed." 
                 } else {
                     Write-Host -NoNewline "Installing ($csoftware)"
-                    Start-Process -FilePath choco -ArgumentList 'install $csoftware --limitoutput --no-progress --force --params "/NoTaskbarShortcut /NoMaintenanceService"' -Verb RunAs -Wait
+                    Install -Apps choco -Arguments $firefox_Arg
                     if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                 }
             } else {
@@ -369,7 +429,7 @@ if ($lcds) { $softwares = $true }
                     Write-Host "$csoftware is already installed." 
                 } else {
                     Write-Host -NoNewline "Installing ($csoftware)"
-                    Start-Process -FilePath choco -ArgumentList "install $csoftware --limitoutput --no-progress" -Verb RunAs -Wait
+                    Install -Apps choco -Arguments $csoftware_Arg
                     if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                 }
             }
@@ -383,7 +443,7 @@ if ($lcds) { $softwares = $true }
                         Write-Host "$dell_software is already installed." 
                     } else {
                         Write-Host -NoNewline "Installing $dell_software"
-                        Start-Process -FilePath choco -ArgumentList "install $dell_software --limitoutput --no-progress" -Verb RunAs -Wait
+                        Install -Apps choco -Arguments $dell_Arg
                         if (choco list | Select-String $dell_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -396,7 +456,7 @@ if ($lcds) { $softwares = $true }
                     Write-Host "$lcds_software is already installed."
                     } else {
                         Write-Host -NoNewline "Installing $lcds_software"
-                        Start-Process -FilePath choco -ArgumentList "install $lcds_software --limitoutput --no-progress" -Verb RunAs -Wait
+                        Install -Apps choco -Arguments $lcds_Arg
                     if (choco list | Select-String $lcds_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -406,9 +466,9 @@ if ($lcds) { $softwares = $true }
 
 # Additional for LCDS
 if ($lcds) {
-    if ($OSName -match "Home" -and $OSName -notmatch "Pro") { 
+    if ($OS_Name -match "Home" -and $OS_Name -notmatch "Pro") { 
         Write-Host "--------------------------------------------------------------------------------------------------------"
-        Write-Host "$computerName is currently running '$OSName'"
+        Write-Host "$computerName is currently running '$OS_Name'"
         pause
         Write-Host "--------------------------------------------------------------------------------------------------------"
         return 
@@ -418,10 +478,11 @@ if ($lcds) {
         Write-Host -NoNewLine "Checking if $computerName is connected to $domainName"
         if (-not($Domain -eq $domainName)) {
             Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
-                Start-Process -FilePath powershell -ArgumentList 'Add-Computer -DomainName $domainName -Credential (Get-Credential)' -WindowStyle Hidden -Wait
-                    if (-not($Domain -eq $domainName)) {
-                        Write-Host " (Failed: Unable to join to domain)"
-                    } else { Write-Host " (Connected)" }
+                try {
+                    CustomTweakProcess -Apps powershell -Arguments $Add_WS_TO_DOMAIN_Arg
+                    Write-Host " (Connected)" 
+                }
+                catch { Write-Host " (Failed: Unable to join to domain)" }    
         } else {
             Write-Host " (Already Connected)"
         }
@@ -430,33 +491,32 @@ if ($lcds) {
     if ($Domain -eq $domainName) {
         Write-Host "--------------------------------------------------------------------------------------------------------"
         Write-Host "Installing Local Software"
-        $testPath = "\\lcds-22-fs1\Netapps\_Initial_Install"
-        if (-not(Test-Path -Path $testPath)) {
+        if (-not(Test-Path -Path $LCDS_Network_Application_PATH)) {
             Write-Host "Failed: PATH NOT EXIST"
             return
         }
         
         # Microsoft Office Professional Plus 2019 Installation 
-        if (choco list -i | Select-String 'Microsoft Office Professional Plus 2019'){
-            Write-Host " Write-Host "Microsoft Office Professional Plus 2019 is already installed.""
+        if (choco list -i | Select-String $Office2019){
+            Write-Host "Write-Host $Office2019 is already installed."
             } else {
-                Write-Host -NoNewline "Installing Microsoft Office Professional Plus 2019"
-                start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\setup.exe" -ArgumentList "/configure \\lcds-22-fs1\Netapps\_Initial_Install\new_office_2019\config.xml" -Verb RunAs -Wait
-                    if (choco list -i | Select-String 'Microsoft Office Professional Plus 2019') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
+                Write-Host -NoNewline "Installing $Office2019"
+                    Install -Apps $2019_Office_Installation_PATH -Arguments $Install_Arg
+                        if (choco list -i | Select-String $Office2019) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
             }
         
         # VIRASEC TeamViewer Installation
-        if (choco list -i | Select-String 'TeamViewer Host'){
-            Write-Host "VIRASEC TeamViewer Host is already installed."
+        if (choco list -i | Select-String $TeamViewer_Host){
+            Write-Host "$VIRASEC_TeamViewer is already installed."
             } else {
-                Write-Host -NoNewline "Installing VIRASEC TeamViewer Host"
-                Start-Process "\\lcds-22-fs1\Netapps\_Initial_Install\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe" -Verb RunAs -Wait
-                    if (choco list -i | select-string 'TeamViewer Host') {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
+                Write-Host -NoNewline "Installing $VIRASEC_TeamViewer"
+                    Install -Apps $VIRASEC_TeamViewer_Installation_PATH
+                        if (choco list -i | select-string $TeamViewer_Host) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
             }
         
         # Microsoft Office 2019 Auto-Shortcut
             Write-Host "--------------------------------------------------------------------------------------------------------"
-            Write-Host -NoNewLine "Looking for Microsoft Office 2019 Directory"
+            Write-Host -NoNewLine "Looking for $Office2019 Directory"
                 if (Test-Path $Check_OFFICE_PATH) { 
                     Write-Host " (Found.)" 
                 } else { 
