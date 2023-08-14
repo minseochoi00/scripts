@@ -1,6 +1,6 @@
 Clear-Host
 # env
-Write-Host "Comment: Aug v2.1"
+Write-Host "Comment: Aug v2.2"
 Write-Host "Setting up the required variables..."
 
 $debug = $false
@@ -117,12 +117,12 @@ $debug = $false
     # Arguments
         $OneDrive_Arg = "Invoke-RestMethod minseochoi.tech/script/remove-onedrive | Invoke-Expression"
         $Chocolatey_Arg = "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression"
-        $amd_Arg = "install $amd --limitoutput --no-progress"
-        $intel_Arg = "install $intel --limitoutput --no-progress --ignore-checksums"
-        $firefox_Arg = "install $csoftware --limitoutput --no-progress --force --params ""/NoTaskbarShortcut /NoMaintenanceService"""
-        $csoftware_Arg = "install $csoftware --limitoutput --no-progress"
-        $dell_Arg = "install $dell_software --limitoutput --no-progress"
-        $lcds_Arg = "install $lcds_software --limitoutput --no-progress"
+        $amd_Arg = "install $amd"
+        $intel_Arg = "install $intel --ignore-checksums"
+        $firefox_Arg = "install $csoftware --force --params ""/NoTaskbarShortcut /NoMaintenanceService"""
+        $csoftware_Arg = "install $csoftware"
+        $dell_Arg = "install $dell_software"
+        $lcds_Arg = "install $lcds_software"
         $W32TM_ManualPeerList_Arg = "/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update"
         $W32TM_Update_Arg = "/config /update"
         $W32TM_ReSync_Arg = "/resync /nowait /rediscover"
@@ -505,7 +505,7 @@ if ($lcds) {
             Write-Host "Write-Host $Office2019 is already installed."
             } else {
                 Write-Host -NoNewline "Installing $Office2019"
-                    Install -Apps $2019_Office_Installation_PATH -Arguments $Install_Arg
+                    Install -Apps "$2019_Office_Installation_PATH" -Arguments $Install_Arg
                         if (choco list -i | Select-String $Office2019) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
             }
         
@@ -514,7 +514,7 @@ if ($lcds) {
             Write-Host "$VIRASEC_TeamViewer is already installed."
             } else {
                 Write-Host -NoNewline "Installing $VIRASEC_TeamViewer"
-                    Install -Apps $VIRASEC_TeamViewer_Installation_PATH
+                    Install -Apps "$VIRASEC_TeamViewer_Installation_PATH"
                         if (choco list -i | select-string $TeamViewer_Host) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
             }
         
