@@ -16,7 +16,10 @@ $debug = $false
             $Shortcut = $WScriptShell.CreateShortcut($ShortcutFile)
             $Shortcut.TargetPath = $TargetFile
             $Shortcut.Save()
-        } catch { Write-Host "Error creating shortcut: $_" }
+        } catch { 
+            # Write-Host " (Failed: Shortcut)"
+            Write-Host "Error creating shortcut: $_"
+        }
     }
 
     function Install {
@@ -27,11 +30,17 @@ $debug = $false
             if ($null -ne $Arguments -and $Arguments -ne "") {
                 try {
                     Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
-                } catch { Write-Host "Error Installing: $_" }
+                } catch { 
+                    # Write-Host " (Failed: Installation of $Apps)"
+                    Write-Host "Error Installing: $_" 
+                }
             } else {
                 try {
                     Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
-                } catch { Write-Host "Error Installing: $_" }
+                } catch {
+                    # Write-Host " (Failed: Installation of $Apps)"
+                    Write-Host "Error Installing: $_" 
+                }
             }
     }
 
@@ -43,11 +52,17 @@ $debug = $false
             if ($null -ne $Arguments -and $Arguments -ne "") {
                 try {
                     Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
-                } catch { Write-Host "Error Installing: $_" }
+                } catch {
+                    # Write-Host " (Failed: Tweak)"
+                    Write-Host "Error Tweaking: $_" 
+                }
             } else {
                 try {
                     Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
-                } catch { Write-Host "Error Installing: $_" }
+                } catch { 
+                    # Write-Host " (Failed: Tweak)"
+                    Write-Host "Error Tweaking: $_" 
+                }
             }
         }
 
