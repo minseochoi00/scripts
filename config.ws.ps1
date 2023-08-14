@@ -1,6 +1,6 @@
 Clear-Host
 # env
-Write-Host "Comment: Aug v2.0"
+Write-Host "Comment: Aug v2.1"
 Write-Host "Setting up the required variables..."
 
 $debug = $false
@@ -17,7 +17,7 @@ $debug = $false
             $Shortcut.TargetPath = $TargetFile
             $Shortcut.Save()
         } catch { Write-Host "Error creating shortcut: $_" }
-    }ㄴ
+    }
 
     function Install {
         param (
@@ -119,15 +119,15 @@ $debug = $false
         $Chocolatey_Arg = "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression"
         $amd_Arg = "install $amd --limitoutput --no-progress"
         $intel_Arg = "install $intel --limitoutput --no-progress --ignore-checksums"
-        $firefox_Arg = 'install $csoftware --limitoutput --no-progress --force --params "/NoTaskbarShortcut /NoMaintenanceService"'
+        $firefox_Arg = "install $csoftware --limitoutput --no-progress --force --params ""/NoTaskbarShortcut /NoMaintenanceService"""
         $csoftware_Arg = "install $csoftware --limitoutput --no-progress"
         $dell_Arg = "install $dell_software --limitoutput --no-progress"
         $lcds_Arg = "install $lcds_software --limitoutput --no-progress"
         $W32TM_ManualPeerList_Arg = "/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update"
         $W32TM_Update_Arg = "/config /update"
         $W32TM_ReSync_Arg = "/resync /nowait /rediscover"
-        $Win10_Style_RightClick_Arg = 'add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve'
-        $BuiltIn_Administrator_Active_Check = 'net user Administrator | Select-String -Pattern "Account active               No"'
+        $Win10_Style_RightClick_Arg = "add ""HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32"" /f /ve"
+        $BuiltIn_Administrator_Active_Check = "net user Administrator | Select-String -Pattern ""Account active               No"""
         $Add_WS_TO_DOMAIN_Arg = "Add-Computer -DomainName $domainName -Credential (Get-Credential)"
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -276,7 +276,10 @@ if ($initial -or $lcds) {
                 Write-Host " (Failed: Version mismatch)"
             } else {
                 # Adding Registry to Workstation for Classic Right Click
+                try {
                     CustomTweakProcess -Apps reg -Arguments $Win10_Style_RightClick_Arg
+                } catch {
+                    Write-Host "Error Tweaking: $_"
             }
                 # Restarting Windows Explorer
                     if ($Explorer) { Stop-Process -Name explorer -Force ; Start-Sleep 10 }
@@ -367,18 +370,17 @@ if ($desktop) {
             Write-Host "Will $computerName / $userName require a General Application 'Auto-Install'?: "
                 $options2 | ForEach-Object { Write-Host "$($_.Key) - $($_.Description)" }
                 $wsChoice = Read-Host -Prompt "Enter the option key: "
-                $selectedOption2 = $options2 | Where-Object { $_.Key -eq $wsChoice } 
+                $selectedOption2 = $options2 | Where-Object { $_.Key -eq $wsChoice }
+                # Set the selected option variable to $true
+            Set-Variable -Name $selectedOption2.Variable -Value $true
         if (-not $selectedOption2) {
             Write-Host "--------------------------------------------------------------------------------------------------------"
             Write-Host "Invalid choice. Please select a valid option."
         }
     }
 }
-
-# Set the selected option variable to $true
-    Set-Variable -Name $selectedOption2.Variable -Value $true
-        if ($no_softwares) { $Softwares = $false }
-        if ($lcds) { $softwares = $true }
+if ($no_softwares) { $Softwares = $false }
+if ($lcds) { $softwares = $true }
 
 # Software Installation
     if ($Softwares) {
@@ -395,7 +397,7 @@ if ($desktop) {
                         Write-Host "$amd is already installed."
                     } else {
                         Write-Host -NoNewline "Installing ($amd)"
-                        Install -Apps choco -Arguments $amd_Arg
+                        Install -Apps "choco" -Arguments $amd_Arg
                                 if (choco list | Select-String $amd) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -408,7 +410,7 @@ if ($desktop) {
                         Write-Host "$intel is already installed." 
                     } else {
                         Write-Host -NoNewline "Installing ($intel)"
-                        Install -Apps choco -Arguments $intel_Arg
+                        Install -Apps "choco" -Arguments $intel_Arg
                                 if (choco list | Select-String $intel) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -421,7 +423,7 @@ if ($desktop) {
                     Write-Host "$csoftware is already installed." 
                 } else {
                     Write-Host -NoNewline "Installing ($csoftware)"
-                    Install -Apps choco -Arguments $firefox_Arg
+                    Install -Apps "choco" -Arguments $firefox_Arg
                     if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                 }
             } else {
@@ -429,7 +431,7 @@ if ($desktop) {
                     Write-Host "$csoftware is already installed." 
                 } else {
                     Write-Host -NoNewline "Installing ($csoftware)"
-                    Install -Apps choco -Arguments $csoftware_Arg
+                    Install -Apps "choco" -Arguments $csoftware_Arg
                     if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                 }
             }
@@ -443,7 +445,7 @@ if ($desktop) {
                         Write-Host "$dell_software is already installed." 
                     } else {
                         Write-Host -NoNewline "Installing $dell_software"
-                        Install -Apps choco -Arguments $dell_Arg
+                        Install -Apps "choco" -Arguments $dell_Arg
                         if (choco list | Select-String $dell_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -456,7 +458,7 @@ if ($desktop) {
                     Write-Host "$lcds_software is already installed."
                     } else {
                         Write-Host -NoNewline "Installing $lcds_software"
-                        Install -Apps choco -Arguments $lcds_Arg
+                        Install -Apps "choco" -Arguments $lcds_Arg
                     if (choco list | Select-String $lcds_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
