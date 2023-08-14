@@ -1,9 +1,9 @@
 Clear-Host
 # env
-Write-Host "Comment: Aug v2.2 - beta"
+Write-Host "Comment: Aug v2.3 - beta"
 Write-Host "Setting up the required variables..."
 
-$debug = $true
+$debug = $false
 
 # Custom Functions
     function CreateShortcut {
@@ -24,14 +24,16 @@ $debug = $true
             [string]$Apps,
             [string]$Arguments
         )
-        try {
             if ($null -ne $Arguments -and $Arguments -ne "") {
-                Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Normal -Wait
+                try {
+                    Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
+                } catch {
+                    Write-Host "Error Installing: $_"
             } else {
-                Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
+                try {
+                    Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
+                } catch { Write-Host "Error Installing: $_" }
             }
-        } catch {
-            Write-Host "Error Installing: $_"
         }
     }
 
@@ -40,16 +42,18 @@ $debug = $true
             [string]$Apps,
             [string]$Arguments
         )
-        try {
             if ($null -ne $Arguments -and $Arguments -ne "") {
-                Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
+                try {
+                    Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
+                } catch {
+                    Write-Host "Error Installing: $_"
             } else {
-                Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
+                try {
+                    Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
+                } catch { Write-Host "Error Installing: $_" }
             }
-        } catch {
-            Write-Host "Error Installing: $_"
         }
-    }
+    }    
 
     
 # Retreieve
@@ -400,7 +404,7 @@ if ($lcds) { $softwares = $true }
                         Write-Host "$amd is already installed."
                     } else {
                         Write-Host -NoNewline "Installing ($amd)"
-                        Install -Apps "choco" -Arguments "$amd_Arg"
+                        Install -Apps "choco" -Arguments "install $amd"
                                 if (choco list | Select-String $amd) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -413,7 +417,7 @@ if ($lcds) { $softwares = $true }
                         Write-Host "$intel is already installed." 
                     } else {
                         Write-Host -NoNewline "Installing ($intel)"
-                        Install -Apps "choco" -Arguments "$intel_Arg"
+                        Install -Apps "choco" -Arguments "install $intel --ignore-checksums"
                                 if (choco list | Select-String $intel) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -426,7 +430,7 @@ if ($lcds) { $softwares = $true }
                     Write-Host "$csoftware is already installed."
                 } else {
                     Write-Host -NoNewline "Installing ($csoftware)"
-                    Install -Apps "choco" -Arguments "$firefox_Arg"
+                    Install -Apps "choco" -Arguments "install $csoftware --force --params ""/NoTaskbarShortcut /NoMaintenanceService"""
                     if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                 }
             } else {
@@ -434,7 +438,7 @@ if ($lcds) { $softwares = $true }
                     Write-Host "$csoftware is already installed."
                 } else {
                     Write-Host -NoNewline "Installing ($csoftware)"
-                    Install -Apps "choco" -Arguments "$csoftware_Arg"
+                    Install -Apps "choco" -Arguments "install $csoftware"
                     if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                 }
             }
@@ -448,7 +452,7 @@ if ($lcds) { $softwares = $true }
                         Write-Host "$dell_software is already installed." 
                     } else {
                         Write-Host -NoNewline "Installing $dell_software"
-                        Install -Apps "choco" -Arguments "$dell_Arg"
+                        Install -Apps "choco" -Arguments "install $dell_software"
                         if (choco list | Select-String $dell_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -461,7 +465,7 @@ if ($lcds) { $softwares = $true }
                     Write-Host "$lcds_software is already installed."
                     } else {
                         Write-Host -NoNewline "Installing $lcds_software"
-                        Install -Apps "choco" -Arguments "$lcds_Arg"
+                        Install -Apps "choco" -Arguments "install $lcds_software"
                     if (choco list | Select-String $lcds_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
