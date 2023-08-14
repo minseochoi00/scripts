@@ -278,6 +278,7 @@ if ($initial -or $lcds) {
                 # Adding Registry to Workstation for Classic Right Click
                     try {
                         CustomTweakProcess -Apps reg -Arguments $Win10_Style_RightClick_Arg
+                        Write-Host " (Finished)"
                     } catch {
                         Write-Host "Error Tweaking: $_"
                 }
@@ -399,7 +400,7 @@ if ($lcds) { $softwares = $true }
                         Write-Host "$amd is already installed."
                     } else {
                         Write-Host -NoNewline "Installing ($amd)"
-                        Install -Apps "choco" -Arguments $amd_Arg
+                        Install -Apps "choco" -Arguments "$amd_Arg"
                                 if (choco list | Select-String $amd) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -412,7 +413,7 @@ if ($lcds) { $softwares = $true }
                         Write-Host "$intel is already installed." 
                     } else {
                         Write-Host -NoNewline "Installing ($intel)"
-                        Install -Apps "choco" -Arguments $intel_Arg
+                        Install -Apps "choco" -Arguments "$intel_Arg"
                                 if (choco list | Select-String $intel) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -422,18 +423,18 @@ if ($lcds) { $softwares = $true }
         foreach ($csoftware in $csoftwares) {
             if ($csoftware -eq "firefox") {
                 if (choco list | Select-String $csoftware) {
-                    Write-Host "$csoftware is already installed." 
+                    Write-Host "$csoftware is already installed."
                 } else {
                     Write-Host -NoNewline "Installing ($csoftware)"
-                    Install -Apps "choco" -Arguments $firefox_Arg
+                    Install -Apps "choco" -Arguments "$firefox_Arg"
                     if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                 }
             } else {
                 if (choco list | Select-String $csoftware) {
-                    Write-Host "$csoftware is already installed." 
+                    Write-Host "$csoftware is already installed."
                 } else {
                     Write-Host -NoNewline "Installing ($csoftware)"
-                    Install -Apps "choco" -Arguments $csoftware_Arg
+                    Install -Apps "choco" -Arguments "$csoftware_Arg"
                     if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                 }
             }
@@ -447,7 +448,7 @@ if ($lcds) { $softwares = $true }
                         Write-Host "$dell_software is already installed." 
                     } else {
                         Write-Host -NoNewline "Installing $dell_software"
-                        Install -Apps "choco" -Arguments $dell_Arg
+                        Install -Apps "choco" -Arguments "$dell_Arg"
                         if (choco list | Select-String $dell_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -460,7 +461,7 @@ if ($lcds) { $softwares = $true }
                     Write-Host "$lcds_software is already installed."
                     } else {
                         Write-Host -NoNewline "Installing $lcds_software"
-                        Install -Apps "choco" -Arguments $lcds_Arg
+                        Install -Apps "choco" -Arguments "$lcds_Arg"
                     if (choco list | Select-String $lcds_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -505,7 +506,7 @@ if ($lcds) {
             Write-Host "Write-Host $Office2019 is already installed."
             } else {
                 Write-Host -NoNewline "Installing $Office2019"
-                    Install -Apps "$2019_Office_Installation_PATH" -Arguments $Install_Arg
+                    Install -Apps "$2019_Office_Installation_PATH" -Arguments "$Install_Arg"
                         if (choco list -i | Select-String $Office2019) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
             }
         
