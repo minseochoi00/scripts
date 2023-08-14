@@ -170,29 +170,35 @@ $debug = $false
         $PPT_USER_PATH = "$User_PATH\PowerPoint.lnk"
         $WORD_USER_PATH = "$User_PATH\Word.lnk"
         $EXCEL_USER_PATH = "$User_PATH\Excel.lnk"
+
     $User2_PATH = "\\lcds-22-fs1\userdata$\faculty\$userName"
         $PPT_USER2_PATH = "$User2_PATH\PowerPoint.lnk"
         $WORD_USER2_PATH = "$User2_PATH\Word.lnk"
         $EXCEL_USER2_PATH = "$User2_PATH\Excel.lnk"
+
     $Check_OFFICE_PATH = "C:\Program Files\Microsoft Office\root\Office16"
         $PPT_PATH = "$Check_OFFICE_PATH\POWERPNT.exe"
         $WORD_PATH = "$Check_OFFICE_PATH\WINWORD.exe"
         $EXCEL_PATH = "$Check_OFFICE_PATH\EXCEL.exe"
+
     $LCDS_Network_Application_PATH = "\\lcds-22-fs1\Netapps\_Initial_Install"
     $2019_Office_Installation_PATH = "$LCDS_Network_Application_PATH\new_office_2019\setup.exe"
         $Install_Arg = "/configure $LCDS_Network_Application_PATH\new_office_2019\config.xml"
     $Office2019 = "Microsoft Office Professional Plus 2019"
+
     $VIRASEC_TeamViewer = "VIRASEC TeamViewer Host"
-    $TeamViewer_Host = "TeamViewer Host"
+        $TeamViewer_Host = "TeamViewer Host"
+        $VIRASEC_TeamViewer_Installation_PATH = "$LCDS_Network_Application_PATH\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe"
+
 
     # Local User Path Shortcut Functions
         $Applications1 = @(
-            @{ Name = "PowerPoint"; TargetPath = $PPT_PATH; ShortcutFile = $PPT_USER_PATH}
+            @{ Name = "PowerPoint"; TargetPath = $PPT_PATH; ShortcutFile = $PPT_USER_PATH },
             @{ Name = "Word"; TargetPath = $WORD_PATH; ShortcutFile = $WORD_USER_PATH },
             @{ Name = "Excel"; TargetPath = $EXCEL_PATH; ShortcutFile = $EXCEL_USER_PATH }
         )
         $Applications2 = @(
-            @{ Name = "PowerPoint"; TargetPath = $PPT_PATH; ShortcutFile = $PPT_USER2_PATH}
+            @{ Name = "PowerPoint"; TargetPath = $PPT_PATH; ShortcutFile = $PPT_USER2_PATH },
             @{ Name = "Word"; TargetPath = $WORD_PATH; ShortcutFile = $WORD_USER2_PATH },
             @{ Name = "Excel"; TargetPath = $EXCEL_PATH; ShortcutFile = $EXCEL_USER2_PATH }
         )
@@ -535,18 +541,18 @@ if ($lcds) {
             Write-Host "--------------------------------------------------------------------------------------------------------"
             Write-Host -NoNewline "Looking for UserData"
                 if (Test-Path $User_PATH) {
-                    Write-Host " (Found Local-Drive Directory)"
+                    Write-Host "Found Local-Drive Directory"
                         foreach ($app1 in $Applications1) {
                             Write-Host -NoNewline "Creating $($app1.Name) shortcut..."
                             CreateShortcut -TargetFile $app1.TargetPath -ShortcutFile $app1.ShortcutFile
-                            Write-Host " (Created)"
+                            if (Test-Path $app1.ShortcutFile) { Write-Host " (Created)" } else { Write-Host " (Failed: Shortcut)" }
                         }
                 } elseif (Test-Path $User2_PATH) {
-                    Write-Host " (Found Network-Drive Directory)"
-                        foreach ($Applications2 in $Applications2) {
+                    Write-Host "Found Network-Drive Directory"
+                        foreach ($app2 in $Applications2) {
                             Write-Host -NoNewline "Creating $($app2.Name) shortcut..."
                             CreateShortcut -TargetFile $app2.TargetPath -ShortcutFile $app2.ShortcutFile
-                            Write-Host " (Created)"
+                            if (Test-Path $app2.ShortcutFile) { Write-Host " (Created)" } else { Write-Host " (Failed: Shortcut)" }
                         }
                 } else {
                     Write-Host " (Failed: Can't find nor detect any UserData)"
