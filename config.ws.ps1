@@ -17,7 +17,7 @@ $debug = $false
             $Shortcut.TargetPath = $TargetFile
             $Shortcut.Save()
         } catch { Write-Host "Error creating shortcut: $_" }
-    }
+    }ㄴ
 
     function Install {
         param (
