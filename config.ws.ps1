@@ -525,7 +525,8 @@ if ($lcds) {
             } else {
                 Write-Host -NoNewline "Installing $VIRASEC_TeamViewer"
                     # Install -Apps "$VIRASEC_TeamViewer_Installation_PATH" -Arguments "/s"
-                    Start-Process -FilePath "$VIRASEC_TeamViewer_Installation_PATH" -ArgumentList "/s" -Verb RunAs -Wait
+                    # Start-Process -FilePath "$VIRASEC_TeamViewer_Installation_PATH" -ArgumentList "/s" -Verb RunAs -Wait
+                    Start-Process -FilePath "$VIRASEC_TeamViewer_Installation_PATH" -Verb RunAs -Wait
                         if (choco list -i | select-string $TeamViewer_Host) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
             }
         
