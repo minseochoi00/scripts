@@ -1,9 +1,9 @@
 Clear-Host
 # env
-Write-Host "Comment: Aug v2.2"
+Write-Host "Comment: Aug v2.2 - beta"
 Write-Host "Setting up the required variables..."
 
-$debug = $false
+$debug = $true
 
 # Custom Functions
     function CreateShortcut {
@@ -26,7 +26,7 @@ $debug = $false
         )
         try {
             if ($null -ne $Arguments -and $Arguments -ne "") {
-                Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
+                Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Normal -Wait
             } else {
                 Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
             }
@@ -126,8 +126,8 @@ $debug = $false
         $W32TM_ManualPeerList_Arg = "/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update"
         $W32TM_Update_Arg = "/config /update"
         $W32TM_ReSync_Arg = "/resync /nowait /rediscover"
-        $Win10_Style_RightClick_Arg = "add ""HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32"" /f /ve"
-        $BuiltIn_Administrator_Active_Check = "net user Administrator | Select-String -Pattern ""Account active               No"""
+        $Win10_Style_RightClick_Arg = 'add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve'
+        $BuiltIn_Administrator_Active_Check = 'net user Administrator | Select-String -Pattern "Account active               No"'
         $Add_WS_TO_DOMAIN_Arg = "Add-Computer -DomainName $domainName -Credential (Get-Credential)"
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
