@@ -1,6 +1,6 @@
 Clear-Host
 # env
-Write-Host "Comment: Aug v2.3 - beta"
+Write-Host "Comment: Aug v2.4 - beta"
 Write-Host "Setting up the required variables..."
 
 $debug = $false
@@ -27,14 +27,12 @@ $debug = $false
             if ($null -ne $Arguments -and $Arguments -ne "") {
                 try {
                     Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
-                } catch {
-                    Write-Host "Error Installing: $_"
+                } catch { Write-Host "Error Installing: $_" }
             } else {
                 try {
                     Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
                 } catch { Write-Host "Error Installing: $_" }
             }
-        }
     }
 
     function CustomTweakProcess {
@@ -45,15 +43,13 @@ $debug = $false
             if ($null -ne $Arguments -and $Arguments -ne "") {
                 try {
                     Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
-                } catch {
-                    Write-Host "Error Installing: $_"
+                } catch { Write-Host "Error Installing: $_" }
             } else {
                 try {
                     Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
                 } catch { Write-Host "Error Installing: $_" }
             }
         }
-    }    
 
     
 # Retreieve
@@ -131,7 +127,7 @@ $debug = $false
         $W32TM_Update_Arg = "/config /update"
         $W32TM_ReSync_Arg = "/resync /nowait /rediscover"
         $Win10_Style_RightClick_Arg = 'add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve'
-        $BuiltIn_Administrator_Active_Check = 'net user Administrator | Select-String -Pattern "Account active               No"'
+        $BuiltIn_Administrator_Active_Check = (net user Administrator) -match "Account active               No"
         $Add_WS_TO_DOMAIN_Arg = "Add-Computer -DomainName $domainName -Credential (Get-Credential)"
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -264,10 +260,10 @@ if ($initial -or $lcds) {
             else {
                 try {
                     if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
-                    CustomTweakProcess -Apps w32tm -Arguments $W32TM_ManualPeerList_Arg
+                    CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ManualPeerList_Arg
                     Restart-Service -Name "W32Time"
-                    CustomTweakProcess -Apps w32tm -Arguments $W32TM_Update_Arg
-                    CustomTweakProcess -Apps w32tm -Arguments $W32TM_ReSync_Arg
+                    CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_Update_Arg
+                    CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ReSync_Arg
                         # Output message that it has been finished
                             Write-Host " (Finished)"
                 }
@@ -281,7 +277,7 @@ if ($initial -or $lcds) {
             } else {
                 # Adding Registry to Workstation for Classic Right Click
                     try {
-                        CustomTweakProcess -Apps reg -Arguments $Win10_Style_RightClick_Arg
+                        CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg
                         Write-Host " (Finished)"
                     } catch {
                         Write-Host "Error Tweaking: $_"
@@ -294,7 +290,10 @@ if ($initial -or $lcds) {
         # Windows Default Administrator Account Tweak
             # Activating Local Administrator Account    
                 Write-Host -NoNewLine "Checking if Local Administrator Account is Active..."
-                    if ($BuiltIn_Administrator_Active_Check) { net user Administrator /active:yes; $AdminActive = $true }
+                    if ($BuiltIn_Administrator_Active_Check) { 
+                        CustomTweakProcess -Apps "net" -Arguments "user Administrator /active:yes"
+                        $AdminActive = $true 
+                    }
                 if ($AdminActive) { Write-Host " (Active)" } else { Write-Host " (Already Active)"}
 
             # Set Local Administrator Account Password
@@ -316,7 +315,7 @@ if ($initial -or $lcds) {
         Write-Host -NoNewline "Checking for OneDrive Process"
             if ($Process_oneDrive) {
                 Write-Host -NoNewline " (Currently Running | Starting Auto-Removal)"
-                CustomTweakProcess -Apps powershell -Arguments $OneDrive_Arg
+                CustomTweakProcess -Apps "powershell" -Arguments $OneDrive_Arg
                 Write-Host " (Finished)"
             } else {
                 Write-Host " (Currently NOT Running)"
