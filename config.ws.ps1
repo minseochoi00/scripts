@@ -524,7 +524,7 @@ if ($lcds) {
             Write-Host "$VIRASEC_TeamViewer is already installed."
             } else {
                 Write-Host -NoNewline "Installing $VIRASEC_TeamViewer"
-                    Install -Apps "$VIRASEC_TeamViewer_Installation_PATH"
+                    Install -Apps "$VIRASEC_TeamViewer_Installation_PATH" -Arguments "/s"
                         if (choco list -i | select-string $TeamViewer_Host) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
             }
         
