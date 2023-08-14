@@ -256,7 +256,7 @@ if ($initial -or $lcds) {
     Write-Host "--------------------------------------------------------------------------------------------------------"
     # Windows NTP Server Tweaks
         Write-Host -NoNewLine "Fixing Workstation's NTP Server"
-            if (-not($isAdmin)) {Write-Host " (Failed: Permission)"}
+            if (-not($isAdmin)) { Write-Host " (Failed: Permission)" }
             else {
                 try {
                     if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
@@ -268,7 +268,7 @@ if ($initial -or $lcds) {
                             Write-Host " (Finished)"
                 }
                 catch { Write-Host " (Failed)" }
-            }    
+            }
 
     # Windows Classic Right-Click Tweak for Windows 11
         Write-Host -NoNewLine "Enabling Windows 10 Right-Click Style in Windows 11"
@@ -276,10 +276,11 @@ if ($initial -or $lcds) {
                 Write-Host " (Failed: Version mismatch)"
             } else {
                 # Adding Registry to Workstation for Classic Right Click
-                try {
-                    CustomTweakProcess -Apps reg -Arguments $Win10_Style_RightClick_Arg
-                } catch {
-                    Write-Host "Error Tweaking: $_"
+                    try {
+                        CustomTweakProcess -Apps reg -Arguments $Win10_Style_RightClick_Arg
+                    } catch {
+                        Write-Host "Error Tweaking: $_"
+                }
             }
                 # Restarting Windows Explorer
                     if ($Explorer) { Stop-Process -Name explorer -Force ; Start-Sleep 10 }
@@ -300,7 +301,7 @@ if ($initial -or $lcds) {
                         $user.SetPassword($password)
                         $user.SetInfo()
                         $AdminPW = $true
-                        } 
+                        }
                         else { Write-Host " (Failed : Permission)" }
                     }
                 if ($AdminPW) { Write-Host " (Done)"}
@@ -379,6 +380,7 @@ if ($desktop) {
         }
     }
 }
+
 if ($no_softwares) { $Softwares = $false }
 if ($lcds) { $softwares = $true }
 
