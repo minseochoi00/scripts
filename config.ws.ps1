@@ -1,6 +1,6 @@
 Clear-Host
 # env
-Write-Host "Comment: Aug v2.4 - beta"
+Write-Host "Comment: Aug v2.1"
 Write-Host "Setting up the required variables..."
 
 $debug = $false
@@ -262,7 +262,6 @@ if ($initial -or $lcds) {
     Write-Host "--------------------------------------------------------------------------------------------------------"
     # Windows NTP Server Tweaks
         Write-Host -NoNewLine "Fixing Workstation's NTP Server"
-            if (-not($isAdmin)) { Write-Host " (Failed: Permission)" }
             else {
                 try {
                     if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
@@ -272,8 +271,7 @@ if ($initial -or $lcds) {
                     CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ReSync_Arg
                         # Output message that it has been finished
                             Write-Host " (Finished)"
-                }
-                catch { Write-Host " (Failed)" }
+                } catch { Write-Host " (Failed: Permission)" }
             }
 
     # Windows Classic Right-Click Tweak for Windows 11
@@ -305,14 +303,13 @@ if ($initial -or $lcds) {
             # Set Local Administrator Account Password
                 Write-Host -NoNewLine "Resetting Local Administrator Password to Generic Password"
                     if ($null -eq $password -and $password -ne "" ) { Write-Host " (Failed: Value)" }
-                    else { 
-                        if ($isAdmin) {
-                        $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
-                        $user.SetPassword($password)
-                        $user.SetInfo()
-                        $AdminPW = $true
-                        }
-                        else { Write-Host " (Failed : Permission)" }
+                    else {
+                        try {
+                            $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
+                            $user.SetPassword($password)
+                            $user.SetInfo()
+                            $AdminPW = $true
+                        } catch { Write-Host " (Failed : Permission)" }
                     }
                 if ($AdminPW) { Write-Host " (Done)"}
     }
@@ -543,14 +540,14 @@ if ($lcds) {
             Write-Host "--------------------------------------------------------------------------------------------------------"
             Write-Host -NoNewline "Looking for UserData"
                 if (Test-Path $User_PATH) {
-                    Write-Host "Found Local-Drive Directory"
+                    Write-Host " (Local-Drive Directory Found)"
                         foreach ($app1 in $Applications1) {
                             Write-Host -NoNewline "Creating $($app1.Name) shortcut..."
                             CreateShortcut -TargetFile $app1.TargetPath -ShortcutFile $app1.ShortcutFile
                             if (Test-Path $app1.ShortcutFile) { Write-Host " (Created)" } else { Write-Host " (Failed: Shortcut)" }
                         }
                 } elseif (Test-Path $User2_PATH) {
-                    Write-Host "Found Network-Drive Directory"
+                    Write-Host " (Network-Drive Directory Found)"
                         foreach ($app2 in $Applications2) {
                             Write-Host -NoNewline "Creating $($app2.Name) shortcut..."
                             CreateShortcut -TargetFile $app2.TargetPath -ShortcutFile $app2.ShortcutFile
