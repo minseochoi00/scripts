@@ -129,25 +129,10 @@ $debug = $false
     $AdminPW = $false               # Default Variable = Checking if Local Administrator's Password has been 'changed'.
     # Choco
         $Test_Choco = Get-Command -Name choco -ea Ignore        # Checking if Chocolatey is installed.
-    # Arguments
-        $OneDrive_Arg = "Invoke-RestMethod minseochoi.tech/script/remove-onedrive | Invoke-Expression"
-        $Chocolatey_Arg = "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression"
-        $amd_Arg = "install $amd"
-        $intel_Arg = "install $intel --ignore-checksums"
-        $firefox_Arg = "install $csoftware --force --params ""/NoTaskbarShortcut /NoMaintenanceService"""
-        $csoftware_Arg = "install $csoftware"
-        $dell_Arg = "install $dell_software"
-        $lcds_Arg = "install $lcds_software"
-        $W32TM_ManualPeerList_Arg = "/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update"
-        $W32TM_Update_Arg = "/config /update"
-        $W32TM_ReSync_Arg = "/resync /nowait /rediscover"
-        $Win10_Style_RightClick_Arg = 'add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve'
-        $BuiltIn_Administrator_Active_Check = (net user Administrator) -match "Account active               No"
-        $Add_WS_TO_DOMAIN_Arg = "Add-Computer -DomainName $domainName -Credential (Get-Credential)"
-
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # if Chocolatey is not installed, installed them.
-    if (-not ($Test_Choco)) { $Chocolatey_Arg }
+ Invoke-RestMethod minseochoi.tech/script/remove-onedrive | Invoke-Expression
+    if (-not($Test_Choco)) { CustomTweakProcess -Apps "powershell" -Arguments "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression" }
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Windows Service List
     $services = @(
@@ -244,6 +229,15 @@ $debug = $false
         "adobereader"                               # Adobe Reader DC
     )
 
+ # Arguments
+    $W32TM_ManualPeerList_Arg = "/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update"
+    $W32TM_Update_Arg = "/config /update"
+    $W32TM_ReSync_Arg = "/resync /nowait /rediscover"
+    $Win10_Style_RightClick_Arg = 'add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve'
+    $BuiltIn_Administrator_Active_Check = (net user Administrator) -match "Account active               No"
+    $Add_WS_TO_DOMAIN_Arg = "Add-Computer -DomainName $domainName -Credential (Get-Credential)"
+
+
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Start
     if (-not($debug)) {Clear-Host}
@@ -332,7 +326,7 @@ if ($initial -or $lcds) {
         Write-Host -NoNewline "Checking for OneDrive Process"
             if ($Process_oneDrive) {
                 Write-Host -NoNewline " (Currently Running | Starting Auto-Removal)"
-                CustomTweakProcess -Apps "powershell" -Arguments $OneDrive_Arg
+                CustomTweakProcess -Apps "powershell" -Arguments "Invoke-RestMethod minseochoi.tech/script/remove-onedrive | Invoke-Expression"
                 Write-Host " (Finished)"
             } else {
                 Write-Host " (Currently NOT Running)"
@@ -416,6 +410,7 @@ if ($lcds) { $softwares = $true }
         # AMD
             if ($processor -like '*AMD*') {
                 foreach ($amd in $amds) {
+                    $amd_Arg = "install $amd"
                     if (choco list | Select-String $amd) {
                         Write-Host "$amd is already installed."
                     } else {
@@ -429,6 +424,7 @@ if ($lcds) { $softwares = $true }
         # Intel
             if ($processor -like '*Intel*') {
                 foreach ($intel in $intels) {
+                    $intel_Arg = "install $intel --ignore-checksums"
                     if (choco list | Select-String $intel) {
                         Write-Host "$intel is already installed." 
                     } else {
@@ -441,6 +437,8 @@ if ($lcds) { $softwares = $true }
 
         # Installing software from the list from above
         foreach ($csoftware in $csoftwares) {
+            $firefox_Arg = "install $csoftware --force --params ""/NoTaskbarShortcut /NoMaintenanceService"""
+            $csoftware_Arg = "install $csoftware"
             if ($csoftware -eq "firefox") {
                 if (choco list | Select-String $csoftware) {
                     Write-Host "$csoftware is already installed."
@@ -454,6 +452,7 @@ if ($lcds) { $softwares = $true }
                     Write-Host "$csoftware is already installed."
                 } else {
                     Write-Host -NoNewline "Installing ($csoftware)"
+                    
                     Install -Apps "choco" -Arguments $csoftware_Arg
                     if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                 }
@@ -464,6 +463,7 @@ if ($lcds) { $softwares = $true }
         # Dell
             if ($manufacturer -like '*Dell*') {
                 foreach ($dell_software in $dell_softwares) {
+                    $dell_Arg = "install $dell_software"
                     if (choco list | Select-String $dell_software) {
                         Write-Host "$dell_software is already installed." 
                     } else {
@@ -477,6 +477,7 @@ if ($lcds) { $softwares = $true }
         # LCDS
             if ($lcds) {
                 foreach ($lcds_software in $lcds_softwares) {
+                    $lcds_Arg = "install $lcds_software"
                     if (choco list | Select-String $lcds_software){
                     Write-Host "$lcds_software is already installed."
                     } else {
