@@ -131,7 +131,6 @@ $debug = $false
         $Test_Choco = Get-Command -Name choco -ea Ignore        # Checking if Chocolatey is installed.
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # if Chocolatey is not installed, installed them.
- Invoke-RestMethod minseochoi.tech/script/remove-onedrive | Invoke-Expression
     if (-not($Test_Choco)) { CustomTweakProcess -Apps "powershell" -Arguments "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression" }
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Windows Service List
@@ -409,52 +408,52 @@ if ($lcds) { $softwares = $true }
 
         # AMD
             if ($processor -like '*AMD*') {
-                foreach ($amd in $amds) {
-                    $amd_Arg = "install $amd"
-                    if (choco list | Select-String $amd) {
-                        Write-Host "$amd is already installed."
+                foreach ($software in $amds) {
+                    $amd_Arg = "install $software"
+                    if (choco list | Select-String $software) {
+                        Write-Host "$software is already installed."
                     } else {
-                        Write-Host -NoNewline "Installing ($amd)"
+                        Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $amd_Arg
-                                if (choco list | Select-String $amd) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
+                                if (choco list | Select-String $software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
             }
 
         # Intel
             if ($processor -like '*Intel*') {
-                foreach ($intel in $intels) {
-                    $intel_Arg = "install $intel --ignore-checksums"
+                foreach ($software in $intels) {
+                    $intel_Arg = "install $software --ignore-checksums"
                     if (choco list | Select-String $intel) {
-                        Write-Host "$intel is already installed." 
+                        Write-Host "$software is already installed." 
                     } else {
-                        Write-Host -NoNewline "Installing ($intel)"
+                        Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $intel_Arg
-                                if (choco list | Select-String $intel) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
+                                if (choco list | Select-String $software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
             }
 
         # Installing software from the list from above
-        foreach ($csoftware in $csoftwares) {
-            $firefox_Arg = "install $csoftware --force --params ""/NoTaskbarShortcut /NoMaintenanceService"""
-            $csoftware_Arg = "install $csoftware"
+        foreach ($software in $csoftwares) {
+            $firefox_Arg = "install $software --force --params ""/NoTaskbarShortcut /NoMaintenanceService"""
+            $csoftware_Arg = "install $software"
             if ($csoftware -eq "firefox") {
-                if (choco list | Select-String $csoftware) {
-                    Write-Host "$csoftware is already installed."
+                if (choco list | Select-String $software) {
+                    Write-Host "$software is already installed."
                 } else {
-                    Write-Host -NoNewline "Installing ($csoftware)"
+                    Write-Host -NoNewline "Installing ($software)"
                     Install -Apps "choco" -Arguments $firefox_Arg
-                    if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
+                    if (choco list | Select-String $software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                 }
             } else {
-                if (choco list | Select-String $csoftware) {
-                    Write-Host "$csoftware is already installed."
+                if (choco list | Select-String $software) {
+                    Write-Host "$software is already installed."
                 } else {
-                    Write-Host -NoNewline "Installing ($csoftware)"
+                    Write-Host -NoNewline "Installing ($software)"
                     
                     Install -Apps "choco" -Arguments $csoftware_Arg
-                    if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
+                    if (choco list | Select-String $software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                 }
             }
         }
@@ -462,28 +461,28 @@ if ($lcds) { $softwares = $true }
 
         # Dell
             if ($manufacturer -like '*Dell*') {
-                foreach ($dell_software in $dell_softwares) {
-                    $dell_Arg = "install $dell_software"
-                    if (choco list | Select-String $dell_software) {
-                        Write-Host "$dell_software is already installed." 
+                foreach ($software in $dell_softwares) {
+                    $dell_Arg = "install $software"
+                    if (choco list | Select-String $software) {
+                        Write-Host "$software is already installed." 
                     } else {
-                        Write-Host -NoNewline "Installing $dell_software"
+                        Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $dell_Arg
-                        if (choco list | Select-String $dell_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
+                        if (choco list | Select-String $software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
             }
 
         # LCDS
             if ($lcds) {
-                foreach ($lcds_software in $lcds_softwares) {
-                    $lcds_Arg = "install $lcds_software"
-                    if (choco list | Select-String $lcds_software){
-                    Write-Host "$lcds_software is already installed."
+                foreach ($software in $lcds_softwares) {
+                    $lcds_Arg = "install $software"
+                    if (choco list | Select-String $software){
+                    Write-Host "$software is already installed."
                     } else {
-                        Write-Host -NoNewline "Installing $lcds_software"
+                        Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $lcds_Arg
-                    if (choco list | Select-String $lcds_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
+                    if (choco list | Select-String $software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
             }
@@ -526,7 +525,7 @@ if ($lcds) {
         if (choco list -i | Select-String $Office2019){
             Write-Host "Write-Host $Office2019 is already installed."
             } else {
-                Write-Host -NoNewline "Installing $Office2019"
+                Write-Host -NoNewline "Installing ($Office2019)"
                     Install -Apps "$2019_Office_Installation_PATH" -Arguments "$Install_Arg"
                         if (choco list -i | Select-String $Office2019) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
             }
@@ -535,7 +534,7 @@ if ($lcds) {
         if (choco list -i | Select-String $TeamViewer_Host){
             Write-Host "$VIRASEC_TeamViewer is already installed."
             } else {
-                Write-Host -NoNewline "Installing $VIRASEC_TeamViewer"
+                Write-Host -NoNewline "Installing ($VIRASEC_TeamViewer)"
                     # Install -Apps "$VIRASEC_TeamViewer_Installation_PATH" -Arguments "/s"
                     # Start-Process -FilePath "$VIRASEC_TeamViewer_Installation_PATH" -ArgumentList "/s" -Verb RunAs -Wait
                     Start-Process -FilePath "$VIRASEC_TeamViewer_Installation_PATH" -Verb RunAs -Wait
