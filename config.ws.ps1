@@ -277,9 +277,8 @@ if ($initial -or $lcds) {
     Write-Host "--------------------------------------------------------------------------------------------------------"
     # Windows NTP Server Tweaks
         Write-Host -NoNewLine "Fixing Workstation's NTP Server"
-            else {
-                try {
-                    if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
+            try {
+                if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
                     CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ManualPeerList_Arg
                     Restart-Service -Name "W32Time"
                     CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_Update_Arg
