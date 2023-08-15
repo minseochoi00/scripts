@@ -58,7 +58,7 @@ $debug = $false
                 }
             } else {
                 try {
-                    Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
+                    Start-Process -FilePath "$Apps" -WindowStyle Hidden -Wait
                 } catch { 
                     # Write-Host " (Failed: Tweak)"
                     Write-Host "Error Tweaking: $_" 
@@ -269,7 +269,7 @@ if ($initial -or $lcds) {
     Write-Host "--------------------------------------------------------------------------------------------------------"
     # Windows NTP Server Tweaks
         Write-Host -NoNewLine "Fixing Workstation's NTP Server"
-        if (-not($isAdmin)) { Write-Host " (Failed: Permission)" }
+        if ($isAdmin) {
             try {
                 if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
                     CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ManualPeerList_Arg
@@ -279,6 +279,10 @@ if ($initial -or $lcds) {
                         # Output message that it has been finished
                             Write-Host " (Finished)"
                 } catch { Write-Host " (Failed: $_)" }
+        } else {
+            Write-Host " (Failed: Permission)"
+        }
+            
 
     # Windows Classic Right-Click Tweak for Windows 11
         Write-Host -NoNewLine "Enabling Windows 10 Right-Click Style in Windows 11"
@@ -291,20 +295,24 @@ if ($initial -or $lcds) {
                         Write-Host " (Finished)"
                     } catch {
                         Write-Host "Error Tweaking: $_"
-                }
+                    }
             }
                 # Restarting Windows Explorer
-                    if ($Explorer) { Stop-Process -Name explorer -Force ; Start-Sleep 10 }
+                    if ($Explorer) { Stop-Process -Name explorer -Force ; Start-Sleep 5 }
 
     if ($lcds) {
         # Windows Default Administrator Account Tweak
             # Activating Local Administrator Account    
                 Write-Host -NoNewLine "Checking if Local Administrator Account is Active..."
                     if ($BuiltIn_Administrator_Active_Check) { 
-                        CustomTweakProcess -Apps "net" -Arguments "user Administrator /active:yes"
-                        $AdminActive = $true 
+                        if ($isAdmin) {
+                            CustomTweakProcess -Apps "net" -Arguments "user Administrator /active:yes"
+                            $AdminActive = $true
+                        } else {
+                            Write-Host " (Failed: Permission)"
+                        } 
                     }
-                if ($AdminActive) { Write-Host " (Active)" } else { Write-Host " (Already Active)"}
+                if ($AdminActive) { Write-Host " (Active)" }
 
             # Set Local Administrator Account Password
                 Write-Host -NoNewLine "Resetting Local Administrator Password to Generic Password"
@@ -315,7 +323,7 @@ if ($initial -or $lcds) {
                             $user.SetPassword($password)
                             $user.SetInfo()
                             $AdminPW = $true
-                        } catch { Write-Host " (Failed : Permission)" }
+                        } catch { Write-Host " (Failed : $_)" }
                     }
                 if ($AdminPW) { Write-Host " (Done)"}
     }
@@ -425,8 +433,8 @@ if ($lcds) { $softwares = $true }
 
         # Installing software from the list from above
         foreach ($software in $csoftwares) {
-            $firefox_Arg = "install $software --force --params ""/NoTaskbarShortcut /NoMaintenanceService"""
-            $csoftware_Arg = "install $software"
+            $firefox_Arg = 'install $software --force --params "/NoTaskbarShortcut /NoMaintenanceService"'
+            $csoftware_Arg = "install $software --ignore-checksums"
             if ($csoftware -eq "firefox") {
                 if (choco list | Select-String $software) {
                     Write-Host "$software is already installed."
@@ -451,7 +459,7 @@ if ($lcds) { $softwares = $true }
         # Dell
             if ($manufacturer -like '*Dell*') {
                 foreach ($software in $dell_softwares) {
-                    $dell_Arg = "install $software"
+                    $dell_Arg = "install $software --ignore-checksums"
                     if (choco list | Select-String $software) {
                         Write-Host "$software is already installed." 
                     } else {
@@ -491,6 +499,7 @@ if ($lcds) {
     Write-Host "--------------------------------------------------------------------------------------------------------"
         Write-Host -NoNewLine "Checking if $computerName is connected to $domainName"
         if (-not($Domain -eq $domainName)) {
+            Write-Host " (Failed: $computerName is not joined to domain)"
             Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
                 try {
                     CustomTweakProcess -Apps powershell -Arguments $Add_WS_TO_DOMAIN_Arg
