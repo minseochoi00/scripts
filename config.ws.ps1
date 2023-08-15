@@ -96,8 +96,6 @@ $debug = $false
             $Explorer = Get-Process explorer -ea SilentlyContinue
         # NTP-Server
             $NTPservice = Get-Service -Name "W32Time" -ea SilentlyContinue
-        # One-Drive    
-            $Process_oneDrive = Get-Process -Name OneDrive -ea SilentlyContinue
             
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Default Variable
@@ -131,7 +129,7 @@ $debug = $false
         $Test_Choco = Get-Command -Name choco -ea Ignore        # Checking if Chocolatey is installed.
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # if Chocolatey is not installed, installed them.
-    if (-not($Test_Choco)) { CustomTweakProcess -Apps "powershell" -Arguments "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression" }
+    if (-not($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Windows Service List
     $services = @(
@@ -321,16 +319,6 @@ if ($initial -or $lcds) {
                     }
                 if ($AdminPW) { Write-Host " (Done)"}
     }
-
-    # Check for One-Drive Installation
-        Write-Host -NoNewline "Checking for OneDrive Process"
-            if ($Process_oneDrive) {
-                Write-Host -NoNewline " (Currently Running | Starting Auto-Removal)"
-                CustomTweakProcess -Apps "powershell" -Arguments "Invoke-RestMethod minseochoi.tech/script/remove-onedrive | Invoke-Expression"
-                Write-Host " (Finished)"
-            } else {
-                Write-Host " (Currently NOT Running)"
-            }
 }
 
 # Laptop
