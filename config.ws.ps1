@@ -274,7 +274,7 @@ if ($initial -or $lcds) {
             try {
                 if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
                     CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ManualPeerList_Arg
-                    Restart-Service -Name "W32Time"
+                    CustomTweakProcess -Apps "powershell" -Arguments "Restart-Service -Name ""W32Time"""
                     CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_Update_Arg
                     CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ReSync_Arg
                         # Output message that it has been finished
@@ -424,7 +424,7 @@ if ($lcds) { $softwares = $true }
             if ($processor -like '*Intel*') {
                 foreach ($software in $intels) {
                     $intel_Arg = "install $software --ignore-checksums"
-                    if (choco list | Select-String $intel) {
+                    if (choco list | Select-String $software) {
                         Write-Host "$software is already installed." 
                     } else {
                         Write-Host -NoNewline "Installing ($software)"
