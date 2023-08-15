@@ -220,7 +220,8 @@ $debug = $false
     )
 
     $dell_softwares = @(
-        "dellcommandupdate"                         # Dell Update Command
+        "dellcommandupdate",                        # Dell Update Command
+        "supportassist"                             # Dell SupportAssist
     )
 
     $lcds_softwares = @(
