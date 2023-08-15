@@ -101,3 +101,5 @@ Write-Host -NoNewLine "Removing additional OneDrive leftovers"
     { Remove-Item -Recurse -Force $item.FullName -ea SilentlyContinue }
     Write-Host " (Removed)"
     } else { Write-Host " (Failed)" }
+
+return

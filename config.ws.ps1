@@ -277,6 +277,7 @@ if ($initial -or $lcds) {
     Write-Host "--------------------------------------------------------------------------------------------------------"
     # Windows NTP Server Tweaks
         Write-Host -NoNewLine "Fixing Workstation's NTP Server"
+        if (-not($isAdmin)) { Write-Host " (Failed: Permission)" }
             try {
                 if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
                     CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ManualPeerList_Arg
@@ -285,8 +286,7 @@ if ($initial -or $lcds) {
                     CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ReSync_Arg
                         # Output message that it has been finished
                             Write-Host " (Finished)"
-                } catch { Write-Host " (Failed: Permission)" }
-            }
+                } catch { Write-Host " (Failed: $_)" }
 
     # Windows Classic Right-Click Tweak for Windows 11
         Write-Host -NoNewLine "Enabling Windows 10 Right-Click Style in Windows 11"
@@ -420,7 +420,7 @@ if ($lcds) { $softwares = $true }
                         Write-Host "$amd is already installed."
                     } else {
                         Write-Host -NoNewline "Installing ($amd)"
-                        Install -Apps "choco" -Arguments "install $amd"
+                        Install -Apps "choco" -Arguments $amd_Arg
                                 if (choco list | Select-String $amd) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -433,7 +433,7 @@ if ($lcds) { $softwares = $true }
                         Write-Host "$intel is already installed." 
                     } else {
                         Write-Host -NoNewline "Installing ($intel)"
-                        Install -Apps "choco" -Arguments "install $intel --ignore-checksums"
+                        Install -Apps "choco" -Arguments $intel_Arg
                                 if (choco list | Select-String $intel) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -446,7 +446,7 @@ if ($lcds) { $softwares = $true }
                     Write-Host "$csoftware is already installed."
                 } else {
                     Write-Host -NoNewline "Installing ($csoftware)"
-                    Install -Apps "choco" -Arguments "install $csoftware --force --params ""/NoTaskbarShortcut /NoMaintenanceService"""
+                    Install -Apps "choco" -Arguments $firefox_Arg
                     if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                 }
             } else {
@@ -454,7 +454,7 @@ if ($lcds) { $softwares = $true }
                     Write-Host "$csoftware is already installed."
                 } else {
                     Write-Host -NoNewline "Installing ($csoftware)"
-                    Install -Apps "choco" -Arguments "install $csoftware"
+                    Install -Apps "choco" -Arguments $csoftware_Arg
                     if (choco list | Select-String $csoftware) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                 }
             }
@@ -468,7 +468,7 @@ if ($lcds) { $softwares = $true }
                         Write-Host "$dell_software is already installed." 
                     } else {
                         Write-Host -NoNewline "Installing $dell_software"
-                        Install -Apps "choco" -Arguments "install $dell_software"
+                        Install -Apps "choco" -Arguments $dell_Arg
                         if (choco list | Select-String $dell_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
@@ -481,7 +481,7 @@ if ($lcds) { $softwares = $true }
                     Write-Host "$lcds_software is already installed."
                     } else {
                         Write-Host -NoNewline "Installing $lcds_software"
-                        Install -Apps "choco" -Arguments "install $lcds_software"
+                        Install -Apps "choco" -Arguments $lcds_Arg
                     if (choco list | Select-String $lcds_software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
                     }
                 }
