@@ -21,7 +21,6 @@ $debug = $false
             Write-Host "Error creating shortcut: $_"
         }
     }
-
     function Install {
         param (
             [string]$Apps,
@@ -43,7 +42,6 @@ $debug = $false
                 }
             }
     }
-
     function CustomTweakProcess {
         param (
             [string]$Apps,
