@@ -64,23 +64,24 @@ $debug = $false
                     }
                 }
             }
-
-            if ($null -ne $Arguments -and $Arguments -ne "") {
-                try {
-                    Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
-                } catch {
-                    # Write-Host " (Failed: Tweak)"
-                    Write-Host "Error Tweaking: $_" 
-                }
-            } else {
-                try {
-                    Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
-                } catch { 
-                    # Write-Host " (Failed: Tweak)"
-                    Write-Host "Error Tweaking: $_" 
+            if ($isAdmin) {
+                if ($null -ne $Arguments -and $Arguments -ne "") {
+                    try {
+                        Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
+                    } catch {
+                        # Write-Host " (Failed: Tweak)"
+                        Write-Host "Error Tweaking: $_" 
+                    }
+                } else {
+                    try {
+                        Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
+                    } catch { 
+                        # Write-Host " (Failed: Tweak)"
+                        Write-Host "Error Tweaking: $_" 
+                    }
                 }
             }
-        }
+    }
 
     
 # Retreieve
