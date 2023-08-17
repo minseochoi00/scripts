@@ -9,7 +9,6 @@ $drives = Get-CimInstance -ClassName Win32_LogicalDisk | Select-Object DeviceID,
 $SerialNumber = (Get-WmiObject -Class Win32_BIOS).SerialNumber
 $Domain = (Get-CimInstance -ClassName Win32_ComputerSystem).Domain
 
-
 $driveInfo = @()
 foreach ($drive in $drives) {
     $freeSpaceGB = [math]::Round($drive.FreeSpace / 1GB, 2)
@@ -24,7 +23,7 @@ $graphics_devices = Get-CimInstance -Class Win32_VideoController
 
 # ---------------------------------------------------------------------------------------------------------------------------- #
 
-$clean
+Clear-Host
 Write-Host "Computer Name: $ComputerName"
 Write-Host "Operating System: $OSName"
 Write-Host "$OSInstallDate"
