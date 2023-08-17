@@ -9,21 +9,28 @@ $debug = $false
 
 # env
     # Custom Functions  
-        function CustomTweakProcess {
-            param (
-                [string]$Apps,
-                [string]$Arguments
-            )
-            try {
-                if ($null -ne $Arguments -and $Arguments -ne "") {
-                    Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait -ea SilentlyContinue
-                } else {
-                    Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait -ea SilentlyContinue
+    function CustomTweakProcess {
+        param (
+            [string]$Apps,
+            [string]$Arguments
+        )
+            if ($null -ne $Arguments -and $Arguments -ne "") {
+                try {
+                    Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
+                } catch {
+                    # Write-Host " (Failed: Tweak)"
+                    Write-Host "Error Tweaking: $_" 
                 }
-            } catch {
-                Write-Host "Error Installing: $_"
+            } else {
+                try {
+                    Start-Process -FilePath "$Apps" -WindowStyle Hidden -Wait
+                } catch { 
+                    # Write-Host " (Failed: Tweak)"
+                    Write-Host "Error Tweaking: $_" 
+                }
             }
         }
+
     # Arguments
         # Choco
             $Choco_Args = "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression"

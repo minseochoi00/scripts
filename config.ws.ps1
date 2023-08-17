@@ -310,7 +310,7 @@ if ($initial -or $lcds) {
                             Write-Host " (Failed: Permission)"
                         } 
                     }
-                if ($AdminActive) { Write-Host " (Active)" }
+                if ($AdminActive) { Write-Host " (Active)" } else { Write-Host " (Already Active)"}
 
             # Set Local Administrator Account Password
                 Write-Host -NoNewLine "Resetting Local Administrator Password to Generic Password"
@@ -431,7 +431,7 @@ if ($lcds) { $softwares = $true }
 
         # Installing software from the list from above
         foreach ($software in $csoftwares) {
-            $firefox_Arg = 'install $software --force --params "/NoTaskbarShortcut /NoMaintenanceService"'
+            $firefox_Arg = "install $software --params ""/MaintenanceService=false /TaskbarShortcut=false /NoStartMenuShortcut=false"""
             $csoftware_Arg = "install $software --ignore-checksums"
             if ($csoftware -eq "firefox") {
                 if (choco list | Select-String $software) {
@@ -568,7 +568,6 @@ if ($lcds) {
                     pause
                     return
                 }
-            
     }
 }
 Write-Host "--------------------------------------------------------------------------------------------------------"
