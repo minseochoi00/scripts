@@ -334,14 +334,14 @@ if ($initial -or $lcds) {
             # Set Local Administrator Account Password
                 Write-Host -NoNewLine "Resetting Local Administrator Password to Generic Password"
                     if ($null -eq $password -and $password -ne "" ) { Write-Host " (Failed: Value)" }
-                    else {
+                    elseif ($isAdmin) {
                         try {
                             $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
                             $user.SetPassword($password)
                             $user.SetInfo()
                             $AdminPW = $true
                         } catch { Write-Host " (Failed : $_)" }
-                    }
+                    } else { Write-Host " (Failed : Permission)"}
                 if ($AdminPW) { Write-Host " (Done)"}
     }
 }
