@@ -47,6 +47,24 @@ $debug = $false
             [string]$Apps,
             [string]$Arguments
         )
+            if (-not($isAdmin)) {
+                if ($null -ne $Arguments -and $Arguments -ne "") {
+                    try {
+                        Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -WindowStyle Hidden -Wait
+                    } catch {
+                        # Write-Host " (Failed: Tweak)"
+                        Write-Host "Error Tweaking: $_" 
+                    }
+                } else {
+                    try {
+                        Start-Process -FilePath "$Apps" -WindowStyle Hidden -Wait
+                    } catch { 
+                        # Write-Host " (Failed: Tweak)"
+                        Write-Host "Error Tweaking: $_" 
+                    }
+                }
+            }
+
             if ($null -ne $Arguments -and $Arguments -ne "") {
                 try {
                     Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
@@ -56,7 +74,7 @@ $debug = $false
                 }
             } else {
                 try {
-                    Start-Process -FilePath "$Apps" -WindowStyle Hidden -Wait
+                    Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
                 } catch { 
                     # Write-Host " (Failed: Tweak)"
                     Write-Host "Error Tweaking: $_" 
@@ -288,12 +306,12 @@ if ($initial -or $lcds) {
                 Write-Host " (Failed: Version mismatch)"
             } else {
                 # Adding Registry to Workstation for Classic Right Click
-                    try {
-                        CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg
-                        Write-Host " (Finished)"
-                    } catch {
-                        Write-Host "Error Tweaking: $_"
-                    }
+                        try {
+                            CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg
+                            Write-Host " (Finished)"
+                        } catch {
+                            Write-Host "Error Tweaking: $_"
+                        }
             }
                 # Restarting Windows Explorer
                     if ($Explorer) { Stop-Process -Name explorer -Force ; Start-Sleep 5 }
