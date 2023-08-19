@@ -26,6 +26,7 @@ $debug = $false
             [string]$Apps,
             [string]$Arguments
         )
+        if ($isAdmin){
             if ($null -ne $Arguments -and $Arguments -ne "") {
                 try {
                     Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
@@ -41,6 +42,9 @@ $debug = $false
                     Write-Host "Error Installing: $_" 
                 }
             }
+        } else {
+            Write-Host " (Failed: Permission)"
+        }
     }
     function CustomTweakProcess {
         param (
@@ -280,8 +284,13 @@ Write-Host "--------------------------------------------------------------------
 if ($initial -or $lcds) {
     # Windows Service Tweaks
         foreach ($service in $services) {
-            Write-Host "Tweaking Services.. ($service)"
-            Get-Service -Name $service -ea SilentlyContinue | Set-Service -StartupType Disabled -ea SilentlyContinue
+            try {
+                Write-Host "Tweaking Services.. ($service)"
+                Get-Service -Name $service -ea SilentlyContinue | Set-Service -StartupType Disabled -ea SilentlyContinue
+            }
+            catch {
+                Write-Host "Failed Tweaking Services.. ($service)"
+            }
         }
     Write-Host "--------------------------------------------------------------------------------------------------------"
     # Windows NTP Server Tweaks
@@ -313,6 +322,7 @@ if ($initial -or $lcds) {
                         } catch {
                             Write-Host "Error Tweaking: $_"
                         }
+                }  
             }
                 # Restarting Windows Explorer
                     if ($Explorer) { Stop-Process -Name explorer -Force ; Start-Sleep 5 }

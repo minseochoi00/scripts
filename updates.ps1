@@ -17,7 +17,7 @@
                 Start-Process -FilePath "$Apps" -Verb RunAs -Wait
             }
         } catch {
-            Write-Host "Error Installing: $_"
+            Write-Host "Error: Updating"
         }
     }
 

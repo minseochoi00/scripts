@@ -14,26 +14,44 @@ $debug = $false
             [string]$Apps,
             [string]$Arguments
         )
-            if ($null -ne $Arguments -and $Arguments -ne "") {
-                try {
-                    Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
-                } catch {
-                    # Write-Host " (Failed: Tweak)"
-                    Write-Host "Error Tweaking: $_" 
-                }
-            } else {
-                try {
-                    Start-Process -FilePath "$Apps" -WindowStyle Hidden -Wait
-                } catch { 
-                    # Write-Host " (Failed: Tweak)"
-                    Write-Host "Error Tweaking: $_" 
+            if (-not($isAdmin)) {
+                if ($null -ne $Arguments -and $Arguments -ne "") {
+                    try {
+                        Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -WindowStyle Hidden -Wait
+                    } catch {
+                        # Write-Host " (Failed: Tweak)"
+                        Write-Host "Error Tweaking: $_" 
+                    }
+                } else {
+                    try {
+                        Start-Process -FilePath "$Apps" -WindowStyle Hidden -Wait
+                    } catch { 
+                        # Write-Host " (Failed: Tweak)"
+                        Write-Host "Error Tweaking: $_" 
+                    }
                 }
             }
-        }
+            if ($isAdmin) {
+                if ($null -ne $Arguments -and $Arguments -ne "") {
+                    try {
+                        Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
+                    } catch {
+                        # Write-Host " (Failed: Tweak)"
+                        Write-Host "Error Tweaking: $_" 
+                    }
+                } else {
+                    try {
+                        Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
+                    } catch { 
+                        # Write-Host " (Failed: Tweak)"
+                        Write-Host "Error Tweaking: $_" 
+                    }
+                }
+            }
+    }
 
     # Arguments
         # Choco
-            $Choco_Args = "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression"
             $PSGallery_Trusted_Args = 'Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted'
             $NuGet_Args = "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Confirm:$false"
             $Windows_Update_Module_Args = "Install-Module PSWindowsUpdate -Confirm $false"
@@ -45,7 +63,7 @@ $debug = $false
             $Windows_Update_Args = 'Get-WindowsUpdate -Download -Hide -IgnoreReboot -NotCategory "Drivers"'
     $Test_Choco = Get-Command -Name choco -ea Ignore
         # Check for Chocolatey Installation if can't be found install it.
-            if (-not($Test_Choco)) { $Choco_Args }
+            if (-not($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
     # Print Spooler
         $PrintSpooler_PATH = "$env:SystemRoot\System32\spool\PRINTERS\*.*"
     # Windows Update
@@ -72,8 +90,7 @@ $debug = $false
     CustomTweakProcess -Apps "taskkill" -Arguments $Args  # If you have a function to handle this
         # Wait for a moment to allow Explorer to close
             Start-Sleep -Seconds 2
-    if (-not (Get-Process -Name explorer -ErrorAction SilentlyContinue)) { Write-Host " (Stopped)"
-    } else { Write-Host " (Failed)" }   
+    if (-not (Get-Process -Name explorer -ErrorAction SilentlyContinue)) { Write-Host " (Stopped)" } else { Write-Host " (Failed)" }   
 
 # Set Execution Policy
     if (-not (Get-ExecutionPolicy) -eq "Bypass") { Set-ExecutionPolicy Bypass -Force }
@@ -131,27 +148,14 @@ $debug = $false
 
 #### Start
 
-# Check for One-Drive Installation
-    Write-Host -NoNewLine "Checking if OneDrive is installed & running"
-    if ($Process_oneDrive) {
-        try { 
-            Write-Host -NoNewLine " (Found. Starting Auto-Removal)"
-            CustomTweakProcess -Apps powershell -Arguments $OneDrive_Arg
-            Write-Host " (Success)"
-        } catch { Write-Host " (Failed: Auto-Removal)"}
-    } else {
-        Write-Host " (Has not found.)"
-    }
-
-
 # Delete Temporary Files for All Users
     Write-Host -NoNewline "Removing Temporary Files"
-    try {
-    Get-ChildItem -Path "$env:windir\Temp\" *.* -Recurse | Remove-Item -Force -Recurse -ea SilentlyContinue
-    Get-ChildItem -Path $env:TEMP *.* -Recurse | Remove-Item -Force -Recurse -ea SilentlyContinue
-    Write-Host " (Removed)"
-    }
-    catch { Write-Host " (Failed: Removal)" }
+        try {
+            Get-ChildItem -Path "$env:windir\Temp\" *.* -Recurse | Remove-Item -Force -Recurse -ea SilentlyContinue
+            Get-ChildItem -Path $env:TEMP *.* -Recurse | Remove-Item -Force -Recurse -ea SilentlyContinue
+            Write-Host " (Removed)"
+        }
+        catch { Write-Host " (Failed: Removal)" }
 
 # Delete Windows update files
     Write-Host -NoNewLine "Deleting Windows update files..."
@@ -164,8 +168,8 @@ $debug = $false
 
 # Delete old Windows installation files
     Write-Host -NoNewLine "Deleting old Windows installation files..."
-        try { 
-            DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase /Quiet 
+        try {
+            CustomTweakProcess -Apps "DISM" -ArgumentList "/Online /Cleanup-Image /StartComponentCleanup /ResetBase"
             # Output message that it has been finished
                 Write-Host " (Finished)"
         }
@@ -174,7 +178,7 @@ $debug = $false
 # Flush Cache
     Write-Host -NoNewLine "Flushing IP Cache"
     try {
-        CustomTweakProcess -Apps ipconfig -Arguments "/flushdns"
+        CustomTweakProcess -Apps "ipconfig" -Arguments "/flushdns"
         # Output message that it has been finished
             Write-Host " (Finished)"
     }
@@ -199,28 +203,28 @@ $debug = $false
         # Output message that it has been finished
             Write-Host " (Finished)"
         }
-        catch { Write-Host " (Failed)" }
+        catch { Write-Host " (Failed:Spooler)" }
 
 # Windows NTP Server Tweaks
     Write-Host -NoNewLine "Fixing Workstation's NTP Server"
-    if (-not($isAdmin)) {Write-Host " (Failed: Permission)"}
-    else {
-        try {
-            if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
-            CustomTweakProcess -Apps w32tm -Arguments $W32TM_ManualPeerList_Arg
-            Restart-Service -Name "W32Time"
-            CustomTweakProcess -Apps w32tm -Arguments $W32TM_Update_Arg
-            CustomTweakProcess -Apps w32tm -Arguments $W32TM_ReSync_Arg
-                # Output message that it has been finished
-                    Write-Host " (Finished)"
-        }
-        catch { Write-Host " (Failed)" }
-    }   
+        if (-not($isAdmin)) {Write-Host " (Failed: Permission)"}
+        else {
+            try {
+                if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
+                CustomTweakProcess -Apps w32tm -Arguments $W32TM_ManualPeerList_Arg
+                Restart-Service -Name "W32Time"
+                CustomTweakProcess -Apps w32tm -Arguments $W32TM_Update_Arg
+                CustomTweakProcess -Apps w32tm -Arguments $W32TM_ReSync_Arg
+                    # Output message that it has been finished
+                        Write-Host " (Finished)"
+            }
+            catch { Write-Host " (Failed)" }
+        }   
 
 # Running Disk Cleanup
     Write-Host -NoNewLine "Starting Disk Cleanup"
         try {
-        ForEach ($Location in $Locations) { Set-ItemProperty -Path $($Base+$Location) -Name $SageSet -Type DWORD -Value 2 -ea silentlycontinue | Out-Null }
+        foreach ($Location in $Locations) { Set-ItemProperty -Path $($Base+$Location) -Name $SageSet -Type DWORD -Value 2 -ea silentlycontinue | Out-Null }
         # Do the clean-up. Have to convert the SageSet number
             $Args = "/sagerun:$([string]([int]$SageSet.Substring($SageSet.Length-4)))"
             CustomTweakProcess -Apps "$env:SystemRoot\System32\cleanmgr.exe" -Arguments $Args
@@ -229,7 +233,7 @@ $debug = $false
         # Output message that it has been finished
             Write-Host " (Finished)"
         }
-        catch { Write-Host " (Failed)" }
+        catch { Write-Host " (Failed: Disk Cleanup)" }
 
 
 
@@ -245,18 +249,18 @@ $debug = $false
 # Windows Update
     Write-Host -NoNewLine "Checking for Windows Update"
         try {
-    # Check for Windows updates (excluding drivers)
+        # Check for Windows updates (excluding drivers)
         CustomTweakProcess -Apps powershell -Arguments $Windows_Update_Args -Verb RunAs -WindowStyle Hidden -Wait
-    # Output message that it has been finished
+        # Output message that it has been finished
         Write-Host " (Finished)"
-    }
-    catch { Write-Host " (Failed)" }
+        }
+        catch { Write-Host " (Failed)" }
     
    
 # Starting File Explorer
     Write-Host -NoNewLine "Re-starting Windows Explorer..."
         if (-not(Get-Process -Name explorer -ErrorAction SilentlyContinue)) { Start-Process Explorer.exe }
-    Start-Sleep 5
+        Start-Sleep 5
         if (Get-Process -Name explorer -ErrorAction SilentlyContinue) { Write-Host " (Started)"} else { Write-Host " (Failed: Start)"}
 
 # Exit
