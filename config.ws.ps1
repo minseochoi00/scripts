@@ -100,8 +100,8 @@ $debug = $false
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Custom Tweaks
     # Power-Plan Tweaks
-        $HpowerPlanGUID = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
-        $LpowerPlanGUID = "381b4222-f694-41f0-9685-ff5bb260df2e"
+        $HpowerPlanGUID = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"            # High-Performance Power-Plan GUID
+        $LpowerPlanGUID = "381b4222-f694-41f0-9685-ff5bb260df2e"            # Low-Performance  Power-Plan GUID
     # NVIDIA High Definition Audio
         $NVIDIA = Get-PnpDevice -FriendlyName "NVIDIA High Definition Audio" -ea SilentlyContinue
             if ($NVIDIA) {
@@ -220,6 +220,12 @@ $debug = $false
             @{ Name = "Word"; TargetPath = $WORD_PATH; ShortcutFile = $WORD_USER2_PATH },
             @{ Name = "Excel"; TargetPath = $EXCEL_PATH; ShortcutFile = $EXCEL_USER2_PATH }
         )
+    # Function to Create a This PC, Documents, Download Shortcut to the Desktop
+        # Specify paths
+            $DesktopPath = [System.Environment]::GetFolderPath("Desktop")
+            $ThisPCPath = [System.Environment]::GetFolderPath("MyComputer")
+            $DocumentsPath = [System.Environment]::GetFolderPath("MyDocuments")
+            $DownloadsPath = [System.Environment]::GetFolderPath("Desktop") + "\Downloads"
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Software Installation List
     $intels = @(
@@ -282,6 +288,15 @@ $debug = $false
 Write-Host "--------------------------------------------------------------------------------------------------------"  
 
 if ($initial -or $lcds) {
+    # Create Default Shortcut
+    Write-Host -NoNewLine "Creating Default Shortcut to the desktop"
+        try {
+            Create-Shortcut -TargetPath $ThisPCPath -ShortcutPath "$DesktopPath\This PC.lnk" -ea SilentlyContinue
+            Create-Shortcut -TargetPath $DocumentsPath -ShortcutPath "$DesktopPath\Documents.lnk" -ea SilentlyContinue
+            Create-Shortcut -TargetPath $DownloadsPath -ShortcutPath "$DesktopPath\Downloads.lnk" -ea SilentlyContinue
+            Write-Host " (Finished)"
+        }
+        catch { Write-Host " (Failed: Shortcut)" }
     # Windows Service Tweaks
         foreach ($service in $services) {
             try {
