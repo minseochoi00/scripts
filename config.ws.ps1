@@ -544,7 +544,7 @@ if ($lcds) {
             Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
                 try {
                     CustomTweakProcess -Apps powershell -Arguments $Add_WS_TO_DOMAIN_Arg
-                    Write-Host " (Connected)" 
+                    if ($Domain -eq $domainName) {Write-Host " (Connected)"} else {Write-Host " (Not Connected)"}
                 }
                 catch { Write-Host " (Failed: Unable to join to domain)" }    
         } else {
