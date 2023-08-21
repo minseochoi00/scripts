@@ -27,8 +27,9 @@ function Install {
     } else {
         Write-Host " (Failed: Permission)"
     }
-if ($isAdmin) {
+}
 
+if ($isAdmin) {
     if (($GetChocoCommand) -and ($current_chocoVersion)) {
         Write-Host ""
         Write-Host "Chocolatey: Installed | Checking for Updates."
