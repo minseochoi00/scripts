@@ -21,12 +21,13 @@ $debug = $true
             Write-Host "Error creating shortcut: $_"
         }
     }
+    
     function Install {
         param (
             [string]$Apps,
             [string]$Arguments
         )
-        if ($isAdmin){
+        if ($isAdmin) {
             if ($null -ne $Arguments -and $Arguments -ne "") {
                 try {
                     Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
@@ -46,6 +47,7 @@ $debug = $true
             Write-Host " (Failed: Permission)"
         }
     }
+
     function CustomTweakProcess {
         param (
             [string]$Apps,
