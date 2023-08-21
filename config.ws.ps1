@@ -338,7 +338,6 @@ if ($initial -or $lcds) {
                             Write-Host "Error Tweaking: $_"
                         }
                 }  
-            }
                 # Restarting Windows Explorer
                     if ($Explorer) { Stop-Process -Name explorer -Force ; Start-Sleep 5 }
 
