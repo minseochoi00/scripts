@@ -21,7 +21,7 @@ $debug = $true
             Write-Host "Error creating shortcut: $_"
         }
     }
-    
+
     function Install {
         param (
             [string]$Apps,
@@ -150,7 +150,7 @@ $debug = $true
     $AdminPW = $false               # Default Variable = Checking if Local Administrator's Password has been 'changed'.
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # if Chocolatey is not installed, installed them.
-    if (-not(Get-Command -Name choco -ea Ignore)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
+    if (-not(Get-Command -Name choco -ea Ignore)) { irm minseochoi.tech/script/install-choco | iex }
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Windows Service List
     $services = @(
