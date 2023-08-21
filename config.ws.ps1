@@ -150,7 +150,7 @@ $debug = $true
     $AdminPW = $false               # Default Variable = Checking if Local Administrator's Password has been 'changed'.
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # if Chocolatey is not installed, installed them.
-    if (-not(Get-Command -Name choco -ea Ignore)) { irm minseochoi.tech/script/install-choco | iex }
+    if (-not(Get-Command -Name choco -ea Ignore)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Windows Service List
     $services = @(
@@ -220,12 +220,6 @@ $debug = $true
             @{ Name = "Word"; TargetPath = $WORD_PATH; ShortcutFile = $WORD_USER2_PATH },
             @{ Name = "Excel"; TargetPath = $EXCEL_PATH; ShortcutFile = $EXCEL_USER2_PATH }
         )
-    # Function to Create a This PC, Documents, Download Shortcut to the Desktop
-        # Specify paths
-            $DesktopPath = [System.Environment]::GetFolderPath("Desktop")
-            $ThisPCPath = [System.Environment]::GetFolderPath("MyComputer")
-            $DocumentsPath = [System.Environment]::GetFolderPath("MyDocuments")
-            $DownloadsPath = [System.Environment]::GetFolderPath("Desktop") + "\Downloads"
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Software Installation List
     $intels = @(
@@ -288,15 +282,6 @@ $debug = $true
 Write-Host "--------------------------------------------------------------------------------------------------------"  
 
 if ($initial -or $lcds) {
-    # Create Default Shortcut
-    Write-Host -NoNewLine "Creating Default Shortcut to the desktop"
-        try {
-            Create-Shortcut -TargetPath $ThisPCPath -ShortcutPath "$DesktopPath\This PC.lnk" -ea SilentlyContinue
-            Create-Shortcut -TargetPath $DocumentsPath -ShortcutPath "$DesktopPath\Documents.lnk" -ea SilentlyContinue
-            Create-Shortcut -TargetPath $DownloadsPath -ShortcutPath "$DesktopPath\Downloads.lnk" -ea SilentlyContinue
-            Write-Host " (Finished)"
-        }
-        catch { Write-Host " (Failed: Shortcut)" }
     # Windows Service Tweaks
         foreach ($service in $services) {
             try {
