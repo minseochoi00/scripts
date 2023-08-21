@@ -34,9 +34,9 @@ if ($isAdmin) {
         Write-Host ""
         Write-Host "Chocolatey: Installed | Checking for Updates."
             # Checking for Updates for Chocolatey
-            Install -Apps "choco" -ArgumentList "upgrade chocolatey -y"
+            choco upgrade chocolatey -y
             # Enable Chocolatey Feature that allows you to install without argument -y or --confirm
-            Install -Apps "choco" -ArgumentList "feature enable -n allowGlobalConfirmation"
+            choco feature enable -n allowGlobalConfirmation
             # Import Powershell Module that allows you to refresh environment
             Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
             # Command: Refresh Envirmonment
@@ -57,7 +57,7 @@ if ($isAdmin) {
         Write-Host "Chocolatey: Not Installed | Starting Auto-Installer."
             Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
             # Enable Chocolatey Feature that allows you to install without argument -y or --confirm
-            Install -Apps "choco" -ArgumentList "feature enable -n allowGlobalConfirmation"
+            choco feature enable -n allowGlobalConfirmation
             # Import Powershell Module that allows you to refresh environment
             Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
             # Command: Refresh Envirmonment
