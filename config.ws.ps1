@@ -3,7 +3,7 @@ Clear-Host
 Write-Host "Comment: Aug v2.1"
 Write-Host "Setting up the required variables..."
 
-$debug = $false
+$debug = $true
 
 # Custom Functions
     function CreateShortcut {
@@ -146,11 +146,9 @@ $debug = $false
     # Administrator Account Related Reset
     $AdminActive = $false           # Default Variable = Checking if Local Administrator account is in 'active' status.
     $AdminPW = $false               # Default Variable = Checking if Local Administrator's Password has been 'changed'.
-    # Choco
-        $Test_Choco = Get-Command -Name choco -ea Ignore        # Checking if Chocolatey is installed.
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # if Chocolatey is not installed, installed them.
-    if (-not($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
+    if (-not(Get-Command -Name choco -ea Ignore)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Windows Service List
     $services = @(
