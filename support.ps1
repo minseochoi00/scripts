@@ -26,28 +26,34 @@ $debug = $true
         param (
             [string]$Apps,
             [string]$Arguments,
-            [string]$NoHidden
+            [bool]$Hidden = $true  # Default value is $true
         )
+        
         if ($isAdmin) {
+            $windowStyle = "Normal"
+            if ($Hidden) {
+                $windowStyle = "Hidden"
+            }
+            
             if ($null -ne $Arguments -and $Arguments -ne "") {
                 try {
-                    Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait
-                } catch { 
-                    # Write-Host " (Failed: Installation of $Apps)"
-                    Write-Host "Error Installing: $_" 
+                    Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle $windowStyle -Wait
+                } catch {
+                    Write-Host "Error Installing: $_"
                 }
             } else {
                 try {
-                    Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait
+                    Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle $windowStyle -Wait
                 } catch {
-                    # Write-Host " (Failed: Installation of $Apps)"
-                    Write-Host "Error Installing: $_" 
+                    Write-Host "Error Installing: $_"
                 }
             }
         } else {
-            Write-Host " (Failed: Permission)"
+            Write-Host "Failed: Permission"
         }
     }
+    
+    
 
     function CustomTweakProcess {
         param (
@@ -75,8 +81,11 @@ $debug = $true
 
     
 # Retreieve
-    $computerName = $env:COMPUTERNAME                                                   # Retreieving Current Computer's Name
-    $userName = $env:USERNAME                                                           # Retreieving Current User's Name
+    # Retreieving Current Computer's Name
+        $computerName = $env:COMPUTERNAME                                                   
+    # Retreieving Current User's Name
+        $UserName = Get-WmiObject -Class Win32_ComputerSystem | Select-Object -ExpandProperty UserName
+        $UserName = $UserName.Split('\')[-1]                                   
     $processor = Get-WmiObject Win32_Processor | Select-Object -ExpandProperty Name     # Retreieving Processor's Information
     $manufacturer = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer      # Retreieving Manufacturer
     $Domain = (Get-CimInstance -ClassName Win32_ComputerSystem).Domain                  # Retreieving Domain
@@ -191,6 +200,7 @@ $debug = $true
         $EXCEL_PATH = "$Check_OFFICE_PATH\EXCEL.exe"
 
     $LCDS_Network_Application_PATH = "\\lcds-22-fs1\Netapps\_Initial_Install"
+        $Office2019_Installation_PATH = "$LCDS_Network_Application_PATH\new_office_2019\setup.exe"
         $Install_Arg = "/configure $LCDS_Network_Application_PATH\new_office_2019\config.xml"
     $Office2019 = "Microsoft Office Professional Plus 2019"
 
@@ -541,7 +551,7 @@ if ($lcds) {
             Write-Host "Write-Host $Office2019 is already installed."
             } else {
                 Write-Host -NoNewline "Installing ($Office2019)"
-                    Start-Process -FilePath "$LCDS_Network_Application_PATH\new_office_2019\setup.exe" -ArgumentList "$Install_Arg" -Verb RunAs -Wait
+                    Install -Apps "$LCDS_Network_Application_PATH\new_office_2019\setup.exe" -Arguments "$Install_Arg"
                         if (choco list -i | Select-String $Office2019) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
             }
         
@@ -550,6 +560,7 @@ if ($lcds) {
             Write-Host "$VIRASEC_TeamViewer is already installed."
             } else {
                 Write-Host -NoNewline "Installing ($VIRASEC_TeamViewer)"
+                    Install -Apps "$VIRASEC_TeamViewer_Installation_PATH" -Hidden $false
                     Start-Process -FilePath "$VIRASEC_TeamViewer_Installation_PATH" -Verb RunAs -Wait
                         if (choco list -i | select-string $TeamViewer_Host) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
             }
