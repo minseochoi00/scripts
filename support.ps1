@@ -26,31 +26,30 @@ $debug = $false
         param (
             [string]$Apps,
             [string]$Arguments,
-            [bool]$Hidden = $true  # Default value is $true
+            [bool]$Hidden = $true,
+            [bool]$Admin = $true
         )
+        if ($Hidden) { $windowStyle = "Hidden" } else { $windowStyle = "Normal"}
+
+        $startProcessParams = @{
+            FilePath      = $Apps
+            WindowStyle   = $windowStyle
+            Wait          = $true
+        }
         
-        if ($isAdmin) {
-            if ($Hidden) {
-                $windowStyle = "Hidden"
-            } else {
-                $windowStyle = "Normal"
-            }
-            
-            if ($null -ne $Arguments -and $Arguments -ne "") {
-                try {
-                    Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle $windowStyle -Wait
-                } catch {
-                    Write-Host "Error Installing: $_"
-                }
-            } else {
-                try {
-                    Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle $windowStyle -Wait
-                } catch {
-                    Write-Host "Error Installing: $_"
-                }
-            }
-        } else {
-            Write-Host "Failed: Permission"
+        if ($null -ne $Arguments -and $Arguments -ne "") {
+            $startProcessParams['ArgumentList'] = $Arguments -split " "
+        }
+        
+        if ($Admin) {
+            $startProcessParams['Verb'] = 'RunAs'
+            $startProcessParams['Credential'] = $cred
+        }
+        
+        try {
+            Start-Process @startProcessParams
+        } catch {
+            Write-Host "Error Installing: $_" 
         }
     }
     
@@ -252,7 +251,7 @@ $debug = $false
     $W32TM_ReSync_Arg = "/resync /nowait /rediscover"
     $Win10_Style_RightClick_Arg = 'add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve'
     $BuiltIn_Administrator_Active_Check = (net user Administrator) -match "Account active               No"
-    $Add_WS_TO_DOMAIN_Arg = "Add-Computer -DomainName $domainName -Credential ($cred)"
+    $Add_WS_TO_DOMAIN_Arg = "Add-Computer -DomainName $domainName"
 
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -322,7 +321,7 @@ if ($initial -or $lcds) {
                         }
                 }  
                 # Restarting Windows Explorer
-                    if ($Explorer) { Stop-Process -Name explorer -Force ; Start-Sleep 5 }
+                    if ($Explorer) { Stop-Process -Name explorer -Force -ea SilentlyContinue ; Start-Sleep 5 }
 
     if ($lcds) {
         # Windows Default Administrator Account Tweak
