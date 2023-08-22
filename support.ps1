@@ -60,26 +60,23 @@ $debug = $true
             [string]$Apps,
             [string]$Arguments
         )
-            if ($isAdmin) {
-                if ($null -ne $Arguments -and $Arguments -ne "") {
-                    try {
-                        Start-Process -FilePath "$Apps" -ArgumentList ($Arguments -split " ") -Verb RunAs -WindowStyle Hidden -Wait -LoadUserProfile
-                    } catch {
-                        # Write-Host " (Failed: Tweak)"
-                        Write-Host "Error Tweaking: $_" 
-                    }
-                } else {
-                    try {
-                        Start-Process -FilePath "$Apps" -Verb RunAs -WindowStyle Hidden -Wait -LoadUserProfile
-                    } catch { 
-                        # Write-Host " (Failed: Tweak)"
-                        Write-Host "Error Tweaking: $_" 
-                    }
+        if ($isAdmin) {
+            if ($null -ne $Arguments -and $Arguments -ne "") {
+                try {
+                    Invoke-Expression -Command "$Apps $Arguments"
+                } catch {
+                    Write-Host "Error Tweaking: $_"
+                }
+            } else {
+                try {
+                    Invoke-Expression -Command "$Apps"
+                } catch {
+                    Write-Host "Error Tweaking: $_"
                 }
             }
+        }
     }
 
-    
 # Retreieve
     # Retreieving Current Computer's Name
         $computerName = $env:COMPUTERNAME                                                   
@@ -551,7 +548,7 @@ if ($lcds) {
             Write-Host "Write-Host $Office2019 is already installed."
             } else {
                 Write-Host -NoNewline "Installing ($Office2019)"
-                    Install -Apps "$LCDS_Network_Application_PATH\new_office_2019\setup.exe" -Arguments "$Install_Arg"
+                    Install -Apps "$Office2019_Installation_PATH" -Arguments "$Install_Arg"
                         if (choco list -i | Select-String $Office2019) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
             }
         
