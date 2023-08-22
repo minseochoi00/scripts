@@ -60,15 +60,8 @@ $debug = $false
         param (
             [string]$Apps,
             [string]$Arguments,
-            [bool]$Admin = $true
+            [bool]$Admin = $false
         )
-    
-        if (-not $Admin) {
-            if ($null -eq $cred) {
-                $cred = Get-Credential -Message "Please Enter Administrator Credentials"
-            }
-        }
-    
         $startProcessParams = @{
             FilePath      = $Apps
             WindowStyle   = 'Hidden'
@@ -117,6 +110,9 @@ $debug = $false
             }
     # Permission Administrator Check
         $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+            if (-not $isAdmin) { 
+                        $cred = Get-Credential -Message "Please Enter Administrator Credentials"
+            }
     # Administrator Account Tweak
         $password = "l0c@l@dm1n"        # Generic Password that it will be reset to.
     # Get-Process | Get-Service
@@ -300,10 +296,10 @@ if ($initial -or $lcds) {
         if ($isAdmin) {
             try {
                 if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
-                    CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ManualPeerList_Arg
-                    CustomTweakProcess -Apps "powershell" -Arguments 'Restart-Service -Name "W32Time"'
-                    CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_Update_Arg
-                    CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ReSync_Arg 
+                    CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ManualPeerList_Arg -Admin $true
+                    CustomTweakProcess -Apps "powershell" -Arguments 'Restart-Service -Name "W32Time"' -Admin $true
+                    CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_Update_Arg -Admin $true
+                    CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ReSync_Arg -Admin $true
                         # Output message that it has been finished
                             Write-Host " (Finished)"
                 } catch { Write-Host " (Failed: $_)" }
@@ -319,7 +315,7 @@ if ($initial -or $lcds) {
             } else {
                 # Adding Registry to Workstation for Classic Right Click
                         try {
-                            CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg -Admin $false
+                            CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg
                             Write-Host " (Finished)"
                         } catch {
                             Write-Host "Error Tweaking: $_"
@@ -334,7 +330,7 @@ if ($initial -or $lcds) {
                 Write-Host -NoNewLine "Checking if Local Administrator Account is Active..."
                     if ($BuiltIn_Administrator_Active_Check) { 
                         if ($isAdmin) {
-                            CustomTweakProcess -Apps "net" -Arguments "user Administrator /active:yes"
+                            CustomTweakProcess -Apps "net" -Arguments "user Administrator /active:yes" -Admin $true
                             $AdminActive = $true
                         } else {
                             Write-Host " (Failed: Permission)"
@@ -530,7 +526,7 @@ if ($lcds) {
             Write-Host " (Failed: $computerName is not joined to domain)"
             Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
                 try {
-                    CustomTweakProcess -Apps powershell -Arguments $Add_WS_TO_DOMAIN_Arg
+                    CustomTweakProcess -Apps powershell -Arguments $Add_WS_TO_DOMAIN_Arg -Admin $true
                     Write-Host " (Connected)"
                 }
                 catch { Write-Host " (Failed: Unable to join to domain)" }    
