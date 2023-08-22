@@ -1,6 +1,6 @@
 Clear-Host
 # env
-Write-Host "Comment: Aug v2.1"
+Write-Host "Comment: Aug v3"
 Write-Host "Setting up the required variables..."
 
 $debug = $false
