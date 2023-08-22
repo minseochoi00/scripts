@@ -25,7 +25,8 @@ $debug = $true
     function Install {
         param (
             [string]$Apps,
-            [string]$Arguments
+            [string]$Arguments,
+            [string]$NoHidden
         )
         if ($isAdmin) {
             if ($null -ne $Arguments -and $Arguments -ne "") {
@@ -253,7 +254,7 @@ $debug = $true
     $W32TM_ReSync_Arg = "/resync /nowait /rediscover"
     $Win10_Style_RightClick_Arg = 'add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve'
     $BuiltIn_Administrator_Active_Check = (net user Administrator) -match "Account active               No"
-    $Add_WS_TO_DOMAIN_Arg = "Add-Computer -DomainName $domainName -Credential (Get-Credential)"
+    $Add_WS_TO_DOMAIN_Arg = "Add-Computer -DomainName $domainName -Credential ($cred)"
 
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -527,6 +528,7 @@ if ($lcds) {
             Write-Host " (Failed: $computerName is not joined to domain)"
             Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
                 try {
+                    $cred = Get-Credential -Message "Please Enter Administrator Credentials"
                     CustomTweakProcess -Apps powershell -Arguments $Add_WS_TO_DOMAIN_Arg
                     Write-Host " (Connected)"
                 }
