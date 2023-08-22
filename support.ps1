@@ -3,7 +3,7 @@ Clear-Host
 Write-Host "Comment: Aug v2.1"
 Write-Host "Setting up the required variables..."
 
-$debug = $true
+$debug = $false
 
 # Custom Functions
     function CreateShortcut {
