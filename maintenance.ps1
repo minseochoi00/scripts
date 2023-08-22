@@ -53,14 +53,13 @@ $debug = $false
     # Arguments
         # Choco
             $PSGallery_Trusted_Args = 'Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted'
-            $NuGet_Args = "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Confirm:$false"
-            $Windows_Update_Module_Args = "Install-Module PSWindowsUpdate -Confirm $false"
-            $Import_Windows_Update_Module_Args = "Import-Module PSWindowsUpdate -Confirm $false"
-            $OneDrive_Arg = "Invoke-RestMethod minseochoi.tech/script/remove-onedrive | Invoke-Expression"
+            $NuGet_Args = 'Install-PackageProvider -Name "NuGet" -MinimumVersion 2.8.5.201 -Force'
+            $Windows_Update_Module_Args = "Install-Module PSWindowsUpdate"
+            $Import_Windows_Update_Module_Args = "Import-Module PSWindowsUpdate"
             $W32TM_ManualPeerList_Arg = "/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update"
             $W32TM_Update_Arg = "/config /update"
             $W32TM_ReSync_Arg = "/resync /nowait /rediscover"
-            $Windows_Update_Args = 'Get-WindowsUpdate -Download -Hide -IgnoreReboot -NotCategory "Drivers"'
+            $Windows_Update_Args = 'Get-WindowsUpdate -Download -IgnoreReboot -NotCategory "Drivers"'
     $Test_Choco = Get-Command -Name choco -ea Ignore
         # Check for Chocolatey Installation if can't be found install it.
             if (-not($Test_Choco)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
@@ -68,8 +67,6 @@ $debug = $false
         $PrintSpooler_PATH = "$env:SystemRoot\System32\spool\PRINTERS\*.*"
     # Windows Update
         $WindowsUpdateFolder = "$($env:windir)\SoftwareDistribution\Download"
-    # OneDrive
-        $Process_oneDrive = Get-Process -Name OneDrive -ea SilentlyContinue
     # NTP Server Tweaks
         $NTPserviceName = "W32Time"
         $NTPservice = Get-Service -Name $NTPserviceName -ea SilentlyContinue
@@ -86,8 +83,8 @@ $debug = $false
 
 # Stop File Explorer
     Write-Host -NoNewLine "Stopping Windows Explorer..."
-    $Args = '/f /im "explorer.exe"'
-    CustomTweakProcess -Apps "taskkill" -Arguments $Args  # If you have a function to handle this
+    $Arguments = '/f /im "explorer.exe"'
+    CustomTweakProcess -Apps "taskkill" -Arguments $Arguments  # If you have a function to handle this
         # Wait for a moment to allow Explorer to close
             Start-Sleep -Seconds 2
     if (-not (Get-Process -Name explorer -ErrorAction SilentlyContinue)) { Write-Host " (Stopped)" } else { Write-Host " (Failed)" }   
@@ -240,7 +237,7 @@ $debug = $false
 # Check and repair system files
     Write-Host -NoNewLine "Checking and repairing system files..."
         try {
-            CustomTweakProcess -Apps sfc -Arguments "/scannow"
+            CustomTweakProcess -Apps "sfc" -Arguments "/scannow"
         # Output message that it has been finished
             Write-Host " (Finished)"
         }
@@ -250,7 +247,7 @@ $debug = $false
     Write-Host -NoNewLine "Checking for Windows Update"
         try {
         # Check for Windows updates (excluding drivers)
-        CustomTweakProcess -Apps powershell -Arguments $Windows_Update_Args -Verb RunAs -WindowStyle Hidden -Wait
+        CustomTweakProcess -Apps "powershell" -Arguments $Windows_Update_Args
         # Output message that it has been finished
         Write-Host " (Finished)"
         }
@@ -259,9 +256,9 @@ $debug = $false
    
 # Starting File Explorer
     Write-Host -NoNewLine "Re-starting Windows Explorer..."
-        if (-not(Get-Process -Name explorer -ErrorAction SilentlyContinue)) { Start-Process Explorer.exe }
+        if (-not(Get-Process -Name explorer -ea SilentlyContinue)) { Start-Process Explorer.exe }
         Start-Sleep 5
-        if (Get-Process -Name explorer -ErrorAction SilentlyContinue) { Write-Host " (Started)"} else { Write-Host " (Failed: Start)"}
+        if (Get-Process -Name explorer -ea SilentlyContinue) { Write-Host " (Started)"} else { Write-Host " (Failed: Start)"}
 
 # Exit
     return
