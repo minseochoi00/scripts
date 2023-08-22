@@ -200,7 +200,6 @@ $debug = $true
         $EXCEL_PATH = "$Check_OFFICE_PATH\EXCEL.exe"
 
     $LCDS_Network_Application_PATH = "\\lcds-22-fs1\Netapps\_Initial_Install"
-    $2019_Office_Installation_PATH = "$LCDS_Network_Application_PATH\new_office_2019\setup.exe"
         $Install_Arg = "/configure $LCDS_Network_Application_PATH\new_office_2019\config.xml"
     $Office2019 = "Microsoft Office Professional Plus 2019"
 
@@ -459,7 +458,7 @@ if ($lcds) { $softwares = $true }
 
         # Installing software from the list from above
         foreach ($software in $csoftwares) {
-            $firefox_Arg = "install $software --params ""/MaintenanceService=false /TaskbarShortcut=false /NoStartMenuShortcut=false"""
+            $firefox_Arg = 'install $software --params "/MaintenanceService=false /TaskbarShortcut=false /NoStartMenuShortcut=false"'
             $csoftware_Arg = "install $software --ignore-checksums"
             if ($csoftware -eq "firefox") {
                 if (choco list | Select-String $software) {
@@ -529,7 +528,7 @@ if ($lcds) {
             Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
                 try {
                     CustomTweakProcess -Apps powershell -Arguments $Add_WS_TO_DOMAIN_Arg
-                    if ($Domain -eq $domainName) {Write-Host " (Connected)"} else {Write-Host " (Not Connected)"}
+                    Write-Host " (Connected)"
                 }
                 catch { Write-Host " (Failed: Unable to join to domain)" }    
         } else {
@@ -550,7 +549,7 @@ if ($lcds) {
             Write-Host "Write-Host $Office2019 is already installed."
             } else {
                 Write-Host -NoNewline "Installing ($Office2019)"
-                    Install -Apps "$2019_Office_Installation_PATH" -Arguments "$Install_Arg"
+                    Start-Process -FilePath "$LCDS_Network_Application_PATH\new_office_2019\setup.exe" -ArgumentList "$Install_Arg" -Verb RunAs -Wait
                         if (choco list -i | Select-String $Office2019) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
             }
         
@@ -559,8 +558,6 @@ if ($lcds) {
             Write-Host "$VIRASEC_TeamViewer is already installed."
             } else {
                 Write-Host -NoNewline "Installing ($VIRASEC_TeamViewer)"
-                    # Install -Apps "$VIRASEC_TeamViewer_Installation_PATH" -Arguments "/s"
-                    # Start-Process -FilePath "$VIRASEC_TeamViewer_Installation_PATH" -ArgumentList "/s" -Verb RunAs -Wait
                     Start-Process -FilePath "$VIRASEC_TeamViewer_Installation_PATH" -Verb RunAs -Wait
                         if (choco list -i | select-string $TeamViewer_Host) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
             }
