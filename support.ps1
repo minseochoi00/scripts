@@ -135,7 +135,12 @@ $debug = $true
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # if Chocolatey is not installed, installed them.
     if (-not(Get-Command -Name choco -ea Ignore)) { 
+        Write-Host -NoNewLine "(Chocolatey) is not installed. Starting Installing"
+        try {
         Install -Apps "Powershell" -Arguments "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression"
+        Write-Host " (Successful)"
+        }
+        catch {Write-Host "Failed: Can't Install"}
     }
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Windows Service List
