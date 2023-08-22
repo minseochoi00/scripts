@@ -301,7 +301,7 @@ if ($initial -or $lcds) {
                 CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_Update_Arg -Admin $true
                 CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ReSync_Arg -Admin $true
                     # Output message that it has been finished
-                        if (-not $Output) { Write-Host " (Finished)" }
+                        if (-not ($Output)) { Write-Host " (Finished)" }
             
 
     # Windows Classic Right-Click Tweak for Windows 11
@@ -311,7 +311,7 @@ if ($initial -or $lcds) {
             } else {
                 # Adding Registry to Workstation for Classic Right Click
                     CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg
-                        if (-not $Output) { Write-Host " (Finished)" }
+                        if (-not ($Output)) { Write-Host " (Finished)" }
             }  
             # Restarting Windows Explorer
                 if ($Explorer) { Stop-Process -Name explorer -Force -ea SilentlyContinue ; Start-Sleep 5 }
@@ -322,6 +322,7 @@ if ($initial -or $lcds) {
                 Write-Host -NoNewLine "Checking if Local Administrator Account is Active..."
                     if ($BuiltIn_Administrator_Active_Check) { 
                         CustomTweakProcess -Apps "net" -Arguments "user Administrator /active:yes" -Admin $true
+                    }
                             if ($BuiltIn_Administrator_Active_Check) { $AdminActive = $true }
                 if ($AdminActive) { Write-Host " (Active)" }
 
