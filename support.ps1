@@ -49,7 +49,7 @@ $debug = $false
         try {
             Start-Process @startProcessParams
         } catch {
-            Write-Host "Error Installing: $_" 
+            Write-Host " (Failed: Installation)"
         }
     }
     
@@ -80,7 +80,8 @@ $debug = $false
         try {
             Start-Process @startProcessParams
         } catch {
-            Write-Host "Error Tweaking: $_" 
+            $Output = $true
+            Write-Host " (Failed: Tweaking)"
         }
     }
     
@@ -134,6 +135,7 @@ $debug = $false
         $lcds = $false
         $selectedOption = $null
         $selectedOption2 = $null
+        $Output = $null
     # Domain
         $domainName = "lcds.internal"
     # Administrator Account Related Reset
@@ -144,7 +146,7 @@ $debug = $false
     if (-not(Get-Command -Name choco -ea Ignore)) { 
         Write-Host -NoNewLine "(Chocolatey) is not installed. Starting Installing"
         try {
-        Install -Apps "Powershell" -Arguments "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression"
+        Install -Apps "Powershell" -Arguments "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression" -Admin $true
         Write-Host " (Successful)"
         }
         catch {Write-Host "Failed: Can't Install"}
@@ -293,19 +295,13 @@ if ($initial -or $lcds) {
     Write-Host "--------------------------------------------------------------------------------------------------------"
     # Windows NTP Server Tweaks
         Write-Host -NoNewLine "Fixing Workstation's NTP Server"
-        if ($isAdmin) {
-            try {
-                if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
-                    CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ManualPeerList_Arg -Admin $true
-                    CustomTweakProcess -Apps "powershell" -Arguments 'Restart-Service -Name "W32Time"' -Admin $true
-                    CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_Update_Arg -Admin $true
-                    CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ReSync_Arg -Admin $true
-                        # Output message that it has been finished
-                            Write-Host " (Finished)"
-                } catch { Write-Host " (Failed: $_)" }
-        } else {
-            Write-Host " (Failed: Permission)"
-        }
+            if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
+                CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ManualPeerList_Arg -Admin $true
+                CustomTweakProcess -Apps "powershell" -Arguments 'Restart-Service -Name "W32Time"' -Admin $true
+                CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_Update_Arg -Admin $true
+                CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ReSync_Arg -Admin $true
+                    # Output message that it has been finished
+                        if (-not $Output) { Write-Host " (Finished)" }
             
 
     # Windows Classic Right-Click Tweak for Windows 11
@@ -314,29 +310,20 @@ if ($initial -or $lcds) {
                 Write-Host " (Failed: Version mismatch)"
             } else {
                 # Adding Registry to Workstation for Classic Right Click
-                        try {
-                            CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg
-                            Write-Host " (Finished)"
-                        } catch {
-                            Write-Host "Error Tweaking: $_"
-                        }
-                }  
-                # Restarting Windows Explorer
-                    if ($Explorer) { Stop-Process -Name explorer -Force -ea SilentlyContinue ; Start-Sleep 5 }
+                    CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg
+                        if (-not $Output) { Write-Host " (Finished)" }
+            }  
+            # Restarting Windows Explorer
+                if ($Explorer) { Stop-Process -Name explorer -Force -ea SilentlyContinue ; Start-Sleep 5 }
 
     if ($lcds) {
         # Windows Default Administrator Account Tweak
             # Activating Local Administrator Account    
                 Write-Host -NoNewLine "Checking if Local Administrator Account is Active..."
                     if ($BuiltIn_Administrator_Active_Check) { 
-                        if ($isAdmin) {
-                            CustomTweakProcess -Apps "net" -Arguments "user Administrator /active:yes" -Admin $true
-                            $AdminActive = $true
-                        } else {
-                            Write-Host " (Failed: Permission)"
-                        } 
-                    }
-                if ($AdminActive) { Write-Host " (Active)" } else { Write-Host " (Already Active)"}
+                        CustomTweakProcess -Apps "net" -Arguments "user Administrator /active:yes" -Admin $true
+                            if ($BuiltIn_Administrator_Active_Check) { $AdminActive = $true }
+                if ($AdminActive) { Write-Host " (Active)" }
 
             # Set Local Administrator Account Password
                 Write-Host -NoNewLine "Resetting Local Administrator Password to Generic Password"
@@ -436,7 +423,7 @@ if ($lcds) { $softwares = $true }
                     } else {
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $amd_Arg
-                                if (choco list | Select-String $software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
+                                if (choco list | Select-String $software) { Write-Host " (Installed)" }
                     }
                 }
             }
@@ -450,7 +437,7 @@ if ($lcds) { $softwares = $true }
                     } else {
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $intel_Arg
-                                if (choco list | Select-String $software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
+                                if (choco list | Select-String $software) { Write-Host " (Installed)" }
                     }
                 }
             }
@@ -465,7 +452,7 @@ if ($lcds) { $softwares = $true }
                 } else {
                     Write-Host -NoNewline "Installing ($software)"
                     Install -Apps "choco" -Arguments $firefox_Arg
-                    if (choco list | Select-String $software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
+                    if (choco list | Select-String $software) { Write-Host " (Installed)" }
                 }
             } else {
                 if (choco list | Select-String $software) {
@@ -474,7 +461,7 @@ if ($lcds) { $softwares = $true }
                     Write-Host -NoNewline "Installing ($software)"
                     
                     Install -Apps "choco" -Arguments $csoftware_Arg
-                    if (choco list | Select-String $software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
+                    if (choco list | Select-String $software) { Write-Host " (Installed)" }
                 }
             }
         }
@@ -489,7 +476,7 @@ if ($lcds) { $softwares = $true }
                     } else {
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $dell_Arg
-                        if (choco list | Select-String $software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
+                        if (choco list | Select-String $software) { Write-Host " (Installed)" }
                     }
                 }
             }
@@ -503,7 +490,7 @@ if ($lcds) { $softwares = $true }
                     } else {
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $lcds_Arg
-                    if (choco list | Select-String $software) { Write-Host " (Installed)" } else { Write-Host " (Failed)" }
+                    if (choco list | Select-String $software) { Write-Host " (Installed)" }
                     }
                 }
             }
@@ -549,7 +536,7 @@ if ($lcds) {
             } else {
                 Write-Host -NoNewline "Installing ($Office2019)"
                     Install -Apps "$Office2019_Installation_PATH" -Arguments "$Install_Arg"
-                        if (choco list -i | Select-String $Office2019) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
+                        if (choco list -i | Select-String $Office2019) {Write-Host " (Installed)"}
             }
         
         # VIRASEC TeamViewer Installation
@@ -558,7 +545,7 @@ if ($lcds) {
             } else {
                 Write-Host -NoNewline "Installing ($VIRASEC_TeamViewer)"
                     Install -Apps "$VIRASEC_TeamViewer_Installation_PATH" -Hidden $false
-                        if (choco list -i | select-string $TeamViewer_Host) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
+                        if (choco list -i | select-string $TeamViewer_Host) {Write-Host " (Installed)"}
             }
         
         # Microsoft Office 2019 Auto-Shortcut
