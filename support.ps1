@@ -17,8 +17,7 @@ $debug = $false
             $Shortcut.TargetPath = $TargetFile
             $Shortcut.Save()
         } catch { 
-            # Write-Host " (Failed: Shortcut)"
-            Write-Host "Error creating shortcut: $_"
+            Write-Host " (Failed: Shortcut)"
         }
     }
 
@@ -43,7 +42,8 @@ $debug = $false
         
         if ($Admin) {
             $startProcessParams['Verb'] = 'RunAs'
-            $startProcessParams['Credential'] = $cred
+            if ($null -eq $cred) { Write-Host "Failed: (Value)"}
+            else { $startProcessParams['Credential'] = $cred }
         }
         
         try {
@@ -73,7 +73,8 @@ $debug = $false
     
         if ($Admin) {
             $startProcessParams['Verb'] = 'RunAs'
-            $startProcessParams['Credential'] = $cred
+            if ($null -eq $cred) { Write-Host "Failed: (Value)"}
+            else { $startProcessParams['Credential'] = $cred }
         }
     
         try {
@@ -577,14 +578,14 @@ if ($lcds) {
                         foreach ($app1 in $Applications1) {
                             Write-Host -NoNewline "Creating $($app1.Name) shortcut..."
                             CreateShortcut -TargetFile $app1.TargetPath -ShortcutFile $app1.ShortcutFile
-                            if (Test-Path $app1.ShortcutFile) { Write-Host " (Created)" } else { Write-Host " (Failed: Shortcut)" }
+                            if (Test-Path $app1.ShortcutFile) { Write-Host " (Created)" }
                         }
                 } elseif (Test-Path $User2_PATH) {
                     Write-Host " (Network-Drive Directory Found)"
                         foreach ($app2 in $Applications2) {
                             Write-Host -NoNewline "Creating $($app2.Name) shortcut..."
                             CreateShortcut -TargetFile $app2.TargetPath -ShortcutFile $app2.ShortcutFile
-                            if (Test-Path $app2.ShortcutFile) { Write-Host " (Created)" } else { Write-Host " (Failed: Shortcut)" }
+                            if (Test-Path $app2.ShortcutFile) { Write-Host " (Created)" }
                         }
                 } else {
                     Write-Host " (Failed: Can't find nor detect any UserData)"
