@@ -61,18 +61,28 @@ $debug = $true
             [string]$Arguments
         )
         if ($isAdmin) {
-            if ($null -ne $Arguments -and $Arguments -ne "") {
-                try {
-                    Invoke-Expression -Command "$Apps $Arguments"
-                } catch {
-                    Write-Host "Error Tweaking: $_"
-                }
-            } else {
-                try {
-                    Invoke-Expression -Command "$Apps"
-                } catch {
-                    Write-Host "Error Tweaking: $_"
-                }
+            $info = New-Object System.Diagnostics.ProcessStartInfo
+            $info.FileName = $Apps
+            $info.Arguments = $Arguments
+            $info.Verb = "runas"
+            $info.WindowStyle = "Hidden"
+            $info.UseShellExecute = $false
+            $info.RedirectStandardOutput = $true
+            $info.RedirectStandardError = $true
+    
+            $process = New-Object System.Diagnostics.Process
+            $process.StartInfo = $info
+            $process.Start() | Out-Null
+    
+            $process.WaitForExit()
+    
+            $stdout = $process.StandardOutput.ReadToEnd()
+            $stderr = $process.StandardError.ReadToEnd()
+    
+            $process.Close()
+    
+            if ($stderr) {
+                Write-Host "Error Tweaking: $stderr"
             }
         }
     }
