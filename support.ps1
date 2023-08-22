@@ -30,9 +30,10 @@ $debug = $false
         )
         
         if ($isAdmin) {
-            $windowStyle = "Normal"
             if ($Hidden) {
                 $windowStyle = "Hidden"
+            } else {
+                $windowStyle = "Normal"
             }
             
             if ($null -ne $Arguments -and $Arguments -ne "") {
@@ -58,34 +59,39 @@ $debug = $false
     function CustomTweakProcess {
         param (
             [string]$Apps,
-            [string]$Arguments
+            [string]$Arguments,
+            [bool]$Admin = $true
         )
-        if ($isAdmin) {
-            $info = New-Object System.Diagnostics.ProcessStartInfo
-            $info.FileName = $Apps
-            $info.Arguments = $Arguments
-            $info.Verb = "runas"
-            $info.WindowStyle = "Hidden"
-            $info.UseShellExecute = $false
-            $info.RedirectStandardOutput = $true
-            $info.RedirectStandardError = $true
     
-            $process = New-Object System.Diagnostics.Process
-            $process.StartInfo = $info
-            $process.Start() | Out-Null
-    
-            $process.WaitForExit()
-    
-            $stdout = $process.StandardOutput.ReadToEnd()
-            $stderr = $process.StandardError.ReadToEnd()
-    
-            $process.Close()
-    
-            if ($stderr) {
-                Write-Host "Error Tweaking: $stderr"
+        if (-not $Admin) {
+            if ($null -eq $cred) {
+                $cred = Get-Credential -Message "Please Enter Administrator Credentials"
             }
         }
+    
+        $startProcessParams = @{
+            FilePath      = $Apps
+            WindowStyle   = 'Hidden'
+            Wait          = $true
+        }
+    
+        if ($null -ne $Arguments -and $Arguments -ne "") {
+            $startProcessParams['ArgumentList'] = $Arguments -split " "
+        }
+    
+        if ($Admin) {
+            $startProcessParams['Verb'] = 'RunAs'
+        } elseif ($cred) {
+            $startProcessParams['Credential'] = $cred
+        }
+    
+        try {
+            Start-Process @startProcessParams
+        } catch {
+            Write-Host "Error Tweaking: $_" 
+        }
     }
+    
 
 # Retreieve
     # Retreieving Current Computer's Name
@@ -126,16 +132,6 @@ $debug = $false
         $Softwares = $false             # Auto Installation of Default Softwares.
     # NVIDIA High Definition Audio
         $VaudioDeviceID = $false        # Check for NVIDIA High Definition Audio is installed
-# Execution Policy
-    $GEP = Get-ExecutionPolicy
-    $BP = "Bypass"
-    # If the current Execution Policy is not already set to Bypass
-        if (-not ($GEP -eq $BP)) {
-        # Define the script block to change Execution Policy
-            $Code = { Set-ExecutionPolicy -ExecutionPolicy $using:BP -Force }
-        # Start a background job to change the Execution Policy
-            Start-Job -ScriptBlock $Code | Wait-Job | Remove-Job
-    }
     # Choice Reset
         $laptop = $false
         $desktop = $false
@@ -306,9 +302,9 @@ if ($initial -or $lcds) {
             try {
                 if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
                     CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ManualPeerList_Arg
-                    CustomTweakProcess -Apps "powershell" -Arguments "Restart-Service -Name ""W32Time"""
+                    CustomTweakProcess -Apps "powershell" -Arguments 'Restart-Service -Name "W32Time"'
                     CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_Update_Arg
-                    CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ReSync_Arg
+                    CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ReSync_Arg 
                         # Output message that it has been finished
                             Write-Host " (Finished)"
                 } catch { Write-Host " (Failed: $_)" }
@@ -324,7 +320,7 @@ if ($initial -or $lcds) {
             } else {
                 # Adding Registry to Workstation for Classic Right Click
                         try {
-                            CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg
+                            CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg -Admin $false
                             Write-Host " (Finished)"
                         } catch {
                             Write-Host "Error Tweaking: $_"
@@ -535,7 +531,6 @@ if ($lcds) {
             Write-Host " (Failed: $computerName is not joined to domain)"
             Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
                 try {
-                    $cred = Get-Credential -Message "Please Enter Administrator Credentials"
                     CustomTweakProcess -Apps powershell -Arguments $Add_WS_TO_DOMAIN_Arg
                     Write-Host " (Connected)"
                 }
@@ -568,7 +563,6 @@ if ($lcds) {
             } else {
                 Write-Host -NoNewline "Installing ($VIRASEC_TeamViewer)"
                     Install -Apps "$VIRASEC_TeamViewer_Installation_PATH" -Hidden $false
-                    Start-Process -FilePath "$VIRASEC_TeamViewer_Installation_PATH" -Verb RunAs -Wait
                         if (choco list -i | select-string $TeamViewer_Host) {Write-Host " (Installed)"} else {Write-Host " (Failed)"}
             }
         
