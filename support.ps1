@@ -81,7 +81,6 @@ $debug = $false
     
         if ($Admin) {
             $startProcessParams['Verb'] = 'RunAs'
-        } elseif ($cred) {
             $startProcessParams['Credential'] = $cred
         }
     
