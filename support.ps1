@@ -310,7 +310,7 @@ if ($initial -or $lcds) {
                 Write-Host " (Failed: Version mismatch)"
             } else {
                 # Adding Registry to Workstation for Classic Right Click
-                    CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg
+                    CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg -Admin $false
                         if (-not ($Output)) { Write-Host " (Finished)" }
             }  
             # Restarting Windows Explorer
