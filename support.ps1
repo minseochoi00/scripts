@@ -76,7 +76,7 @@ $debug = $false
         try {
             Start-Process @startProcessParams
         } catch {
-            $Output = $true
+            Set-Variable $ErrorOutput = $true
             Write-Host " (Failed: Tweaking)"
         }
     }
@@ -307,7 +307,7 @@ if ($initial -or $lcds) {
             } else {
                 # Adding Registry to Workstation for Classic Right Click
                     CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg -Admin $false
-                        if (-not ($Output)) { Write-Host " (Finished)" }
+                        if (-not ($ErrorOutput)) { Write-Host " (Finished)" }
             }  
             # Restarting Windows Explorer
                 if ($Explorer) { Stop-Process -Name explorer -Force -ea SilentlyContinue ; Start-Sleep 5 }
