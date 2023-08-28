@@ -93,12 +93,11 @@ $debug = $false
     if (-not (Get-ExecutionPolicy) -eq "Bypass") { Set-ExecutionPolicy Bypass -Force }
 
 # Set PSGallery as Trusted
-    # CustomTweakProcess -Apps powershell.exe -Arguments $PSGallery_Trusted_Args
-    Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
+    CustomTweakProcess -Apps powershell.exe -Arguments $PSGallery_Trusted_Args
 
 # Installing NuGet Package
     # CustomTweakProcess -Apps powershell.exe -Arguments $NuGet_Args
-    Install-PackageProvider -Name "NuGet" -MinimumVersion 2.8.5.201 -Force
+    Install-PackageProvider -Name "NuGet" -MinimumVersion 2.8.5.201 -Confirm
 
 # Installing Windows Update Module
     CustomTweakProcess -Apps powershell.exe -Arguments $Windows_Update_Module_Args
