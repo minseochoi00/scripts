@@ -42,9 +42,7 @@ $debug = $false
         
         if ($Admin) {
             $startProcessParams['Verb'] = 'RunAs'
-            if ($null -eq $cred) { Write-Host "Failed: (Value)"}
-            else { $startProcessParams['Credential'] = $cred }
-        }
+        } else { $startProcessParams['Credential'] = $cred }
         
         try {
             Start-Process @startProcessParams
@@ -73,9 +71,7 @@ $debug = $false
     
         if ($Admin) {
             $startProcessParams['Verb'] = 'RunAs'
-            if ($null -eq $cred) { Write-Host "Failed: (Value)"}
-            else { $startProcessParams['Credential'] = $cred }
-        }
+        } else { $startProcessParams['Credential'] = $cred }
     
         try {
             Start-Process @startProcessParams
