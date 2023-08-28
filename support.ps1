@@ -80,6 +80,27 @@ $debug = $false
             Write-Host " (Failed: Tweaking)"
         }
     }
+
+    function Show-ScriptProgress {
+        param (
+            [int]$TotalItems,
+            [string]$Activity,
+            [string]$StatusPrefix = "Processing",
+            [int]$UpdateIntervalMilliseconds = 100
+        )
+    
+        # Loop through the total items
+        for ($i = 1; $i -le $TotalItems; $i++) {
+            $PercentageComplete = ($i / $TotalItems) * 100
+            $Status = "$StatusPrefix item $i of $TotalItems"
+        
+            Write-Progress -Activity $Activity -Status $Status -PercentComplete $PercentageComplete
+            Start-Sleep -Milliseconds $UpdateIntervalMilliseconds
+        }
+    
+        # Mark script as completed
+        Write-Progress -Activity $Activity -Status "Script completed" -Completed
+}
     
 
 # Retreieve
@@ -418,6 +439,7 @@ if ($lcds) { $softwares = $true }
                     if (choco list | Select-String $software) {
                         Write-Host "$software is already installed."
                     } else {
+                        Show-ScriptProgress -TotalItems $amds.Count -Activity "Installing Software using Chocolatey"
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $amd_Arg
                                 if (choco list | Select-String $software) { Write-Host " (Installed)" }
@@ -432,6 +454,7 @@ if ($lcds) { $softwares = $true }
                     if (choco list | Select-String $software) {
                         Write-Host "$software is already installed." 
                     } else {
+                        Show-ScriptProgress -TotalItems $intels.Count -Activity "Installing Software using Chocolatey"
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $intel_Arg
                                 if (choco list | Select-String $software) { Write-Host " (Installed)" }
@@ -455,8 +478,8 @@ if ($lcds) { $softwares = $true }
                 if (choco list | Select-String $software) {
                     Write-Host "$software is already installed."
                 } else {
+                    Show-ScriptProgress -TotalItems $csoftwares.Count -Activity "Installing Software using Chocolatey"
                     Write-Host -NoNewline "Installing ($software)"
-                    
                     Install -Apps "choco" -Arguments $csoftware_Arg
                     if (choco list | Select-String $software) { Write-Host " (Installed)" }
                 }
@@ -471,6 +494,7 @@ if ($lcds) { $softwares = $true }
                     if (choco list | Select-String $software) {
                         Write-Host "$software is already installed." 
                     } else {
+                        Show-ScriptProgress -TotalItems $dell_softwares.Count -Activity "Installing Software using Chocolatey"
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $dell_Arg
                         if (choco list | Select-String $software) { Write-Host " (Installed)" }
@@ -485,6 +509,7 @@ if ($lcds) { $softwares = $true }
                     if (choco list | Select-String $software){
                     Write-Host "$software is already installed."
                     } else {
+                        Show-ScriptProgress -TotalItems $lcds_softwares.Count -Activity "Installing Software using Chocolatey"
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $lcds_Arg
                     if (choco list | Select-String $software) { Write-Host " (Installed)" }
