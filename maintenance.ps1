@@ -197,7 +197,7 @@ $debug = $false
     Write-Host -NoNewLine "Fixing Print Spooler"
         try {
             Stop-Service -Name Spooler -Force
-            Remove-Item -Path $PrintSpooler_PATH -ea Ignore
+            Remove-Item -Path $PrintSpooler_PATH -ea Ignore -Confirm
             Start-Service -Name Spooler
         # Output message that it has been finished
             Write-Host " (Finished)"
