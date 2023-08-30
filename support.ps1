@@ -1,9 +1,9 @@
 Clear-Host
 # env
-Write-Host "Comment: Sep v1"
+Write-Host "Comment: Sep v2"
 Write-Host "Setting up the required variables..."
 
-$debug = $false
+$debug = $true
 
 # Custom Functions
     function CreateShortcut {
@@ -131,12 +131,12 @@ $debug = $false
             }
     # Permission Administrator Check
         $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-            if (-not $isAdmin) {
+            if (-not ($isAdmin)) {
                 $cred = Get-Credential -Message "Enter Administrator Credentials" -UserName "lcds.internal\"
                 if ($null -eq $cred) {
                     Write-Host "Credentials are missing"
                     Pause
-                    return
+                    exit
                 }
             }
     # Administrator Account Tweak
@@ -171,7 +171,7 @@ $debug = $false
     if (-not(Get-Command -Name choco -ea Ignore)) { 
         Write-Host -NoNewLine "(Chocolatey) is not installed. Starting Installing"
         try {
-        Install -Apps "PowerShell" -Arguments "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression" -Admin $true
+        Start-Process -FilePath "PowerShell" -ArgumentList "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression" -Verb RunAs
         Write-Host " (Successful)"
         }
         catch {Write-Host "Failed: Can't Install"}
@@ -456,7 +456,7 @@ if ($lcds) { $softwares = $true }
                     } else {
                         Show-ScriptProgress -TotalItems $amds.Count -Activity "Installing Software using Chocolatey"
                         Write-Host -NoNewline "Installing ($software)"
-                        Install -Apps "choco" -Arguments $amd_Arg
+                        Install -Apps "choco" -Arguments $amd_Arg 
                                 if (choco list -i | Select-String $software) { Write-Host " (Installed)" }
                     }
                 }
