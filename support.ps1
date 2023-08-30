@@ -42,6 +42,7 @@ $debug = $false
         
         if ($Admin) {
             $startProcessParams['Verb'] = 'RunAs'
+        } elseif ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"
         } else { $startProcessParams['Credential'] = $cred }
         
         try {
@@ -71,6 +72,7 @@ $debug = $false
     
         if ($Admin) {
             $startProcessParams['Verb'] = 'RunAs'
+        } elseif ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"
         } else { $startProcessParams['Credential'] = $cred }
     
         try {
