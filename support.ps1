@@ -28,6 +28,7 @@ $debug = $false
             [bool]$Hidden = $true,
             [bool]$Admin = $true
         )
+        $cred = Get-Credential
         if ($Hidden) { $windowStyle = "Hidden" } else { $windowStyle = "Normal"}
 
         $startProcessParams = @{
@@ -52,14 +53,15 @@ $debug = $false
         }
     }
     
-    
-
     function CustomTweakProcess {
         param (
             [string]$Apps,
             [string]$Arguments,
             [bool]$Admin = $false
         )
+    
+        $cred = Get-Credential
+    
         $startProcessParams = @{
             FilePath      = $Apps
             WindowStyle   = 'Hidden'
@@ -72,12 +74,15 @@ $debug = $false
     
         if ($Admin) {
             $startProcessParams['Verb'] = 'RunAs'
-        } elseif ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"
-        } else { $startProcessParams['Credential'] = $cred }
+        } elseif ($null -eq $cred) {
+            Write-Host " (Failed: Credentials is Empty)"
+        } else {
+            $startProcessParams['Credential'] = $cred
+        }
     
         Start-Process @startProcessParams
-
     }
+    
 
     function Show-ScriptProgress {
         param (
