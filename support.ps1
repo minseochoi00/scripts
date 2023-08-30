@@ -131,10 +131,9 @@ $debug = $false
             }
     # Permission Administrator Check
         $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-            if (-not $isAdmin) {
-                        $cred = $null
+            <# if (-not $isAdmin) {
                         $cred = Get-Credential -Message "Please Enter Administrator Credentials"
-            }
+            } #>
     # Administrator Account Tweak
         $password = "l0c@l@dm1n"        # Generic Password that it will be reset to.
     # Get-Process | Get-Service
