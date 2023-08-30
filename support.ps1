@@ -152,7 +152,8 @@ $debug = $false
         $lcds = $false
         $selectedOption = $null
         $selectedOption2 = $null
-        $Output = $null
+        $ErrorOutput = $null
+        $cred = $null
     # Domain
         $domainName = "lcds.internal"
     # Administrator Account Related Reset
@@ -217,13 +218,13 @@ $debug = $false
         $EXCEL_PATH = "$Check_OFFICE_PATH\EXCEL.exe"
 
     $LCDS_Network_Application_PATH = "\\lcds-22-fs1\Netapps\_Initial_Install"
-        $Office2019_Installation_PATH = "$LCDS_Network_Application_PATH\new_office_2019\setup.exe"
+        $Office2019_Install_PATH = "$LCDS_Network_Application_PATH\new_office_2019\setup.exe"
         $Install_Arg = "/configure $LCDS_Network_Application_PATH\new_office_2019\config.xml"
-    $Office2019 = "Microsoft Office Professional Plus 2019"
+        $Office2019 = "Microsoft Office Professional Plus 2019"
 
     $VIRASEC_TeamViewer = "VIRASEC TeamViewer Host"
         $TeamViewer_Host = "TeamViewer Host"
-        $VIRASEC_TeamViewer_Installation_PATH = "$LCDS_Network_Application_PATH\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe"
+        $VTeamViewer_Install_PATH = "$LCDS_Network_Application_PATH\VIRASEC-TeamViewer\TeamViewer_Host_Setup.exe"
 
 
     # Local User Path Shortcut Functions
@@ -264,6 +265,8 @@ $debug = $false
         "vlc",                                      # VLC Media Player
         "adobereader"                               # Adobe Reader DC
     )
+
+
 
  # Arguments
     $W32TM_ManualPeerList_Arg = "/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update"
@@ -557,7 +560,7 @@ if ($lcds) {
             Write-Host "Write-Host $Office2019 is already installed."
             } else {
                 Write-Host -NoNewline "Installing ($Office2019)"
-                    Install -Apps "$Office2019_Installation_PATH" -Arguments "$Install_Arg"
+                    Install -Apps "$Office2019_Install_PATH" -Arguments "$Install_Arg" -Hidden $true
                         if (choco list -i | Select-String $Office2019) {Write-Host " (Installed)"}
             }
         
@@ -566,9 +569,10 @@ if ($lcds) {
             Write-Host "$VIRASEC_TeamViewer is already installed."
             } else {
                 Write-Host -NoNewline "Installing ($VIRASEC_TeamViewer)"
-                    Install -Apps "$VIRASEC_TeamViewer_Installation_PATH" -Hidden $false
+                    Install -Apps "$VTeamViewer_Install_PATH" -Hidden $false
                         if (choco list -i | select-string $TeamViewer_Host) {Write-Host " (Installed)"}
             }
+  
         
         # Microsoft Office 2019 Auto-Shortcut
             Write-Host "--------------------------------------------------------------------------------------------------------"
