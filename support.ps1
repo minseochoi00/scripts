@@ -1,6 +1,6 @@
 Clear-Host
 # env
-Write-Host "Comment: Aug v3"
+Write-Host "Comment: Sep v1"
 Write-Host "Setting up the required variables..."
 
 $debug = $false
@@ -46,6 +46,7 @@ $debug = $false
                 $startProcessParams['Credential'] = $cred
             }
             catch { $startProcessParams['Verb'] = 'RunAs' }
+        }
         if ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"}
 
         
@@ -76,6 +77,7 @@ $debug = $false
         if ($Admin) {
             try { $startProcessParams['Credential'] = $cred }
             catch { $startProcessParams['Verb'] = 'RunAs' }
+        }
         if ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"}
     
         Start-Process @startProcessParams
