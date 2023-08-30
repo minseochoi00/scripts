@@ -26,7 +26,8 @@ $debug = $false
             [string]$Apps,
             [string]$Arguments,
             [bool]$Hidden = $true,
-            [bool]$Admin = $true
+            [bool]$Admin = $true,
+            [bool]$Credential = $true
         )
 
         if ($Hidden) { $windowStyle = "Hidden" } else { $windowStyle = "Normal"}
@@ -41,13 +42,11 @@ $debug = $false
             $startProcessParams['ArgumentList'] = $Arguments -split " "
         }
         
-        if ($Admin) {
-            try {
-                $startProcessParams['Credential'] = $cred
-            }
-            catch { $startProcessParams['Verb'] = 'RunAs' }
-        }
-        if ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"}
+        if ($Admin) { $startProcessParams['Verb'] = 'RunAs' }
+        
+        if ($Credential) { $startProcessParams['Credential'] = $cred }
+        elseif ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"}
+        else { Write-Host " (Failed: Credentials)"}
 
         
         try {
@@ -61,7 +60,8 @@ $debug = $false
         param (
             [string]$Apps,
             [string]$Arguments,
-            [bool]$Admin = $false
+            [bool]$Admin = $false,
+            [bool]$Credential = $true
         )
     
         $startProcessParams = @{
@@ -74,11 +74,11 @@ $debug = $false
             $startProcessParams['ArgumentList'] = $Arguments -split " "
         }
     
-        if ($Admin) {
-            try { $startProcessParams['Credential'] = $cred }
-            catch { $startProcessParams['Verb'] = 'RunAs' }
-        }
-        if ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"}
+        if ($Admin) { $startProcessParams['Verb'] = 'RunAs' }
+        
+        if ($Credential) { $startProcessParams['Credential'] = $cred }
+        elseif ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"}
+        else { Write-Host " (Failed: Credentials)"}
     
         Start-Process @startProcessParams
     }
@@ -131,9 +131,14 @@ $debug = $false
             }
     # Permission Administrator Check
         $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-            <# if (-not $isAdmin) {
-                        $cred = Get-Credential -Message "Please Enter Administrator Credentials"
-            } #>
+            if (-not $isAdmin) {
+                $cred = Get-Credential -Message "Enter Administrator Credentials" -UserName "lcds.internal\"
+                if ($null -eq $cred) {
+                    Write-Host "Credentials are missing"
+                    Pause
+                    return
+                }
+            }
     # Administrator Account Tweak
         $password = "l0c@l@dm1n"        # Generic Password that it will be reset to.
     # Get-Process | Get-Service
@@ -166,7 +171,7 @@ $debug = $false
     if (-not(Get-Command -Name choco -ea Ignore)) { 
         Write-Host -NoNewLine "(Chocolatey) is not installed. Starting Installing"
         try {
-        Install -Apps "Powershell" -Arguments "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression" -Admin $true
+        Install -Apps "PowerShell" -Arguments "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression" -Admin $true
         Write-Host " (Successful)"
         }
         catch {Write-Host "Failed: Can't Install"}
@@ -318,10 +323,10 @@ if ($initial -or $lcds) {
     # Windows NTP Server Tweaks
         Write-Host -NoNewLine "Fixing Workstation's NTP Server"
             if (($NTPservice).Status -eq 'Stopped') { Start-Service -Name "W32Time" }
-                CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ManualPeerList_Arg -Admin $true
-                CustomTweakProcess -Apps "powershell" -Arguments 'Restart-Service -Name "W32Time"' -Admin $true
-                CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_Update_Arg -Admin $true
-                CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ReSync_Arg -Admin $true
+                CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ManualPeerList_Arg -Credential $true
+                CustomTweakProcess -Apps "powershell" -Arguments 'Restart-Service -Name "W32Time"' -Credential $true
+                CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_Update_Arg -Credential $true
+                CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ReSync_Arg -Credential $true
                     # Output message that it has been finished
                         if (-not ($Output)) { Write-Host " (Finished)" }
             
@@ -446,13 +451,13 @@ if ($lcds) { $softwares = $true }
             if ($processor -like '*AMD*') {
                 foreach ($software in $amds) {
                     $amd_Arg = "install $software"
-                    if (choco list | Select-String $software) {
+                    if (choco list -i | Select-String $software) {
                         Write-Host "$software is already installed."
                     } else {
                         Show-ScriptProgress -TotalItems $amds.Count -Activity "Installing Software using Chocolatey"
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $amd_Arg
-                                if (choco list | Select-String $software) { Write-Host " (Installed)" }
+                                if (choco list -i | Select-String $software) { Write-Host " (Installed)" }
                     }
                 }
             }
@@ -461,28 +466,28 @@ if ($lcds) { $softwares = $true }
             if ($processor -like '*Intel*') {
                 foreach ($software in $intels) {
                     $intel_Arg = "install $software --ignore-checksums"
-                    if (choco list | Select-String $software) {
+                    if (choco list -i | Select-String $software) {
                         Write-Host "$software is already installed." 
                     } else {
                         Show-ScriptProgress -TotalItems $intels.Count -Activity "Installing Software using Chocolatey"
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $intel_Arg
-                                if (choco list | Select-String $software) { Write-Host " (Installed)" }
+                                if (choco list -i | Select-String $software) { Write-Host " (Installed)" }
                     }
                 }
             }
 
         # Installing software from the list from above
         foreach ($software in $csoftwares) {
-            $firefox_Arg = 'install $software --params "/MaintenanceService=false /TaskbarShortcut=false /NoStartMenuShortcut=false"'
-            $csoftware_Arg = "install $software --ignore-checksums"
+            $firefox_Arg = 'install $software --force --params "/MaintenanceService=false /TaskbarShortcut=false /NoStartMenuShortcut=false"'
+            $csoftware_Arg = "install $software --ignore-checksums --force"
             if ($csoftware -eq "firefox") {
-                if (choco list | Select-String $software) {
+                if (choco list -i | Select-String $software) {
                     Write-Host "$software is already installed."
                 } else {
                     Write-Host -NoNewline "Installing ($software)"
                     Install -Apps "choco" -Arguments $firefox_Arg
-                    if (choco list | Select-String $software) { Write-Host " (Installed)" }
+                    if (choco list -i | Select-String $software) { Write-Host " (Installed)" }
                 }
             } else {
                 if (choco list | Select-String $software) {
@@ -491,7 +496,7 @@ if ($lcds) { $softwares = $true }
                     Show-ScriptProgress -TotalItems $csoftwares.Count -Activity "Installing Software using Chocolatey"
                     Write-Host -NoNewline "Installing ($software)"
                     Install -Apps "choco" -Arguments $csoftware_Arg
-                    if (choco list | Select-String $software) { Write-Host " (Installed)" }
+                    if (choco list -i | Select-String $software) { Write-Host " (Installed)" }
                 }
             }
         }
@@ -500,14 +505,14 @@ if ($lcds) { $softwares = $true }
         # Dell
             if ($manufacturer -like '*Dell*') {
                 foreach ($software in $dell_softwares) {
-                    $dell_Arg = "install $software --ignore-checksums"
-                    if (choco list | Select-String $software) {
+                    $dell_Arg = "install $software --ignore-checksums --force"
+                    if (choco list -i | Select-String $software) {
                         Write-Host "$software is already installed." 
                     } else {
                         Show-ScriptProgress -TotalItems $dell_softwares.Count -Activity "Installing Software using Chocolatey"
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $dell_Arg
-                        if (choco list | Select-String $software) { Write-Host " (Installed)" }
+                        if (choco list -i | Select-String $software) { Write-Host " (Installed)" }
                     }
                 }
             }
@@ -515,14 +520,14 @@ if ($lcds) { $softwares = $true }
         # LCDS
             if ($lcds) {
                 foreach ($software in $lcds_softwares) {
-                    $lcds_Arg = "install $software"
-                    if (choco list | Select-String $software){
+                    $lcds_Arg = "install $software --force"
+                    if (choco list -i | Select-String $software){
                     Write-Host "$software is already installed."
                     } else {
                         Show-ScriptProgress -TotalItems $lcds_softwares.Count -Activity "Installing Software using Chocolatey"
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $lcds_Arg
-                    if (choco list | Select-String $software) { Write-Host " (Installed)" }
+                    if (choco list -i | Select-String $software) { Write-Host " (Installed)" }
                     }
                 }
             }
