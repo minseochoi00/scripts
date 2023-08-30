@@ -78,7 +78,6 @@ $debug = $false
         try {
             Start-Process @startProcessParams
         } catch {
-            Set-Variable $ErrorOutput = $true
             Write-Host " (Failed: Tweaking)"
         }
     }
@@ -332,8 +331,13 @@ if ($initial -or $lcds) {
                 Write-Host " (Failed: Version mismatch)"
             } else {
                 # Adding Registry to Workstation for Classic Right Click
+                try {
                     CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg -Admin $false
-                        if (-not ($ErrorOutput)) { Write-Host " (Finished)" }
+                    Write-Host " (Finished)"
+                }
+                catch {
+                    Write-Host " (Failed: Registry)"
+                }
             }  
             # Restarting Windows Explorer
                 if ($Explorer) { Stop-Process -Name explorer -Force -ea SilentlyContinue ; Start-Sleep 5 }
