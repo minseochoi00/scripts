@@ -75,11 +75,8 @@ $debug = $false
         } elseif ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"
         } else { $startProcessParams['Credential'] = $cred }
     
-        try {
-            Start-Process @startProcessParams
-        } catch {
-            Write-Host " (Failed: Tweaking)"
-        }
+        Start-Process @startProcessParams
+
     }
 
     function Show-ScriptProgress {
