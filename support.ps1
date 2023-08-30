@@ -28,7 +28,7 @@ $debug = $false
             [bool]$Hidden = $true,
             [bool]$Admin = $true
         )
-        $cred = Get-Credential
+
         if ($Hidden) { $windowStyle = "Hidden" } else { $windowStyle = "Normal"}
 
         $startProcessParams = @{
@@ -42,9 +42,12 @@ $debug = $false
         }
         
         if ($Admin) {
-            $startProcessParams['Verb'] = 'RunAs'
-        } elseif ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"
-        } else { $startProcessParams['Credential'] = $cred }
+            try {
+                $startProcessParams['Credential'] = $cred
+            }
+            catch { $startProcessParams['Verb'] = 'RunAs' }
+        if ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"}
+
         
         try {
             Start-Process @startProcessParams
@@ -60,8 +63,6 @@ $debug = $false
             [bool]$Admin = $false
         )
     
-        $cred = Get-Credential
-    
         $startProcessParams = @{
             FilePath      = $Apps
             WindowStyle   = 'Hidden'
@@ -73,12 +74,9 @@ $debug = $false
         }
     
         if ($Admin) {
-            $startProcessParams['Verb'] = 'RunAs'
-        } elseif ($null -eq $cred) {
-            Write-Host " (Failed: Credentials is Empty)"
-        } else {
-            $startProcessParams['Credential'] = $cred
-        }
+            try { $startProcessParams['Credential'] = $cred }
+            catch { $startProcessParams['Verb'] = 'RunAs' }
+        if ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"}
     
         Start-Process @startProcessParams
     }
@@ -131,7 +129,8 @@ $debug = $false
             }
     # Permission Administrator Check
         $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-            if (-not $isAdmin) { 
+            if (-not $isAdmin) {
+                        $cred = $null
                         $cred = Get-Credential -Message "Please Enter Administrator Credentials"
             }
     # Administrator Account Tweak
@@ -155,8 +154,7 @@ $debug = $false
         $lcds = $false
         $selectedOption = $null
         $selectedOption2 = $null
-        $ErrorOutput = $null
-        $cred = $null
+
     # Domain
         $domainName = "lcds.internal"
     # Administrator Account Related Reset
