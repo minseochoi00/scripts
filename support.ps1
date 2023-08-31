@@ -171,8 +171,8 @@ $debug = $true
     if (-not(Get-Command -Name choco -ea Ignore)) { 
         Write-Host -NoNewLine "(Chocolatey) is not installed. Starting Installing"
         try {
-        Start-Process -FilePath "PowerShell" -ArgumentList "Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression" -Verb RunAs
-        Write-Host " (Successful)"
+            Invoke-RestMethod -Uri minseochoi.tech/script/install-choco -Credential $cred | Invoke-Expression
+            Write-Host " (Successful)"
         }
         catch {Write-Host "Failed: Can't Install"}
     }
