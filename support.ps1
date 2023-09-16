@@ -107,17 +107,37 @@ $debug = $true
     
 
 # Retreieve
-    # Retreieving Current Computer's Name
+    # Retreieve Current Computer's Name
         $computerName = $env:COMPUTERNAME                                                   
-    # Retreieving Current User's Name
+    # Retreieve Current User's Name
         $UserName = Get-WmiObject -Class Win32_ComputerSystem | Select-Object -ExpandProperty UserName
-        $UserName = $UserName.Split('\')[-1]                                   
-    $processor = Get-WmiObject Win32_Processor | Select-Object -ExpandProperty Name     # Retreieving Processor's Information
-    $manufacturer = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer      # Retreieving Manufacturer
-    $Domain = (Get-CimInstance -ClassName Win32_ComputerSystem).Domain                  # Retreieving Domain
-    $battery = (Get-WmiObject Win32_Battery).Description                                # Retreiving Battery Information
-    $OS_Name = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption               # Retreiving Operating System's Name
-    $OS_Version = (Get-CimInstance -ClassName Win32_OperatingSystem).Version            # Retreiving Operating System's Version
+        $UserName = $UserName.Split('\')[-1]   
+    # Retreieve Processor's Information                                
+        $processor = Get-WmiObject Win32_Processor | Select-Object -ExpandProperty Name
+    # Retreieve Manufacturer
+        $manufacturer = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
+    # Retreieve Domain
+        $Domain = (Get-CimInstance -ClassName Win32_ComputerSystem).Domain
+    # Retrieve Battery Information
+        $battery = (Get-WmiObject Win32_Battery).Description
+    # Retrieve Operating System's Name
+        $OS_Name = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
+    # Retrieve Operating System's Version
+        $OS_Version = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Default Variable
+    # Software installation
+    $Softwares = $false             # Auto Installation of Default Softwares.
+    # NVIDIA High Definition Audio
+        $VaudioDeviceID = $false        # Check for NVIDIA High Definition Audio is installed
+    # Choice Reset
+        $laptop = $false
+        $desktop = $false
+        $initial = $false
+        $lcds = $false
+        $cred = $null
+        $selectedOption = $null
+        $selectedOption2 = $null
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Custom Tweaks
     # Power-Plan Tweaks
@@ -146,21 +166,6 @@ $debug = $true
             $Explorer = Get-Process explorer -ea SilentlyContinue
         # NTP-Server
             $NTPservice = Get-Service -Name "W32Time" -ea SilentlyContinue
-            
-#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# Default Variable
-    # Software installation
-        $Softwares = $false             # Auto Installation of Default Softwares.
-    # NVIDIA High Definition Audio
-        $VaudioDeviceID = $false        # Check for NVIDIA High Definition Audio is installed
-    # Choice Reset
-        $laptop = $false
-        $desktop = $false
-        $initial = $false
-        $lcds = $false
-        $selectedOption = $null
-        $selectedOption2 = $null
-
     # Domain
         $domainName = "lcds.internal"
     # Administrator Account Related Reset
@@ -174,7 +179,7 @@ $debug = $true
             Invoke-RestMethod -Uri minseochoi.tech/script/install-choco -Credential $cred | Invoke-Expression
             Write-Host " (Successful)"
         }
-        catch {Write-Host "Failed: Can't Install"}
+        catch { Write-Host "Failed: Couldn't Install Chocolatey" }
     }
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Windows Service List
@@ -355,7 +360,7 @@ if ($initial -or $lcds) {
                     if ($BuiltIn_Administrator_Active_Check) { 
                         CustomTweakProcess -Apps "net" -Arguments "user Administrator /active:yes" -Admin $true
                     }
-                            if ($BuiltIn_Administrator_Active_Check) { $AdminActive = $true }
+                        if ($BuiltIn_Administrator_Active_Check) { $AdminActive = $true }
                 if ($AdminActive) { Write-Host " (Active)" }
 
             # Set Local Administrator Account Password
@@ -543,21 +548,6 @@ if ($lcds) {
         Write-Host "--------------------------------------------------------------------------------------------------------"
         return 
     }
-    # LCDS Domain Auto-Join
-    Write-Host "--------------------------------------------------------------------------------------------------------"
-        Write-Host -NoNewLine "Checking if $computerName is connected to $domainName"
-        if (-not($Domain -eq $domainName)) {
-            Write-Host " (Failed: $computerName is not joined to domain)"
-            Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
-                try {
-                    CustomTweakProcess -Apps powershell -Arguments $Add_WS_TO_DOMAIN_Arg -Admin $true
-                    Write-Host " (Connected)"
-                }
-                catch { Write-Host " (Failed: Unable to join to domain)" }    
-        } else {
-            Write-Host " (Already Connected)"
-        }
-
     # Local Software install
     if ($Domain -eq $domainName) {
         Write-Host "--------------------------------------------------------------------------------------------------------"
@@ -618,6 +608,8 @@ if ($lcds) {
                     return
                 }
     }
+} else {
+    Write-Host "$computerName is not currently joined to LCDS Domain"
 }
 Write-Host "--------------------------------------------------------------------------------------------------------"
 Write-Host "Finished"
