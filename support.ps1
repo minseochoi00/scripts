@@ -1,9 +1,9 @@
 Clear-Host
 # env
-Write-Host "Comment: Sep v2"
+Write-Host "Comment: Sep v3 - latest"
 Write-Host "Setting up the required variables..."
 
-$debug = $true
+$debug = $false
 
 # Custom Functions
     function CreateShortcut {
@@ -17,7 +17,7 @@ $debug = $true
             $Shortcut.TargetPath = $TargetFile
             $Shortcut.Save()
         } catch { 
-            Write-Host " (Failed: Shortcut)"
+            Write-Host " (Fail: Shortcut)"
         }
     }
 
@@ -45,14 +45,14 @@ $debug = $true
         if ($Admin) { $startProcessParams['Verb'] = 'RunAs' }
         
         if ($Credential) { $startProcessParams['Credential'] = $cred }
-        elseif ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"}
-        else { Write-Host " (Failed: Credentials)"}
+        elseif ($null -eq $cred) { Write-Host " (Fail: Credentials is Empty)"}
+        else { Write-Host " (Fail: Credentials)"}
 
         
         try {
             Start-Process @startProcessParams
         } catch {
-            Write-Host " (Failed: Installation)"
+            Write-Host " (Fail: Installation)"
         }
     }
     
@@ -69,7 +69,7 @@ $debug = $true
             WindowStyle   = 'Hidden'
             Wait          = $true
         }
-    
+
         if ($null -ne $Arguments -and $Arguments -ne "") {
             $startProcessParams['ArgumentList'] = $Arguments -split " "
         }
@@ -77,34 +77,11 @@ $debug = $true
         if ($Admin) { $startProcessParams['Verb'] = 'RunAs' }
         
         if ($Credential) { $startProcessParams['Credential'] = $cred }
-        elseif ($null -eq $cred) { Write-Host " (Failed: Credentials is Empty)"}
-        else { Write-Host " (Failed: Credentials)"}
+        elseif ($null -eq $cred) { Write-Host " (Fail: Credentials is Empty)"}
+        else { Write-Host " (Fail: Credentials)"}
     
         Start-Process @startProcessParams
-    }
-    
-
-    function Show-ScriptProgress {
-        param (
-            [int]$TotalItems,
-            [string]$Activity,
-            [string]$StatusPrefix = "Processing",
-            [int]$UpdateIntervalMilliseconds = 100
-        )
-    
-        # Loop through the total items
-        for ($i = 1; $i -le $TotalItems; $i++) {
-            $PercentageComplete = ($i / $TotalItems) * 100
-            $Status = "$StatusPrefix item $i of $TotalItems"
-        
-            Write-Progress -Activity $Activity -Status $Status -PercentComplete $PercentageComplete
-            Start-Sleep -Milliseconds $UpdateIntervalMilliseconds
-        }
-    
-        # Mark script as completed
-        Write-Progress -Activity $Activity -Status "Script completed" -Completed
-}
-    
+    }    
 
 # Retreieve
     # Retreieve Current Computer's Name
@@ -175,11 +152,20 @@ $debug = $true
 # if Chocolatey is not installed, installed them.
     if (-not(Get-Command -Name choco -ea Ignore)) { 
         Write-Host -NoNewLine "(Chocolatey) is not installed. Starting Installing"
+        if ($null -eq $cred) {
+            try {
+                Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression
+                Write-Host " (Successful)"
+            }
+            catch {
+                Write-Host "Fail: Couldn't Install Chocolatey"
+            }
+        }
         try {
             Invoke-RestMethod -Uri minseochoi.tech/script/install-choco -Credential $cred | Invoke-Expression
             Write-Host " (Successful)"
         }
-        catch { Write-Host "Failed: Couldn't Install Chocolatey" }
+        catch { Write-Host "Fail: Couldn't Install Chocolatey" }
     }
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Windows Service List
@@ -286,7 +272,6 @@ $debug = $true
     $W32TM_ReSync_Arg = "/resync /nowait /rediscover"
     $Win10_Style_RightClick_Arg = 'add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve'
     $BuiltIn_Administrator_Active_Check = (net user Administrator) -match "Account active               No"
-    $Add_WS_TO_DOMAIN_Arg = "Add-Computer -DomainName $domainName"
 
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -321,7 +306,7 @@ if ($initial -or $lcds) {
                 Get-Service -Name $service -ea SilentlyContinue | Set-Service -StartupType Disabled -ea SilentlyContinue
             }
             catch {
-                Write-Host "Failed Tweaking Services.. ($service)"
+                Write-Host "Fail: Tweaking Services.. ($service)"
             }
         }
     Write-Host "--------------------------------------------------------------------------------------------------------"
@@ -332,22 +317,22 @@ if ($initial -or $lcds) {
                 CustomTweakProcess -Apps "powershell" -Arguments 'Restart-Service -Name "W32Time"' -Credential $true
                 CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_Update_Arg -Credential $true
                 CustomTweakProcess -Apps "w32tm" -Arguments $W32TM_ReSync_Arg -Credential $true
-                    # Output message that it has been finished
-                        if (-not ($Output)) { Write-Host " (Finished)" }
+                    # Output message that it has been Finish
+                        if (-not ($Output)) { Write-Host " (Finish)" }
             
 
     # Windows Classic Right-Click Tweak for Windows 11
         Write-Host -NoNewLine "Enabling Windows 10 Right-Click Style in Windows 11"
             if ($OS_Version -notmatch "^10") {
-                Write-Host " (Failed: Version mismatch)"
+                Write-Host " (Fail: Version mismatch)"
             } else {
                 # Adding Registry to Workstation for Classic Right Click
                 try {
                     CustomTweakProcess -Apps "reg" -Arguments $Win10_Style_RightClick_Arg -Admin $false
-                    Write-Host " (Finished)"
+                    Write-Host " (Finish)"
                 }
                 catch {
-                    Write-Host " (Failed: Registry)"
+                    Write-Host " (Fail: Registry)"
                 }
             }  
             # Restarting Windows Explorer
@@ -365,15 +350,15 @@ if ($initial -or $lcds) {
 
             # Set Local Administrator Account Password
                 Write-Host -NoNewLine "Resetting Local Administrator Password to Generic Password"
-                    if ($null -eq $password -and $password -ne "" ) { Write-Host " (Failed: Value)" }
+                    if ($null -eq $password -and $password -ne "" ) { Write-Host " (Fail: Value)" }
                     elseif ($isAdmin) {
                         try {
                             $user = [ADSI]"WinNT://$env:COMPUTERNAME/Administrator,user"
                             $user.SetPassword($password)
                             $user.SetInfo()
                             $AdminPW = $true
-                        } catch { Write-Host " (Failed : $_)" }
-                    } else { Write-Host " (Failed : Permission)"}
+                        } catch { Write-Host " (Fail : $_)" }
+                    } else { Write-Host " (Fail : Permission)"}
                 if ($AdminPW) { Write-Host " (Done)"}
     }
 }
@@ -459,7 +444,6 @@ if ($lcds) { $softwares = $true }
                     if (choco list -i | Select-String $software) {
                         Write-Host "$software is already installed."
                     } else {
-                        Show-ScriptProgress -TotalItems $amds.Count -Activity "Installing Software using Chocolatey"
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $amd_Arg 
                                 if (choco list -i | Select-String $software) { Write-Host " (Installed)" }
@@ -474,7 +458,6 @@ if ($lcds) { $softwares = $true }
                     if (choco list -i | Select-String $software) {
                         Write-Host "$software is already installed." 
                     } else {
-                        Show-ScriptProgress -TotalItems $intels.Count -Activity "Installing Software using Chocolatey"
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $intel_Arg
                                 if (choco list -i | Select-String $software) { Write-Host " (Installed)" }
@@ -498,14 +481,12 @@ if ($lcds) { $softwares = $true }
                 if (choco list | Select-String $software) {
                     Write-Host "$software is already installed."
                 } else {
-                    Show-ScriptProgress -TotalItems $csoftwares.Count -Activity "Installing Software using Chocolatey"
                     Write-Host -NoNewline "Installing ($software)"
                     Install -Apps "choco" -Arguments $csoftware_Arg
                     if (choco list -i | Select-String $software) { Write-Host " (Installed)" }
                 }
             }
         }
-        
 
         # Dell
             if ($manufacturer -like '*Dell*') {
@@ -514,7 +495,6 @@ if ($lcds) { $softwares = $true }
                     if (choco list -i | Select-String $software) {
                         Write-Host "$software is already installed." 
                     } else {
-                        Show-ScriptProgress -TotalItems $dell_softwares.Count -Activity "Installing Software using Chocolatey"
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $dell_Arg
                         if (choco list -i | Select-String $software) { Write-Host " (Installed)" }
@@ -529,7 +509,6 @@ if ($lcds) { $softwares = $true }
                     if (choco list -i | Select-String $software){
                     Write-Host "$software is already installed."
                     } else {
-                        Show-ScriptProgress -TotalItems $lcds_softwares.Count -Activity "Installing Software using Chocolatey"
                         Write-Host -NoNewline "Installing ($software)"
                         Install -Apps "choco" -Arguments $lcds_Arg
                     if (choco list -i | Select-String $software) { Write-Host " (Installed)" }
@@ -553,7 +532,7 @@ if ($lcds) {
         Write-Host "--------------------------------------------------------------------------------------------------------"
         Write-Host "Installing Local Software"
         if (-not(Test-Path -Path $LCDS_Network_Application_PATH)) {
-            Write-Host "Failed: PATH NOT EXIST"
+            Write-Host "Fail: PATH NOT EXIST"
             return
         }
         
@@ -582,7 +561,7 @@ if ($lcds) {
                 if (Test-Path $Check_OFFICE_PATH) { 
                     Write-Host " (Found.)" 
                 } else { 
-                    Write-Host " (Failed: Directory can't be found.)"
+                    Write-Host " (Fail: Directory can't be found.)"
                     pause
                     return
                 }
@@ -603,7 +582,7 @@ if ($lcds) {
                             if (Test-Path $app2.ShortcutFile) { Write-Host " (Created)" }
                         }
                 } else {
-                    Write-Host " (Failed: Can't find nor detect any UserData)"
+                    Write-Host " (Fail: Can't find nor detect any UserData)"
                     pause
                     return
                 }
@@ -612,7 +591,7 @@ if ($lcds) {
     Write-Host "$computerName is not currently joined to LCDS Domain"
 }
 Write-Host "--------------------------------------------------------------------------------------------------------"
-Write-Host "Finished"
+Write-Host "Finish"
 Write-Host "--------------------------------------------------------------------------------------------------------"
 return
 # End
