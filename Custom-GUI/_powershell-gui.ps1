@@ -1,6 +1,5 @@
 ﻿# Setting
     $version = "v1.0"
-    $logoPath = "logo.ico"
     $Button1_Name = 'Configuration'
     $Button2_Name = 'Maintenance'
     $Button3_Name = 'Extras'
@@ -121,12 +120,6 @@ $Form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
         $ExtraForm.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterParent
         $ExtraForm.ControlBox = $false
 
-        # Load an image from the same directory as the script
-        $ImagePath = Join-Path $PSScriptRoot $logoPath
-        $Icon = New-Object System.Drawing.Icon($ImagePath)
-        # Set the form's icon to the loaded image
-        $ExtraForm.Icon = $Icon
-
         # Create a label to display which button finished running its script
             $Label = New-Object System.Windows.Forms.Label
             $Label.Location = New-Object System.Drawing.Point(100, 0)
@@ -197,8 +190,6 @@ $Form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
     $Form.Controls.Add($Button1)
     $Form.Controls.Add($Button2)
     $Form.Controls.Add($Button3)
-
-
 
 # Show the form
     Hide-Console
