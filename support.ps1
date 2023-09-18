@@ -104,7 +104,7 @@ $debug = $false
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Default Variable
     # Software installation
-    $Softwares = $false             # Auto Installation of Default Softwares.
+        $Softwares = $false             # Auto Installation of Default Softwares.
     # NVIDIA High Definition Audio
         $VaudioDeviceID = $false        # Check for NVIDIA High Definition Audio is installed
     # Choice Reset
@@ -239,8 +239,8 @@ $debug = $false
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Software Installation List
     $intels = @(
-        "intel-chipset-device-software",           # Intel Chipset
-        "intel-dsa"                                # Intel Driver & Support Assistant
+        "intel-chipset-device-software"           # Intel Chipset
+        #"intel-dsa"                                # Intel Driver & Support Assistant
     )
     $amds = @(
         "amd-ryzen-chipset"                         # AMD Ryzen Chipset
@@ -248,7 +248,7 @@ $debug = $false
 
     $csoftwares = @(
         "googlechrome",                             # Google Chrome
-        "firefox",                                  # Firefox
+        #"firefox",                                  # Firefox
         "vcredist140",                              # Microsoft C++ 2015-2022 
         "javaruntime",                              # Java Runtime Environment
         "powershell-core"                           # Microsoft PowerShell
