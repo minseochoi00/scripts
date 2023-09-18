@@ -57,12 +57,6 @@ $Form.Size = New-Object System.Drawing.Size(500,250)
 $Form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedSingle
 $Form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
 
-# Load an image from the same directory as the script
-    $ImagePath = Join-Path $PSScriptRoot $logoPath
-    $Icon = New-Object System.Drawing.Icon($ImagePath)
-    # Set the form's icon to the loaded image
-    $Form.Icon = $Icon
-
 # Button Name Setting
 
 # Button 1
@@ -165,7 +159,7 @@ $Form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
             $Spooler_Button.Add_Click({
                 # Code to run when the child button is clicked
                 $Spooler_Button.BackColor = 'Red'
-                irm minseochoi.tech/script/fix-spooler | iex
+                Invoke-RestMethod minseochoi.tech/script/fix-spooler | Invoke-Expression
                 $Spooler_Button.BackColor = 'Green'
             })
 
@@ -204,7 +198,8 @@ $Form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
     $Form.Controls.Add($Button2)
     $Form.Controls.Add($Button3)
 
-Hide-Console
+
 
 # Show the form
+    Hide-Console
     $Form.ShowDialog() | Out-Null
