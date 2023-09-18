@@ -15,5 +15,14 @@
     REG ADD "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate" /v "NoRecentDocsHistory" /t REG_DWORD /d 1 /f
     REG ADD "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate" /v "NoStartMenuMFUprogramsList" /t REG_DWORD /d 1 /f
 
+# Mouse
+    REG ADD "HKCU\Control Panel\Mouse" /v "MouseSpeed" /t REG_SZ /d 0 /f
+    REG ADD "HKCU\Control Panel\Mouse" /v "MouseSensitivity" /t REG_SZ /d 10 /f
+    
+# Keyboard
+    REG ADD "HKCU\Control Panel\Keyboard" /v "KeyboardDelay" /t REG_SZ /d 0 /f
+    REG ADD "HKCU\Control Panel\Keyboard" /v "KeyboardSpeed" /t REG_SZ /d 31 /f
+    REG ADD "HKCU\Control Panel\Keyboard" /v "InitialKeyboardIndicators" /t REG_SZ /d 2 /f
+
 # Chocolatey Install + Software Installation
     Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression
