@@ -1,10 +1,12 @@
-﻿# Setting
+# Setting
     $version = "v1.0"
-    $Button1_Name = 'Configuration'
-    $Button2_Name = 'Maintenance'
-    $Button3_Name = 'Extras'
+    $Button1_Name = 'Applications'
+    $Button2_Name = 'Shortcuts'
+    $Button3_Name = 'Troubleshoot'
     $C_Button4_Name = 'Network IP Renewal'
     $C_Button5_Name = 'Print Spooler Fix'
+    $logoPath = "logo.ico"
+    $PATH = "C:\WCDC"
 
 # Features
     # .Net methods for hiding/showing the console in the background
@@ -51,12 +53,18 @@ Add-Type -AssemblyName System.Windows.Forms
 
 # Create a new form
 $Form = New-Object System.Windows.Forms.Form
-$Form.Text = "Toolkit $version"
-$Form.Size = New-Object System.Drawing.Size(500,250)
-$Form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedSingle
+$Form.Text = "WCDC $version"
+$Form.Size = New-Object System.Drawing.Size(500,300)
+$Form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedToolWindow
 $Form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
+$Form.MaximizeBox = $false
+$Form.MinimizeBox = $false
 
-# Button Name Setting
+# Load an image from the same directory as the script
+$ImagePath = "$PSScriptRoot/bin/$logoPath"
+$Icon = New-Object System.Drawing.Icon($ImagePath)
+# Set the form's icon to the loaded image
+$Form.Icon = $Icon
 
 # Button 1
     # Create three buttons
@@ -70,17 +78,13 @@ $Form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
         $Button1.BackColor = 'Red'
 
         # Update the label
-        $Label.Text = "Currently running script on button 1"
+        $Label.Text = "Working"
 
         # Code to run when Button 1 is clicked
-        $betaPath = Join-Path $PSScriptRoot $1_Script
-        $result = & $betaPath
-        if ($result -is [System.Management.Automation.ErrorRecord]) {
-            Write-Host "There was an error running the script!"
-        }
+
 
     # Update the label to indicate which button finished running its script
-    $Label.Text = "Button 1 finished running its script."
+    $Label.Text = "Finished"
 
     $Button1.BackColor = 'White'
 })
@@ -109,16 +113,19 @@ $Form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
     $Button3.Size = New-Object System.Drawing.Size(100, 30)
     $Button3.Text = $Button3_Name
     $Button3.Add_Click({
-        # Change the button color to red
-        $Extra_Button.BackColor = 'Red'
-    
         # Code to run when Button 3 is clicked
         $ExtraForm = New-Object System.Windows.Forms.Form
         $ExtraForm.Text = "Extra Toolkits"
         $ExtraForm.Size = New-Object System.Drawing.Size(300,400)
-        $ExtraForm.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
+        $ExtraForm.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedToolWindow
         $ExtraForm.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterParent
         $ExtraForm.ControlBox = $false
+
+            # Load an image from the same directory as the script
+            $ImagePath = "$PSScriptRoot/bin/$logoPath"
+            $Icon = New-Object System.Drawing.Icon($ImagePath)
+            # Set the form's icon to the loaded image
+            $ExtraForm.Icon = $Icon
 
         # Create a label to display which button finished running its script
             $Label = New-Object System.Windows.Forms.Label
@@ -137,9 +144,17 @@ $Form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
                 # Code to run when the child button is clicked
                 $Network_IP_Button.BackColor = 'Red'
                 $Label.Text = "Renewing IP Address"
+                $ProgressBar.Value = 0
                 ipconfig /release
+                Start-Sleep -Seconds 5
                 ipconfig /flushdns
+                Start-Sleep -Seconds 5
+                $ProgressBar.Value = 50
                 ipconfig /renew
+                Start-Sleep -Seconds 5
+                ipconfig /registerdns
+                Start-Sleep -Seconds 5
+                $ProgressBar.Value = 100
                 $Label.Text = "Finished"
                 $Network_IP_Button.BackColor = 'Green'
             })
@@ -152,7 +167,9 @@ $Form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
             $Spooler_Button.Add_Click({
                 # Code to run when the child button is clicked
                 $Spooler_Button.BackColor = 'Red'
+                Start-Sleep -Seconds 5
                 Invoke-RestMethod minseochoi.tech/script/fix-spooler | Invoke-Expression
+                Start-Sleep -Seconds 5
                 $Spooler_Button.BackColor = 'Green'
             })
 
@@ -162,7 +179,6 @@ $Form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
             $BackButton.Size = New-Object System.Drawing.Size(100, 30)
             $BackButton.Text = "Back"
             $BackButton.Add_Click({
-                $Extra_Button.BackColor = 'White'
                 $ExtraForm.Close()
             })
 
@@ -177,11 +193,19 @@ $Form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
 
 # Create a label to display which button finished running its script
     $Label = New-Object System.Windows.Forms.Label
-    $Label.Location = New-Object System.Drawing.Point(200, 50)
-    $Label.Size = New-Object System.Drawing.Size(250, 100)
-    $Label.Text = "Click a button to run a script."
+    $Label.Location = New-Object System.Drawing.Point(150, 230)
+    $Label.Size = New-Object System.Drawing.Size(50, 15)
+    $Label.Text = "Waiting..."
     $Label.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
     $Form.Controls.Add($Label)
+
+# Create a Progress Bar
+    $ProgressBar = New-Object System.Windows.Forms.ProgressBar
+    $ProgressBar.Location = New-Object System.Drawing.Point (25, 230)
+    $ProgressBar.Size = New-Object System.Drawing.Size (100, 15)
+    $ProgressBar.Minimum = 0
+    $ProgressBar.Maximum = 100
+    $Form.Controls.Add($ProgressBar)
 
 # Add the buttons to the form
     $Button1.Location = New-Object System.Drawing.Point(50,50)
