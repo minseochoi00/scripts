@@ -32,3 +32,12 @@
 
 # Chocolatey Install + Software Installation
     Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression
+
+# Check Bluetooth Status
+    $bluetoothEnabled = Get-Service -Name "bthserv" | Select-Object -ExpandProperty Status
+
+    if ($bluetoothEnabled -eq "Running") {
+        Write-Host "Bluetooth is enabled and running."
+    } else {
+        Write-Host "Bluetooth is not enabled or not running."
+    }
