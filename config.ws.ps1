@@ -145,6 +145,7 @@ $debug = $true
         $selectedOption = $null
         $selectedOption2 = $null
     # Domain
+        $default_domainName = "WORKGROUP"
         $domainName = "lcds.internal"
     # Administrator Account Related Reset
     $AdminActive = $false           # Default Variable = Checking if Local Administrator account is in 'active' status.
