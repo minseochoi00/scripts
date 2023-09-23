@@ -5,6 +5,7 @@
     $Button3_Name = 'Troubleshoot'
     $C_Button4_Name = 'Network IP Renewal'
     $C_Button5_Name = 'Print Spooler Fix'
+    $C_Button6_Name = 'NDI Troubleshoot'
     $logoPath = "logo.ico"
     $PATH = "C:\WCDC"
 
@@ -185,9 +186,12 @@ $Form.Icon = $Icon
 
                 # Code to run when the child button is clicked
                 $Spooler_Button.BackColor = 'Red'
+                $ProgressBar2.Value = 0
                 Start-Sleep -Seconds 5
+                $ProgressBar2.Value = 50
                 Invoke-RestMethod minseochoi.tech/script/fix-spooler | Invoke-Expression
                 Start-Sleep -Seconds 5
+                $ProgressBar2.Value = 100
                 $Spooler_Button.BackColor = 'Green'
 
                 })
