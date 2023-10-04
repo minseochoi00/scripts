@@ -23,7 +23,7 @@
     if (($isAdmin)) {
         if (-not(Get-Command -Name choco -ea Ignore)) { Invoke-RestMethod minseochoi.tech/script/install-choco | Invoke-Expression }
     } else {
-            Write-Host "$userName does not have Administrative Previlage."
+            Write-Host "$userName does not have Administrative Previlage to install Chocolatey."
     }
 
 

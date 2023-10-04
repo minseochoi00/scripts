@@ -1,6 +1,4 @@
 # ENV
-    # General
-        $stop = 'pause'
     # Create New Function 'Test-Admin'
         function Test-Admin {
             $currentUser = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
@@ -8,7 +6,8 @@
             return $isAdmin
         }
     # Print Spooler PATH
-        $PrintSpooler_PATH = "$env:SystemRoot\System32\spool\PRINTERS\*.*"
+        $PrintSpooler_PATH1 = "$env:SystemRoot\System32\spool\PRINTERS\*.*"
+        $PrintSpooler_PATH2 = "$env:SystemRoot\System32\spool\PRINTERS"
 
 # ------------------------------------------------------------------------------------------
 
@@ -17,7 +16,6 @@ if (-not (Test-Admin)) {
     Write-Host "This Code requires Administrative Privileges."
     Pause
     return
-    Exit
 }
 
 # Start
@@ -28,7 +26,7 @@ try {
     if (Get-Service -Name Spooler) { Stop-Service -Name Spooler -Force }
 
     Write-Host "Removing Spool System Files"
-    if (Test-Path $PrintSpooler_PATH) { Remove-Item -Path $PrintSpooler_PATH -ErrorAction Ignore } 
+    if (Test-Path $PrintSpooler_PATH2) { Remove-Item -Path $PrintSpooler_PATH1 -ErrorAction SilentlyContinue } 
     else { 
         Write-Output "$PrintSpooler_PATH" 
         Write-Output "Above PATH does not EXIST." 
@@ -48,7 +46,7 @@ catch {
 
     Write-Output "Error has occured while Fixing Print Spooler"
     Write-Output "Please 'RE-START' the workstation."
-    $stop
+    pause
     Return
 
 }
