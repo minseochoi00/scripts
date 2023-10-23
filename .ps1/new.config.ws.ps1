@@ -14,6 +14,7 @@
         $battery = (Get-WmiObject Win32_Battery).Description                                # Retreiving Battery Information
         $OS_Name = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption               # Retreiving Operating System's Name
         $OS_Version = (Get-CimInstance -ClassName Win32_OperatingSystem).Version            # Retreiving Operating System's Version
+        $IP_Address = ()
 
 
     # Permission Administrator Check
@@ -28,5 +29,8 @@
 
 
 # START
+
+
+
 
 # END
