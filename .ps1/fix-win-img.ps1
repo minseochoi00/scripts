@@ -16,7 +16,7 @@ Function Fix-SystemImage {
 
 # Section 2: Disk Cleanup
 Function Start-DiskCleanup {
-    "C:\Windows\System32\cleanmgr.exe" /sagerun:1
+    cleanmgr /sagerun:1
 }
 
 # Section 3: Windows Update
