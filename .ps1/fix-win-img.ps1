@@ -21,8 +21,8 @@ Function Start-DiskCleanup {
 
 # Section 4: Temporary Files Cleanup
 Function Cleanup-TempFiles {
-   Remove-Item -Path "C:\Windows\Temp" -Recurse -Force
-   Remove-Item -Path "$env:TEMP" -Recurse -Force
+   Remove-Item -Path "C:\Windows\Temp" -Recurse -Force -ErrorAction Ignore
+   Remove-Item -Path "$env:TEMP" -Recurse -Force -ErrorAction Ignore
 }
 
 # Section 5: Disk Defragmentation (for HDD)
@@ -47,7 +47,7 @@ Function Check-Disk {
 }
 
 Function Restart-Service {
-  Restart-Service -Name wuauserv, bits, cryptsvc
+  Restart-Service -Name wuauserv, bits, cryptsvc -ErrorAction SilentlyContinue
 }
 
 # Executing the functions
