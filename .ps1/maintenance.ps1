@@ -123,6 +123,14 @@ try {
         # Output message that it has been finished
             Write-Host " (Completed)"
 
+    # Start File Explorer
+        Write-Host -NoNewLine "Starting Windows Explorer... "
+        $Arguments = "explorer.exe"
+        CustomTweakProcess -Apps "start" -Arguments $Arguments  # If you have a function to handle this
+            # Wait for a moment to allow Explorer to close
+                Start-Sleep -Seconds 2
+        if (-not (Get-Process -Name explorer -ErrorAction SilentlyContinue)) { Write-Host "(Failed)" } else { Write-Host "(Started)" }
+
 } catch { 
     Write-Host " (Failed)"
 }
