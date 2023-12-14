@@ -19,18 +19,6 @@ Function Start-DiskCleanup {
     cleanmgr /sagerun:1
 }
 
-# Section 3: Windows Update
-Function Install-WindowsUpdates {
-    # Requires PSWindowsUpdate module
-   try {
-      Import-Module PSWindowsUpdate
-   } catch {
-      Install-Module -Name PSWindowsUpdate -Force
-   }
-   Get-WindowsUpdate | Out-Null
-   Install-WindowsUpdate -AcceptAll -AutoReboot
-}
-
 # Section 4: Temporary Files Cleanup
 Function Cleanup-TempFiles {
    Remove-Item -Path "C:\Windows\Temp" -Recurse -Force
@@ -65,7 +53,6 @@ Function Restart-Service {
 # Executing the functions
 Fix-SystemImage
 Start-DiskCleanup
-Install-WindowsUpdates
 Cleanup-TempFiles
 Start-Defragmentation
 Check-SystemHealth
