@@ -1,7 +1,7 @@
 Clear-Host
 
 # Settings
-Write-Host "Comment: 2023 Nov v3.0 Updated"
+Write-Host "Comment: 2023 Dec v3.0 Updated"
 Write-Host "Setting up the required variables..."
 
 # Required Parameter for Disk Clean-up
@@ -81,38 +81,39 @@ try {
     # Set Execution Policy to Bypass
         Set-ExecutionPolicy Bypass -Force
 
-    # Cleanup operations
-        Write-Host "Performing cleanup operations..."
-
     # Delete Temporary Files
+        Write-Host -NoNewLine "Clearing Temporary Files... "
         Get-ChildItem "$env:windir\Temp\", "$env:TEMP", "$($env:windir)\SoftwareDistribution\Download\*" -Recurse | Remove-Item -Force -Recurse -ErrorAction Ignore
-        Write-Host "Temporary files removed."
+        Write-Host "(Completed)"
 
     # Empty Recycle Bin
+        Write-Host -NoNewLine "Emptying Recylce Bin... "
         Clear-RecycleBin -DriveLetter C -Force -ErrorAction Ignore
-        Write-Host "Recycle Bin emptied."
+        Write-Host "(Completed)"
 
     # Windows NTP Server Adjustment (Only if Admin)
         if ($isAdmin) {
-            Write-Host "Adjusting NTP Server settings..."
+            Write-Host -NoNewLine "Adjusting NTP Server settings... "
             $NTP_Args = @("/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update", "/config /update", "/resync /nowait /rediscover")
             foreach ($arg in $NTP_Args) { CustomTweakProcess -Apps "w32tm" -Arguments $arg }
-            Write-Host "NTP Server settings adjusted."
+            Write-Host "(Completed)"
         }
 
     # System Image Check
-        Write-Host "Fixing Windows Image using DISM"
+        Write-Host -NoNewLine "Fixing Windows Image using DISM "
         CustomTweakProcess -Apps "dism" -Arguments "/online /english /cleanup-image /restorehealth"
         CustomTweakProcess -Apps "dism" -Arguments "/cleanup-mountpoints"
+        Write-Host "(Completed)"
+
 
     # System File Check
-        Write-Host "Checking and repairing system files..."
-        CustomTweakProcess -Apps "sfc" -Arguments "/scannow"
-        Write-Host "System file check complete."
+            Write-Host -NoNewLine "Checking and repairing system files... "
+            CustomTweakProcess -Apps "sfc" -Arguments "/scannow"
+            Write-Host "(Completed)"
+
 
     # Running Disk Cleanup
         Write-Host -NoNewLine "Starting Disk Cleanup"
-        try {
         foreach ($Location in $Locations) { Set-ItemProperty -Path $($Base+$Location) -Name $SageSet -Type DWORD -Value 2 -ea silentlycontinue | Out-Null }
         # Do the clean-up. Have to convert the SageSet number
             $Args = "/sagerun:$([string]([int]$SageSet.Substring($SageSet.Length-4)))"
@@ -120,12 +121,10 @@ try {
         # Remove the Stateflags
             foreach($Location in $Locations) { Remove-ItemProperty -Path $($Base+$Location) -Name $SageSet -Force -ea silentlycontinue | Out-Null }
         # Output message that it has been finished
-            Write-Host " (Finished)"
-        } catch { Write-Host " (Failed: Disk Cleanup)" 
-        }
+            Write-Host " (Completed)"
 
-} catch {
-    Write-Host "An error occurred: $_"
+} catch { 
+    Write-Host " (Failed)"
 }
 
 Write-Host "Script execution completed."
