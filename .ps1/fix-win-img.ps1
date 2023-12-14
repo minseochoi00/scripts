@@ -39,7 +39,6 @@ Function Start-Defragmentation {
 # Section 6: System Health Check
 Function Check-SystemHealth {
    sfc /scannow
-   Get-WinEvent -LogName System | Where-Object {$_.EventID -eq 1001} | Select-Object -ExpandProperty Message | ForEach-Object {Write-Host $_}
 }
 
 Function Check-Disk {
