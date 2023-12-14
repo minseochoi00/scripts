@@ -42,7 +42,7 @@ Function Check-SystemHealth {
 }
 
 Function Check-Disk {
-   Get-Disk | Check-Disk -Repair
+   Get-Disk | Get-Partition | Repair-Volume -Scan -ErrorAction Ignore
 }
 
 Function Restart-Service {
