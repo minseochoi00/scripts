@@ -83,7 +83,7 @@ try {
 
     # Delete Temporary Files
         Write-Host -NoNewLine "Clearing Temporary Files... "
-        Get-ChildItem "$env:windir\Temp\", "$env:TEMP", "$($env:windir)\SoftwareDistribution\Download\*" -Recurse | Remove-Item -Force -Recurse -ErrorAction Ignore
+        Remove-Item "$env:windir\Temp\", "$env:TEMP", "$($env:windir)\SoftwareDistribution\Download\*" -Force -Recurse -ErrorAction Ignore
         Write-Host "(Completed)"
 
     # Empty Recycle Bin
@@ -125,7 +125,7 @@ try {
 
     # Start File Explorer
         Write-Host -NoNewLine "Starting Windows Explorer... "
-        $Arguments = "explorer.exe"
+        $Arguments = "explorer"
         CustomTweakProcess -Apps "start" -Arguments $Arguments  # If you have a function to handle this
             # Wait for a moment to allow Explorer to close
                 Start-Sleep -Seconds 2
