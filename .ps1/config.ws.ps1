@@ -202,7 +202,7 @@ $debug = $true
         $EXCEL_PATH = "$Check_OFFICE_PATH\EXCEL.exe"
 
     $LCDS_Network_Application_PATH = "\\lcds-22-fs1\Netapps\_Initial_Install"
-        $Install_Arg = "/configure $LCDS_Network_Application_PATH\new_office_2019\config.xml"
+        $Install_Arg = "/configure $LCDS_Network_Application_PATH\Office\new_office_2019\config.xml"
     $Office2019 = "Microsoft Office Professional Plus 2019"
 
     $VIRASEC_TeamViewer = "VIRASEC TeamViewer Host"
@@ -527,13 +527,7 @@ if ($lcds) {
         Write-Host -NoNewLine "Checking if $computerName is connected to $domainName"
         if (-not($Domain -eq $domainName)) {
             Write-Host " (Failed: $computerName is not joined to domain)"
-            Write-Host -NoNewLine "Adding Workstation:$computerName into $domainName"
-                try {
-                    $cred = Get-Credential -Message "Please Enter Administrator Credentials"
-                    CustomTweakProcess -Apps powershell -Arguments $Add_WS_TO_DOMAIN_Arg
-                    Write-Host " (Connected)"
-                }
-                catch { Write-Host " (Failed: Unable to join to domain)" }    
+            pause
         } else {
             Write-Host " (Already Connected)"
         }
