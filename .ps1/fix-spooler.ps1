@@ -1,52 +1,40 @@
-# ENV
-    # Create New Function 'Test-Admin'
-        function Test-Admin {
-            $currentUser = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-            $isAdmin = $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
-            return $isAdmin
-        }
-    # Print Spooler PATH
-        $PrintSpooler_PATH1 = "$env:SystemRoot\System32\spool\PRINTERS\*.*"
-        $PrintSpooler_PATH2 = "$env:SystemRoot\System32\spool\PRINTERS"
+# Function to check if the current user has administrative privileges
+function Test-Admin {
+    $currentUser = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+    $isAdmin = $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
+    return $isAdmin
+}
 
-# ------------------------------------------------------------------------------------------
+# Environment variables for Print Spooler paths
+$PrintSpooler_PATH1 = "$env:SystemRoot\System32\spool\PRINTERS\*.*"
+$PrintSpooler_PATH2 = "$env:SystemRoot\System32\spool\PRINTERS"
 
-# Check if the script is running as an administrator
+# Main script execution
 if (-not (Test-Admin)) {
-    Write-Host "This Code requires Administrative Privileges."
+    Write-Host "This script requires Administrative privileges."
     Pause
     return
 }
 
-# Start
-
 try {
+    # Stopping the Print Spooler service
+    Write-Host "Stopping Print Spooler Service..."
+    Stop-Service -Name "Spooler" -Force -ErrorAction Stop
 
-    Write-Host "Stopping Print Spooler Service"
-    if (Get-Service -Name Spooler) { Stop-Service -Name Spooler -Force }
-
-    Write-Host "Removing Spool System Files"
-    if (Test-Path $PrintSpooler_PATH2) { Remove-Item -Path $PrintSpooler_PATH1 -ErrorAction SilentlyContinue } 
-    else { 
-        Write-Output "$PrintSpooler_PATH" 
-        Write-Output "Above PATH does not EXIST." 
+    # Removing printer spool files
+    Write-Host "Removing Spool System Files..."
+    if (Test-Path $PrintSpooler_PATH2) {
+        Remove-Item -Path $PrintSpooler_PATH1 -Force -ErrorAction SilentlyContinue
+    } else {
+        Write-Host "Path does not exist: $PrintSpooler_PATH2"
     }
 
-    Write-Host "Starting Print Spooler Service"
-    Start-Service -Name Spooler
-    
-    Return
+    # Starting the Print Spooler service
+    Write-Host "Starting Print Spooler Service..."
+    Start-Service -Name "Spooler"
 
-}
-
-# End
-
-# Error Prompt
-catch {
-
-    Write-Output "Error has occured while Fixing Print Spooler"
-    Write-Output "Please 'RE-START' the workstation."
-    pause
-    Return
-
+} catch {
+    Write-Host "An error has occurred while managing the Print Spooler."
+    Write-Host "Please restart the workstation and try again."
+    Pause
 }

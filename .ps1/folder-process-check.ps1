@@ -1,9 +1,11 @@
 $FolderPath = "C:\Your\Folder\Path"
 
-Get-WmiObject Win32_Process | ForEach-Object {
+# Use Get-CimInstance for better performance and because Get-WmiObject is deprecated
+Get-CimInstance Win32_Process | ForEach-Object {
     try {
         $ProcessPath = $_.ExecutablePath
-        if ($ProcessPath -and $ProcessPath.StartsWith($FolderPath, [StringComparison]::OrdinalIgnoreCase)) {
+        # Using StartsWith method for string comparison
+        if ($ProcessPath -and $ProcessPath.StartsWith($FolderPath, "CurrentCultureIgnoreCase")) {
             $_ | Select-Object ProcessName, ExecutablePath
         }
     } catch {
