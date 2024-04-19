@@ -1,0 +1,11 @@
+- Get-WmiObject -Class "Win32_Processor"
+  # Retrieves management information from local or remote computers.
+
+- Restart-Computer -ComputerName "Server01", "Server02" -Force
+  # Restarts one or more computers.
+
+- Test-Connection -ComputerName "google.com" -Count 4
+  # Sends ICMP echo request packets ("ping") to test network connectivity.
+
+- Set-Service -Name "wuauserv" -StartupType "Disabled" -Status "Stopped"
+  # Modifies the start mode and status of a service.
