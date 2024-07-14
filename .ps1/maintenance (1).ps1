@@ -94,7 +94,7 @@ try {
     # Windows NTP Server Adjustment (Only if Admin)
         if ($isAdmin) {
             Write-Host -NoNewLine "Adjusting NTP Server settings... "
-            $NTP_Args = @("/config /manualpeerlist:time.google.com /syncfromflags:MANUAL /reliable:yes /update", "/config /update", "/resync /nowait /rediscover")
+            $NTP_Args = @("/config /manualpeerlist:time.nist.gov /syncfromflags:MANUAL /reliable:YES /update", "/config /update", "/resync /nowait /rediscover")
             foreach ($arg in $NTP_Args) { CustomTweakProcess -Apps "w32tm" -Arguments $arg }
             Write-Host "(Completed)"
         }
