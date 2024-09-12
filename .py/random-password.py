@@ -1,4 +1,4 @@
-## This GUI has been created by @minseochoi00 with help of ChatGPT ##
+## This GUI has been created by @minseochoi00 ##
 
 # Start
 import random
