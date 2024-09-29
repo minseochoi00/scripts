@@ -1,21 +1,22 @@
 <#
 .SYNOPSIS
-    System Diagnostics and Maintenance Script
+    System Diagnostics and Maintenance Script with Timeout Handling
 
 .DESCRIPTION
-    This script performs several system diagnostics and maintenance tasks to help maintain a healthy and stable Windows OS.
-    It runs silently and reports which tasks succeeded and which need attention.
+    This script performs system diagnostics and maintenance tasks to help maintain a healthy and stable Windows OS.
+    It includes timeout handling to prevent commands from getting stuck.
 
 .NOTES
     Author: Minseo Choi
     Version: v1
 #>
 
-# Function to run a command silently and capture output
+# Function to run a command silently with timeout handling
 function Run-Command {
     param (
         [string]$Command,
-        [string]$TaskName
+        [string]$TaskName,
+        [int]$TimeoutInSeconds = 1800  # Default timeout set to 30 minutes
     )
 
     Write-Host "Starting $TaskName..." -ForegroundColor Cyan
@@ -35,18 +36,45 @@ function Run-Command {
         $process.StartInfo = $processInfo
         $process.Start() | Out-Null
 
-        # Capture output and error streams
-        $standardOutput = $process.StandardOutput.ReadToEnd()
-        $standardError = $process.StandardError.ReadToEnd()
+        # Capture output and error streams asynchronously
+        $standardOutput = ''
+        $standardError = ''
 
-        $process.WaitForExit()
+        $outputEvent = [System.Threading.AutoResetEvent]::new($false)
+        $errorEvent = [System.Threading.AutoResetEvent]::new($false)
 
-        $exitCode = $process.ExitCode
+        $process.OutputDataReceived += {
+            $standardOutput += $_.Data + "`n"
+            if ($_.Data -eq $null) { $outputEvent.Set() }
+        }
+        $process.ErrorDataReceived += {
+            $standardError += $_.Data + "`n"
+            if ($_.Data -eq $null) { $errorEvent.Set() }
+        }
 
-        if ($exitCode -eq 0) {
-            Write-Host "$TaskName completed successfully." -ForegroundColor Green
+        $process.BeginOutputReadLine()
+        $process.BeginErrorReadLine()
+
+        # Wait for the process to exit or timeout
+        if ($process.WaitForExit($TimeoutInSeconds * 1000)) {
+            # Wait for output streams to finish
+            $outputEvent.WaitOne()
+            $errorEvent.WaitOne()
+
+            $exitCode = $process.ExitCode
+
+            if ($exitCode -eq 0) {
+                Write-Host "$TaskName completed successfully." -ForegroundColor Green
+            } else {
+                Write-Host "$TaskName encountered errors. Please check logs." -ForegroundColor Red
+            }
         } else {
-            Write-Host "$TaskName encountered errors. Please check logs." -ForegroundColor Red
+            # Timeout occurred
+            Write-Host "$TaskName timed out after $TimeoutInSeconds seconds." -ForegroundColor Yellow
+            $process.Kill()
+
+            # Indicate timeout in exit code
+            $exitCode = -1
         }
 
         # Save output to log files
@@ -107,14 +135,17 @@ if (!(Test-Path $logDirectory)) {
     New-Item -ItemType Directory -Path $logDirectory | Out-Null
 }
 
-# Run DISM to restore health
-Run-Command -Command "Dism /Online /Cleanup-Image /RestoreHealth" -TaskName "DISM_RestoreHealth"
+# Define a timeout for long-running commands (in seconds)
+$commandTimeout = 3600  # 1 hour timeout
 
-# Run SFC to scan and repair system files
-Run-Command -Command "sfc /scannow" -TaskName "System_File_Checker_SFC"
+# Run DISM to restore health with timeout
+Run-Command -Command "Dism /Online /Cleanup-Image /RestoreHealth" -TaskName "DISM_RestoreHealth" -TimeoutInSeconds $commandTimeout
 
-# Optionally, check disk health
-Run-Command -Command "chkdsk /scan" -TaskName "Check_Disk_Scan"
+# Run SFC to scan and repair system files with timeout
+Run-Command -Command "sfc /scannow" -TaskName "System_File_Checker_SFC" -TimeoutInSeconds $commandTimeout
+
+# Optionally, check disk health with timeout
+Run-Command -Command "chkdsk /scan" -TaskName "Check_Disk_Scan" -TimeoutInSeconds $commandTimeout
 
 # Check for Windows Updates
 Check-WindowsUpdates
