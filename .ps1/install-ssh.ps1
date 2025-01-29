@@ -33,10 +33,9 @@ if ((Get-Service -Name ssh-agent -ErrorAction SilentlyContinue).Status -ne 'Runn
 Set-Service -Name ssh-agent -StartupType 'Automatic'
 
 # Ensure firewall rule is added for SSHD
-$firewallRule = Get-NetFirewallRule -DisplayName "SSHD service" -ErrorAction SilentlyContinue
-if (-not $firewallRule) {
-    Write-Host "Adding firewall rule for SSHD..."
-    netsh advfirewall firewall add rule name="SSHD service" dir=in action=allow protocol=TCP localport=22
+if (!(Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue | Select-Object Name, Enabled)) {
+    Write-Output "Firewall Rule 'OpenSSH-Server-In-TCP' does not exist, creating it..."
+    New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
 } else {
-    Write-Host "Firewall rule for SSHD already exists."
+    Write-Output "Firewall rule 'OpenSSH-Server-In-TCP' has been created and exists."
 }
